@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup disableIfNoEncryptionCapabilities="true">
+        <!--
+          Include all default content for cloud backup.
+          This includes databases, shared preferences, and files in the app's specific directories.
+          Caches are excluded by default.
+          The disableIfNoEncryptionCapabilities="true" flag adds a layer of security,
+          ensuring cloud backups only happen on devices that support end-to-end encryption. [2]
+        -->
+        <include domain="database" />
+        <include domain="file" />
+        <include domain="sharedpref" />
+        <include domain="root" />
+        <include domain="external" />
+    </cloud-backup>
+
+    <device-transfer>
+        <!--
+          Include all default content for device-to-device transfers.
+          This is generally more permissive as the data is not stored in the cloud. [6]
+        -->
+        <include domain="database" />
+        <include domain="file" />
+        <include domain="sharedpref" />
+        <include domain="root" />
+        <include domain="external" />
+    </device-transfer>
+</data-extraction-rules>

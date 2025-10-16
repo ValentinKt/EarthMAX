@@ -1,0 +1,24 @@
+type Query {
+    getEcoTips(category: String, limit: Int): [EcoTip!]!
+    getEcoTip(id: ID!): EcoTip
+}
+
+type EcoTip {
+    id: ID!
+    title: String!
+    description: String!
+    category: String!
+    difficulty: Difficulty!
+    estimatedImpact: String!
+    steps: [String!]!
+    imageUrl: String
+    tags: [String!]!
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum Difficulty {
+    EASY
+    MEDIUM
+    HARD
+}

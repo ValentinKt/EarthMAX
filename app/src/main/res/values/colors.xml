@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Environmental Teal Theme -->
+    <color name="teal_200">#FF80CBC4</color>
+    <color name="teal_500">#FF4DB6AC</color>
+    <color name="teal_700">#FF00695C</color>
+    
+    <!-- Additional Environmental Colors -->
+    <color name="eco_green">#FF4CAF50</color>
+    <color name="earth_brown">#FF8D6E63</color>
+    <color name="sky_blue">#FF03DAC6</color>
+    <color name="forest_green">#FF2E7D32</color>
+    <color name="ocean_blue">#FF0277BD</color>
+</resources>

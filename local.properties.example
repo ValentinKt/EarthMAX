@@ -1,0 +1,13 @@
+# This file contains the local configuration for the EarthMAX Android app.
+# Copy this file to local.properties and fill in your actual values.
+
+# Android SDK location
+sdk.dir=/path/to/your/android/sdk
+
+# Supabase Configuration
+# Get these values from your Supabase project dashboard
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here
+
+# Optional: Supabase Service Role Key (for admin operations)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here

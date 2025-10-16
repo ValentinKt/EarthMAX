@@ -1,0 +1,15 @@
+query GetEcoTips($category: String, $limit: Int) {
+    getEcoTips(category: $category, limit: $limit) {
+        id
+        title
+        description
+        category
+        difficulty
+        estimatedImpact
+        steps
+        imageUrl
+        tags
+        createdAt
+        updatedAt
+    }
+}
