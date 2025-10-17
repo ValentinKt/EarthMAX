@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,9 +18,18 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      // TODO: Implement Supabase authentication
-      setMessage('Login functionality will be implemented with Supabase integration.');
-    } catch (error) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setMessage(error.message);
+      } else {
+        setMessage('Login successful! Redirecting...');
+        router.push('/dashboard');
+      }
+    } catch {
       setMessage('An error occurred during login.');
     } finally {
       setLoading(false);

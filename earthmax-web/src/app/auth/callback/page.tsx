@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export default function AuthCallbackPage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -12,11 +15,23 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // TODO: Implement Supabase auth callback handling
-        // This will handle email confirmation and other auth callbacks
+        const { data, error } = await supabase.auth.getSession();
         
-        // For now, simulate the process
-        setTimeout(() => {
+        if (error) {
+          setStatus('error');
+          setMessage('There was an error confirming your email. Please try again or contact support.');
+          return;
+        }
+
+        if (data.session) {
+          setStatus('success');
+          setMessage('Email confirmed successfully! You are now signed in.');
+          
+          // Redirect to dashboard after 3 seconds
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 3000);
+        } else {
           setStatus('success');
           setMessage('Email confirmed successfully! You can now sign in to your account.');
           
@@ -24,9 +39,9 @@ export default function AuthCallbackPage() {
           setTimeout(() => {
             router.push('/auth/login');
           }, 3000);
-        }, 2000);
+        }
         
-      } catch (error) {
+      } catch {
         setStatus('error');
         setMessage('There was an error confirming your email. Please try again or contact support.');
       }

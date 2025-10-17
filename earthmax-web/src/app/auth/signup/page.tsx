@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -22,9 +23,20 @@ export default function SignUpPage() {
     }
 
     try {
-      // TODO: Implement Supabase authentication
-      setMessage('Sign up functionality will be implemented with Supabase integration. Please check your email for confirmation.');
-    } catch (error) {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+        }
+      });
+
+      if (error) {
+        setMessage(error.message);
+      } else {
+        setMessage('Please check your email for a confirmation link to complete your registration.');
+      }
+    } catch {
       setMessage('An error occurred during sign up.');
     } finally {
       setLoading(false);
