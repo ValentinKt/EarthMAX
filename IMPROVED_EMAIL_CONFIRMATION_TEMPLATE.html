@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your EarthMAX Account</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+        
+        .tagline {
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+        
+        .welcome-message {
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0 0 30px 0;
+            text-align: center;
+            line-height: 1.7;
+        }
+        
+        .confirmation-section {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            border-left: 4px solid #14b8a6;
+        }
+        
+        .confirmation-text {
+            font-size: 16px;
+            color: #374151;
+            margin: 0 0 25px 0;
+        }
+        
+        .confirm-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            color: white !important;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+        
+        .confirm-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+        }
+        
+        .security-info {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .security-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .security-text {
+            font-size: 13px;
+            color: #92400e;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .alternative-link {
+            background-color: #f1f5f9;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .alternative-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            margin: 0 0 8px 0;
+        }
+        
+        .alternative-url {
+            font-size: 12px;
+            color: #64748b;
+            word-break: break-all;
+            background-color: #ffffff;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .footer {
+            background-color: #f8fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .footer-text {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0 0 15px 0;
+        }
+        
+        .footer-links {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        .footer-links a {
+            color: #14b8a6;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Mobile responsiveness */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .welcome-title {
+                font-size: 24px;
+            }
+            
+            .confirm-button {
+                padding: 14px 28px;
+                font-size: 15px;
+            }
+            
+            .footer {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🌍 EarthMAX</div>
+            <p class="tagline">Sustainable Living Made Simple</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <h1 class="welcome-title">Welcome to EarthMAX! 🎉</h1>
+            <p class="welcome-message">
+                Thank you for joining our community of eco-conscious individuals working together to create a more sustainable future. You're just one step away from accessing your account.
+            </p>
+            
+            <!-- Confirmation Section -->
+            <div class="confirmation-section">
+                <p class="confirmation-text">
+                    <strong>Please confirm your email address to activate your account:</strong>
+                </p>
+                <a href="{{ .ConfirmationURL }}" class="confirm-button">
+                    ✅ Confirm My Account
+                </a>
+            </div>
+            
+            <!-- Security Information -->
+            <div class="security-info">
+                <div class="security-title">
+                    🔒 Security Notice
+                </div>
+                <p class="security-text">
+                    This confirmation link will expire in <strong>24 hours</strong> for your security. If you didn't create an EarthMAX account, please ignore this email or contact our support team.
+                </p>
+            </div>
+            
+            <!-- Alternative Link -->
+            <div class="alternative-link">
+                <div class="alternative-title">Can't click the button? Copy and paste this link:</div>
+                <div class="alternative-url">{{ .ConfirmationURL }}</div>
+            </div>
+            
+            <p style="font-size: 16px; color: #374151; margin: 30px 0 0 0; text-align: center;">
+                Once confirmed, you'll be able to:
+            </p>
+            <ul style="color: #6b7280; font-size: 15px; margin: 15px 0; padding-left: 20px;">
+                <li>Track your environmental impact</li>
+                <li>Connect with like-minded individuals</li>
+                <li>Access exclusive sustainability tips</li>
+                <li>Participate in eco-friendly challenges</li>
+            </ul>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="footer-text">
+                Need help? Contact us at <a href="mailto:support@earthmax.app" style="color: #14b8a6; text-decoration: none;">support@earthmax.app</a>
+            </p>
+            <div class="footer-links">
+                <a href="https://earthmax.app/privacy">Privacy Policy</a> |
+                <a href="https://earthmax.app/terms">Terms of Service</a> |
+                <a href="https://earthmax.app/unsubscribe">Unsubscribe</a>
+            </div>
+            <p style="font-size: 11px; color: #9ca3af; margin: 15px 0 0 0;">
+                © 2024 EarthMAX. All rights reserved.<br>
+                This email was sent to you because you signed up for an EarthMAX account.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

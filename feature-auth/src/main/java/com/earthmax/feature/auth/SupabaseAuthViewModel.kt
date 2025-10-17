@@ -47,12 +47,13 @@ class SupabaseAuthViewModel @Inject constructor(
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             try {
-                val user = authRepository.signUp(email, password, name).getOrNull()
-	            if(user == null) {
-                    _currentUser.value = user
-                    _authState.value = AuthState.Authenticated
+                val result = authRepository.signUp(email, password, name)
+                if (result.isSuccess) {
+                    // Signup request sent successfully, email confirmation required
+                    _authState.value = AuthState.EmailConfirmationSent
                 } else {
-                    _authState.value = AuthState.Unauthenticated
+                    val error = result.exceptionOrNull()
+                    _authState.value = AuthState.Error(error?.message ?: "Sign up failed")
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Sign up failed")
@@ -105,6 +106,7 @@ sealed class AuthState {
     object Loading : AuthState()
     object Authenticated : AuthState()
     object Unauthenticated : AuthState()
+    object EmailConfirmationSent : AuthState()
     object PasswordResetSent : AuthState()
     data class Error(val message: String) : AuthState()
 }
