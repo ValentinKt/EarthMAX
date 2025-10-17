@@ -1,5 +1,10 @@
 package com.earthmax.feature.events.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -38,7 +43,21 @@ fun NavGraphBuilder.eventsGraph(
             )
         }
         
-        composable(CREATE_EVENT_ROUTE) {
+        composable(
+            CREATE_EVENT_ROUTE,
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(400)
+                ) + fadeIn(animationSpec = tween(400))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(400)
+                ) + fadeOut(animationSpec = tween(400))
+            }
+        ) {
             CreateEventScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -53,7 +72,13 @@ fun NavGraphBuilder.eventsGraph(
             route = "$EVENT_DETAIL_ROUTE/{eventId}",
             arguments = listOf(
                 navArgument("eventId") { type = NavType.StringType }
-            )
+            ),
+            enterTransition = {
+                fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(300))
+            }
         ) { backStackEntry ->
             EventDetailScreen(
                 onNavigateBack = {

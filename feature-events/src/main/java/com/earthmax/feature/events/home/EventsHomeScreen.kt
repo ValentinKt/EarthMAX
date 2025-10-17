@@ -1,5 +1,11 @@
 package com.earthmax.feature.events.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -22,6 +28,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.earthmax.core.models.Event
 import com.earthmax.core.models.EventCategory
+import com.earthmax.core.ui.animation.fadeInAnimation
+import com.earthmax.core.ui.animation.slideInFromBottom
 import com.earthmax.feature.events.EventsViewModel
 import com.earthmax.feature.events.components.EventCard
 import com.earthmax.feature.events.components.EventCategoryChip
@@ -86,7 +94,17 @@ fun EventsHomeScreen(
         )
         
         // Search Bar
-        if (showSearchBar) {
+        AnimatedVisibility(
+            visible = showSearchBar,
+            enter = slideInVertically(
+                initialOffsetY = { -it },
+                animationSpec = tween(300)
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = slideOutVertically(
+                targetOffsetY = { -it },
+                animationSpec = tween(300)
+            ) + fadeOut(animationSpec = tween(300))
+        ) {
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = viewModel::setSearchQuery,
@@ -157,7 +175,10 @@ fun EventsHomeScreen(
                             onEventClick = onNavigateToEventDetail,
                             onJoinClick = viewModel::joinEvent,
                             onLeaveClick = viewModel::leaveEvent,
-                            isLoading = uiState.isLoading
+                            isLoading = uiState.isLoading,
+                            modifier = Modifier
+                                .fadeInAnimation(visible = true)
+                                .slideInFromBottom(visible = true)
                         )
                     }
                 }
@@ -173,7 +194,8 @@ fun EventsHomeScreen(
         ) {
             FloatingActionButton(
                 onClick = onNavigateToCreateEvent,
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fadeInAnimation(visible = true)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,

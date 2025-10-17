@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -22,6 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.earthmax.core.models.EventCategory
+import com.earthmax.core.ui.components.EcoButton
+import com.earthmax.core.ui.components.EcoButtonType
+import com.earthmax.core.ui.components.EcoTextField
+import com.earthmax.core.ui.components.SmallLoadingIndicator
 import com.earthmax.feature.events.components.EventCategoryChip
 import java.text.SimpleDateFormat
 import java.util.*
@@ -52,6 +58,15 @@ fun CreateEventScreen(
     uiState.error?.let { error ->
         LaunchedEffect(error) {
             // Show snackbar or handle error
+        }
+    }
+
+    // Show success message
+    if (uiState.showSuccessMessage) {
+        LaunchedEffect(Unit) {
+            // Auto-dismiss success message after 3 seconds
+            kotlinx.coroutines.delay(3000)
+            viewModel.dismissSuccessMessage()
         }
     }
 
@@ -105,31 +120,40 @@ fun CreateEventScreen(
             }
 
             // Title
-            OutlinedTextField(
+            EcoTextField(
                 value = uiState.title,
                 onValueChange = viewModel::updateTitle,
-                label = { Text("Event Title") },
+                label = "Event Title",
+                placeholder = "Enter a compelling event title",
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = uiState.titleError != null,
+                errorMessage = uiState.titleError
             )
 
             // Description
-            OutlinedTextField(
+            EcoTextField(
                 value = uiState.description,
                 onValueChange = viewModel::updateDescription,
-                label = { Text("Description") },
+                label = "Description",
+                placeholder = "Describe your event and its environmental impact",
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                maxLines = 5
+                maxLines = 5,
+                singleLine = false,
+                isError = uiState.descriptionError != null,
+                errorMessage = uiState.descriptionError
             )
 
             // Location
-            OutlinedTextField(
+            EcoTextField(
                 value = uiState.location,
                 onValueChange = viewModel::updateLocation,
-                label = { Text("Location") },
+                label = "Location",
+                placeholder = "Where will this event take place?",
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = uiState.locationError != null,
+                errorMessage = uiState.locationError
             )
 
             // Date and Time
@@ -192,15 +216,22 @@ fun CreateEventScreen(
             }
 
             // Max Participants
-            OutlinedTextField(
-                value = uiState.maxParticipants.toString(),
+            EcoTextField(
+                value = if (uiState.maxParticipants == 0) "" else uiState.maxParticipants.toString(),
                 onValueChange = { value ->
-                    value.toIntOrNull()?.let { viewModel.updateMaxParticipants(it) }
+                    if (value.isEmpty()) {
+                        viewModel.updateMaxParticipants(0)
+                    } else {
+                        value.toIntOrNull()?.let { viewModel.updateMaxParticipants(it) }
+                    }
                 },
-                label = { Text("Max Participants") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                label = "Max Participants",
+                placeholder = "Enter number of participants",
+                keyboardType = KeyboardType.Number,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = uiState.maxParticipantsError != null,
+                errorMessage = uiState.maxParticipantsError
             )
 
             // Category Selection
@@ -224,46 +255,69 @@ fun CreateEventScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Create Button
-            Button(
-                onClick = viewModel::createEvent,
+            // Show general error message
+            uiState.error?.let { error ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = error,
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            // Show success message
+            if (uiState.showSuccessMessage) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🎉",
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = "Event created successfully! Your environmental impact event is now live.",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
+            // Create Event Button
+            EcoButton(
+                onClick = { viewModel.createEvent() },
                 enabled = uiState.isFormValid && !uiState.isLoading,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                type = EcoButtonType.PRIMARY
             ) {
                 if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp
+                    SmallLoadingIndicator(
+                        modifier = Modifier.size(20.dp)
                     )
                 } else {
-                    Text("Create Event")
+                    Text(
+                        text = "Create Event",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun LazyRow(
-    horizontalArrangement: Arrangement.Horizontal,
-    contentPadding: PaddingValues,
-    content: @Composable () -> Unit
-) {
-    // Simplified implementation - in real app, use androidx.compose.foundation.lazy.LazyRow
-    Row(
-        horizontalArrangement = horizontalArrangement,
-        modifier = Modifier.padding(contentPadding)
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun items(
-    items: Array<EventCategory>,
-    itemContent: @Composable (EventCategory) -> Unit
-) {
-    items.forEach { item ->
-        itemContent(item)
     }
 }

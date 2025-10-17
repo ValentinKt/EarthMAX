@@ -1,5 +1,6 @@
 package com.earthmax.feature.auth.signup
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -273,9 +274,14 @@ fun SignUpScreen(
         // Sign Up Button
         Button(
             onClick = {
+                Log.d("SignUpScreen", "Create Account button clicked")
+                Log.d("SignUpScreen", "Display name: '$displayName', Email: '$email', Password length: ${password.length}, Passwords match: ${password == confirmPassword}")
                 if (displayName.isNotBlank() && email.isNotBlank() && 
                     password.isNotBlank() && password == confirmPassword) {
+                    Log.d("SignUpScreen", "Validation passed, calling viewModel.signUp")
                     viewModel.signUp(email, password, displayName)
+                } else {
+                    Log.d("SignUpScreen", "Validation failed - displayName blank: ${displayName.isBlank()}, email blank: ${email.isBlank()}, password blank: ${password.isBlank()}, passwords match: ${password == confirmPassword}")
                 }
             },
             enabled = authState !is AuthState.Loading && displayName.isNotBlank() && 

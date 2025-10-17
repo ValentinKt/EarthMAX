@@ -17,6 +17,11 @@ object SupabaseClient {
         supabaseKey = BuildConfig.SUPABASE_ANON_KEY
     ) {
         install(Auth) {
+            // Enable session persistence
+            alwaysAutoRefresh = true
+            autoSaveToStorage = true
+            autoLoadFromStorage = true
+            
             // Temporarily disable custom redirect URLs to test email validation
             // scheme = "earthmax"
             // host = "earthmax.app"

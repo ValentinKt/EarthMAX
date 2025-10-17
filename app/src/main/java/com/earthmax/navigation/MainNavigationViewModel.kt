@@ -23,6 +23,10 @@ class MainNavigationViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MainNavigationUiState())
     val uiState: StateFlow<MainNavigationUiState> = _uiState.asStateFlow()
     
+    init {
+        checkAuthState()
+    }
+    
     fun checkAuthState() {
         viewModelScope.launch {
             try {

@@ -6,9 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.earthmax.feature.profile.ProfileScreen
+import com.earthmax.feature.profile.EditProfileScreen
+import com.earthmax.feature.profile.SettingsScreen
 
 const val PROFILE_GRAPH_ROUTE = "profile_graph"
 const val PROFILE_ROUTE = "profile"
+const val EDIT_PROFILE_ROUTE = "edit_profile"
+const val SETTINGS_ROUTE = "settings"
 
 fun NavGraphBuilder.profileGraph(
     navController: NavHostController,
@@ -22,10 +26,26 @@ fun NavGraphBuilder.profileGraph(
             ProfileScreen(
                 onNavigateToAuth = onNavigateToAuth,
                 onNavigateToSettings = {
-                    // TODO: Navigate to settings screen when implemented
+                    navController.navigate(SETTINGS_ROUTE)
                 },
                 onNavigateToEditProfile = {
-                    // TODO: Navigate to edit profile screen when implemented
+                    navController.navigate(EDIT_PROFILE_ROUTE)
+                }
+            )
+        }
+        
+        composable(EDIT_PROFILE_ROUTE) {
+            EditProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable(SETTINGS_ROUTE) {
+            SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

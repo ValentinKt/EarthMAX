@@ -26,14 +26,17 @@ import kotlin.time.ExperimentalTime
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("MainActivity", "=== MainActivity onCreate called ===")
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         
+        Log.d("MainActivity", "=== MainActivity setup starting ===")
         enableEdgeToEdge()
         
         // Handle deep link intent
         handleDeepLink(intent)
         
+        Log.d("MainActivity", "=== Setting content ===")
         setContent {
             EarthMaxTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
@@ -41,6 +44,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        Log.d("MainActivity", "=== MainActivity onCreate completed ===")
     }
     
     override fun onNewIntent(intent: Intent) {

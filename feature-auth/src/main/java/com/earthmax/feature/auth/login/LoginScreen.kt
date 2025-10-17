@@ -1,5 +1,6 @@
 package com.earthmax.feature.auth.login
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -142,7 +143,9 @@ fun LoginScreen(
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
+                    Log.d("LoginScreen", "Password field onDone triggered")
                     if (email.isNotBlank() && password.isNotBlank()) {
+                        Log.d("LoginScreen", "Calling viewModel.signIn from password field")
                         viewModel.signIn(email, password)
                     }
                 }
@@ -166,8 +169,13 @@ fun LoginScreen(
         // Login Button
         Button(
             onClick = {
+                Log.d("LoginScreen", "Sign In button clicked")
+                Log.d("LoginScreen", "Email: $email, Password length: ${password.length}")
                 if (email.isNotBlank() && password.isNotBlank()) {
+                    Log.d("LoginScreen", "Calling viewModel.signIn")
                     viewModel.signIn(email, password)
+                } else {
+                    Log.d("LoginScreen", "Email or password is blank")
                 }
             },
             enabled = authState !is AuthState.Loading && email.isNotBlank() && password.isNotBlank(),

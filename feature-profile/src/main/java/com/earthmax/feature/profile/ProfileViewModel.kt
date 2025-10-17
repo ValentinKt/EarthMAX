@@ -3,6 +3,10 @@ package com.earthmax.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.earthmax.core.models.User
+import com.earthmax.core.models.EnvironmentalImpact
+import com.earthmax.core.models.MonthlyGoals
+import com.earthmax.core.models.Achievement
+import com.earthmax.core.models.AchievementCategory
 import com.earthmax.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +19,10 @@ data class ProfileUiState(
     val isLoading: Boolean = false,
     val user: User? = null,
     val error: String? = null,
-    val isSigningOut: Boolean = false
+    val isSigningOut: Boolean = false,
+    val environmentalImpact: EnvironmentalImpact? = null,
+    val monthlyGoals: MonthlyGoals? = null,
+    val recentAchievements: List<Achievement> = emptyList()
 )
 
 @HiltViewModel
@@ -39,7 +46,10 @@ class ProfileViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         user = user,
-                        error = null
+                        error = null,
+                        environmentalImpact = user?.environmentalImpact,
+                        monthlyGoals = user?.environmentalImpact?.monthlyGoals,
+                        recentAchievements = user?.environmentalImpact?.achievements?.takeLast(3) ?: emptyList()
                     )
                 }
             } catch (e: Exception) {

@@ -24,10 +24,24 @@ data class CreateEventUiState(
     val location: String = "",
     val selectedDate: Date? = null,
     val selectedTime: Date? = null,
-    val maxParticipants: Int = 10,
+    val maxParticipants: Int = 0,
     val selectedCategory: EventCategory = EventCategory.OTHER,
     val selectedImageUri: Uri? = null,
-    val isFormValid: Boolean = false
+    val isFormValid: Boolean = false,
+    // Field-specific validation errors
+    val titleError: String? = null,
+    val descriptionError: String? = null,
+    val locationError: String? = null,
+    val dateError: String? = null,
+    val timeError: String? = null,
+    val maxParticipantsError: String? = null,
+    // Form interaction states
+    val hasInteractedWithTitle: Boolean = false,
+    val hasInteractedWithDescription: Boolean = false,
+    val hasInteractedWithLocation: Boolean = false,
+    val hasInteractedWithMaxParticipants: Boolean = false,
+    // Success feedback
+    val showSuccessMessage: Boolean = false
 )
 
 @HiltViewModel
@@ -62,30 +76,99 @@ class CreateEventViewModel @Inject constructor(
     private fun observeFormValidation() {
         viewModelScope.launch {
             _uiState.collect { state ->
-                val isValid = state.title.isNotBlank() &&
-                        state.description.isNotBlank() &&
-                        state.location.isNotBlank() &&
-                        state.selectedDate != null &&
-                        state.selectedTime != null &&
-                        state.maxParticipants > 0
+                val titleError = validateTitle(state.title, state.hasInteractedWithTitle)
+                val descriptionError = validateDescription(state.description, state.hasInteractedWithDescription)
+                val locationError = validateLocation(state.location, state.hasInteractedWithLocation)
+                val dateError = validateDate(state.selectedDate)
+                val timeError = validateTime(state.selectedTime)
+                val maxParticipantsError = validateMaxParticipants(state.maxParticipants, state.hasInteractedWithMaxParticipants)
                 
-                if (state.isFormValid != isValid) {
-                    _uiState.update { it.copy(isFormValid = isValid) }
+                val isValid = titleError == null &&
+                        descriptionError == null &&
+                        locationError == null &&
+                        dateError == null &&
+                        timeError == null &&
+                        maxParticipantsError == null
+                
+                _uiState.update { 
+                    it.copy(
+                        isFormValid = isValid,
+                        titleError = titleError,
+                        descriptionError = descriptionError,
+                        locationError = locationError,
+                        dateError = dateError,
+                        timeError = timeError,
+                        maxParticipantsError = maxParticipantsError
+                    )
                 }
             }
         }
     }
 
+    private fun validateTitle(title: String, hasInteracted: Boolean): String? {
+        if (!hasInteracted) return null
+        return when {
+            title.isBlank() -> "Title is required"
+            title.length < 3 -> "Title must be at least 3 characters"
+            title.length > 100 -> "Title must be less than 100 characters"
+            else -> null
+        }
+    }
+
+    private fun validateDescription(description: String, hasInteracted: Boolean): String? {
+        if (!hasInteracted) return null
+        return when {
+            description.isBlank() -> "Description is required"
+            description.length < 10 -> "Description must be at least 10 characters"
+            description.length > 500 -> "Description must be less than 500 characters"
+            else -> null
+        }
+    }
+
+    private fun validateLocation(location: String, hasInteracted: Boolean): String? {
+        if (!hasInteracted) return null
+        return when {
+            location.isBlank() -> "Location is required"
+            location.length < 3 -> "Location must be at least 3 characters"
+            location.length > 100 -> "Location must be less than 100 characters"
+            else -> null
+        }
+    }
+
+    private fun validateDate(date: Date?): String? {
+        return when {
+            date == null -> "Date is required"
+            date.before(Date()) -> "Date cannot be in the past"
+            else -> null
+        }
+    }
+
+    private fun validateTime(time: Date?): String? {
+        return when {
+            time == null -> "Time is required"
+            else -> null
+        }
+    }
+
+    private fun validateMaxParticipants(maxParticipants: Int, hasInteracted: Boolean): String? {
+        if (!hasInteracted) return null
+        return when {
+            maxParticipants <= 0 -> "Maximum participants must be greater than 0"
+            maxParticipants > 1000 -> "Maximum participants cannot exceed 1000"
+            else -> null
+        }
+    }
+
     fun updateTitle(title: String) {
-        _uiState.update { it.copy(title = title) }
+        _uiState.update { it.copy(title = title, hasInteractedWithTitle = true) }
     }
 
     fun updateDescription(description: String) {
-        _uiState.update { it.copy(description = description) }
+        _uiState.update { it.copy(description = description, hasInteractedWithDescription = true) }
     }
 
     fun updateLocation(location: String) {
-        _uiState.update { it.copy(location = location) }
+        _uiState.update { it.copy(location = location, hasInteractedWithLocation = true) }
     }
 
     fun updateSelectedDate(date: Date) {
@@ -97,7 +180,12 @@ class CreateEventViewModel @Inject constructor(
     }
 
     fun updateMaxParticipants(maxParticipants: Int) {
-        _uiState.update { it.copy(maxParticipants = maxParticipants.coerceAtLeast(1)) }
+        _uiState.update { 
+            it.copy(
+                maxParticipants = maxParticipants.coerceAtLeast(0),
+                hasInteractedWithMaxParticipants = true
+            ) 
+        }
     }
 
     fun updateSelectedCategory(category: EventCategory) {
@@ -112,8 +200,23 @@ class CreateEventViewModel @Inject constructor(
         val state = _uiState.value
         val currentUser = state.currentUser
         
+        // Mark all fields as interacted to show validation errors
+        _uiState.update { 
+            it.copy(
+                hasInteractedWithTitle = true,
+                hasInteractedWithDescription = true,
+                hasInteractedWithLocation = true,
+                hasInteractedWithMaxParticipants = true
+            )
+        }
+        
         if (!state.isFormValid || currentUser == null) {
-            _uiState.update { it.copy(error = "Please fill in all required fields") }
+            _uiState.update { 
+                it.copy(
+                    error = if (currentUser == null) "Please log in to create an event" 
+                           else "Please fix the errors above before creating the event"
+                ) 
+            }
             return
         }
 
@@ -135,9 +238,9 @@ class CreateEventViewModel @Inject constructor(
 
                 val event = Event(
                     id = UUID.randomUUID().toString(),
-                    title = state.title,
-                    description = state.description,
-                    location = state.location,
+                    title = state.title.trim(),
+                    description = state.description.trim(),
+                    location = state.location.trim(),
                     dateTime = eventDateTime,
                     organizerId = currentUser.id,
                     maxParticipants = state.maxParticipants,
@@ -155,12 +258,18 @@ class CreateEventViewModel @Inject constructor(
                     val createdEventId = result.getOrNull() ?: ""
                     // Upload image if selected
                     state.selectedImageUri?.let { uri ->
-                        eventRepository.uploadEventPhoto(createdEventId, uri.toString())
+                        try {
+                            eventRepository.uploadEventPhoto(createdEventId, uri.toString())
+                        } catch (e: Exception) {
+                            // Image upload failed, but event was created successfully
+                            // Log the error but don't fail the entire operation
+                        }
                     }
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             isEventCreated = true,
+                            showSuccessMessage = true,
                             error = null
                         )
                     }
@@ -169,10 +278,18 @@ class CreateEventViewModel @Inject constructor(
                 }
                 
             } catch (e: Exception) {
+                val errorMessage = when {
+                    e.message?.contains("network", ignoreCase = true) == true -> 
+                        "Network error. Please check your connection and try again."
+                    e.message?.contains("permission", ignoreCase = true) == true -> 
+                        "Permission denied. Please check your account permissions."
+                    else -> e.message ?: "Failed to create event. Please try again."
+                }
+                
                 _uiState.update { 
                     it.copy(
                         isLoading = false, 
-                        error = e.message ?: "Failed to create event"
+                        error = errorMessage
                     ) 
                 }
             }
@@ -181,6 +298,10 @@ class CreateEventViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun dismissSuccessMessage() {
+        _uiState.update { it.copy(showSuccessMessage = false) }
     }
 
     fun resetForm() {

@@ -22,13 +22,23 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Green80,
     background = SurfaceDark,
     surface = SurfaceDark,
+    surfaceVariant = SurfaceDarkVariant,
     error = ErrorDark,
+    errorContainer = ErrorContainer,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color.White,
     onSurface = Color.White,
-    onError = Color.Black
+    onSurfaceVariant = Color(0xFFB0BEC5),
+    onError = Color.Black,
+    outline = Color(0xFF4A5568),
+    outlineVariant = Color(0xFF2D3748),
+    scrim = OverlayDark,
+    inverseSurface = SurfaceLight,
+    inverseOnSurface = Color.Black,
+    inversePrimary = Teal40,
+    surfaceTint = Teal80
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -37,20 +47,37 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Green40,
     background = SurfaceLight,
     surface = SurfaceLight,
+    surfaceVariant = SurfaceLightVariant,
     error = ErrorLight,
+    errorContainer = ErrorContainer,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color.Black,
     onSurface = Color.Black,
-    onError = Color.White
+    onSurfaceVariant = Color(0xFF455A64),
+    onError = Color.White,
+    outline = Color(0xFF79747E),
+    outlineVariant = Color(0xFFCAC4D0),
+    scrim = OverlayDark,
+    inverseSurface = SurfaceDark,
+    inverseOnSurface = Color.White,
+    inversePrimary = Teal80,
+    surfaceTint = Teal40,
+    // Enhanced semantic colors
+    primaryContainer = Color(0xFFE0F2F1),
+    onPrimaryContainer = Color(0xFF002020),
+    secondaryContainer = Color(0xFFE0F7FA),
+    onSecondaryContainer = Color(0xFF001F24),
+    tertiaryContainer = Color(0xFFE8F5E8),
+    onTertiaryContainer = Color(0xFF0D2818)
 )
 
 @Composable
 fun EarthMaxTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Disabled to maintain environmental theme consistency
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -66,6 +93,7 @@ fun EarthMaxTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

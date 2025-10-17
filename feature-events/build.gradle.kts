@@ -42,6 +42,7 @@ android {
 dependencies {
     // Core modules
     implementation(project(":core"))
+    implementation(project(":core-ui"))
     implementation(project(":data"))
 
     // AndroidX

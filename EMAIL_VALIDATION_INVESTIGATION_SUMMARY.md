@@ -162,4 +162,5 @@ All necessary documentation, enhanced logging, and alternative testing configura
 **Status**: Ready for Supabase Dashboard Configuration Review  
 **Priority**: High - Blocks user registration functionality
 
-I'm login, but I can't create an event,  sign out, edit my profile. Can fix that ?
+I'm login, but I can't create an event,  sign out, and edit my profile on the mobile app. Can you fix that ?
+Next, improve the user experience by improving the UI/UX of the mobile app.
