@@ -150,4 +150,4 @@ For questions, suggestions, or support:
 
 ---
 
-**Together, we can make a difference! 🌱**
+**Together, we can make a difference! 🌱**# EarthMAX
