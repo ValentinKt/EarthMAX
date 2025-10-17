@@ -120,12 +120,12 @@ export default function LoginPage() {
             </div>
 
             <div className="text-center">
-              <span className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link href="/auth/signup" className="font-medium text-teal-600 hover:text-teal-500">
+              <p className="text-sm text-gray-600">
+                Don&apos;t have an account?{' '}
+                <a href="/auth/signup" className="text-teal-600 hover:text-teal-700 font-medium">
                   Sign up here
-                </Link>
-              </span>
+                </a>
+              </p>
             </div>
           </form>
         </div>

@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50">
       {/* Header */}
@@ -65,7 +64,7 @@ export default function Home() {
               <div className="text-4xl mb-4">📊</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Track Your Impact</h3>
               <p className="text-gray-600">
-                Monitor your environmental footprint and see the positive changes you're making for our planet.
+                Our platform helps you monitor and reduce your carbon footprint through smart tracking and actionable insights.
               </p>
             </div>
             <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow">
@@ -91,10 +90,8 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">
               Building a Sustainable Future Together
             </h2>
-            <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-              EarthMAX is more than just an app – it's a movement. We believe that small actions, 
-              when multiplied by millions of people, can transform the world. Join us in creating 
-              a more sustainable future for generations to come.
+            <p className="text-xl text-gray-600 mb-8">
+              Join the movement towards a sustainable future. Track your environmental impact and make a difference.
             </p>
           </div>
         </section>
