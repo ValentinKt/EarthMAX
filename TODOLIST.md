@@ -27,6 +27,12 @@
 [x] - Test Avatar component with comprehensive test screen
 [x] - Verify image loading and fallback behavior
 
+### App Stability and Chat Testing
+[x] - Fix EarthMAX keeps stopping error
+[x] - Investigate SupabaseAuth error with getCurrentUser flow
+[x] - Fix database migration error for MessageEntity
+[x] - Test chat functionality once app is stable
+
 ## Pending Tasks 📋
 
 [] - Add the possibility to chat between users that participate to the same event.
@@ -36,7 +42,9 @@
 [] - Add OpenStreetMap when a user creates an event in order to pick up the location of event. 
 [] - Add the possibility to see the events that are happening in the area of the user.
 [] - Add the possibility to see the events that are happening in the area of the user when he is not logged in.
-[] - Add the possibility to add picture/image when user create an event.
+[x] - Add the possibility to add picture/image when user create an event.
+[x] - Implement image compression for large files.
+[x] - Test image upload with different file formats.
 
 ## Project Status
 
