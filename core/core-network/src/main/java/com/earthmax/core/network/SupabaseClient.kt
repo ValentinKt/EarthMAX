@@ -22,15 +22,17 @@ object SupabaseClient {
             autoSaveToStorage = true
             autoLoadFromStorage = true
             
-            // Temporarily disable custom redirect URLs to test email validation
-            // scheme = "earthmax"
-            // host = "earthmax.app"
+            // Minimal configuration to fix login issues
+            // Disable custom redirect URLs temporarily
         }
         install(Postgrest)
         install(Realtime)
         install(Storage)
         
-        // Configure Ktor client
-        httpEngine = Android.create()
+        // Configure Ktor client with timeout settings
+        httpEngine = Android.create {
+            connectTimeout = 30_000
+            socketTimeout = 30_000
+        }
     }
 }

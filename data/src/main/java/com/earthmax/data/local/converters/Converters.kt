@@ -5,6 +5,8 @@ import com.earthmax.core.models.Badge
 import com.earthmax.core.models.EventCategory
 import com.earthmax.core.models.TodoItem
 import com.earthmax.core.models.UserPreferences
+import com.earthmax.core.models.EnvironmentalImpact
+import com.earthmax.core.models.ProfileCustomization
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.Date
@@ -64,6 +66,26 @@ class Converters {
     @TypeConverter
     fun fromUserPreferencesToString(preferences: UserPreferences): String {
         return gson.toJson(preferences)
+    }
+    
+    @TypeConverter
+    fun fromEnvironmentalImpact(value: String): EnvironmentalImpact {
+        return gson.fromJson(value, EnvironmentalImpact::class.java)
+    }
+    
+    @TypeConverter
+    fun fromEnvironmentalImpactToString(impact: EnvironmentalImpact): String {
+        return gson.toJson(impact)
+    }
+    
+    @TypeConverter
+    fun fromProfileCustomization(value: String): ProfileCustomization {
+        return gson.fromJson(value, ProfileCustomization::class.java)
+    }
+    
+    @TypeConverter
+    fun fromProfileCustomizationToString(customization: ProfileCustomization): String {
+        return gson.toJson(customization)
     }
     
     @TypeConverter

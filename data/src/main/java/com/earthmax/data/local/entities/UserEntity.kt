@@ -5,6 +5,8 @@ import androidx.room.PrimaryKey
 import com.earthmax.core.models.Badge
 import com.earthmax.core.models.User
 import com.earthmax.core.models.UserPreferences
+import com.earthmax.core.models.EnvironmentalImpact
+import com.earthmax.core.models.ProfileCustomization
 import java.util.Date
 
 @Entity(tableName = "users")
@@ -21,6 +23,8 @@ data class UserEntity(
     val ecoPoints: Int,
     val badges: List<Badge>,
     val preferences: UserPreferences,
+    val environmentalImpact: EnvironmentalImpact,
+    val profileCustomization: ProfileCustomization,
     val createdAt: Date,
     val updatedAt: Date
 )
@@ -38,6 +42,8 @@ fun UserEntity.toUser(): User {
         ecoPoints = ecoPoints,
         badges = badges,
         preferences = preferences,
+        environmentalImpact = environmentalImpact,
+        profileCustomization = profileCustomization,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -56,6 +62,8 @@ fun User.toEntity(): UserEntity {
         ecoPoints = ecoPoints,
         badges = badges,
         preferences = preferences,
+        environmentalImpact = environmentalImpact,
+        profileCustomization = profileCustomization,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

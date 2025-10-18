@@ -118,10 +118,19 @@ class EditProfileViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                // Create updated user object
+                // Create updated profile customization
+                val updatedProfileCustomization = currentUser.profileCustomization.copy(
+                    theme = state.selectedTheme,
+                    profileVisibility = state.selectedVisibility,
+                    showImpactStats = state.showImpactStats
+                )
+                
+                // Create updated user object with all changes
                 val updatedUser = currentUser.copy(
                     displayName = state.displayName,
-                    bio = state.bio
+                    bio = state.bio,
+                    profileCustomization = updatedProfileCustomization,
+                    updatedAt = java.util.Date()
                 )
 
                 // Update user profile

@@ -84,6 +84,11 @@ fun ProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showSignOutDialog by remember { mutableStateOf(false) }
 
+    // Refresh profile data when screen is first composed or when returning from other screens
+    LaunchedEffect(Unit) {
+        viewModel.refreshProfile()
+    }
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(error)
