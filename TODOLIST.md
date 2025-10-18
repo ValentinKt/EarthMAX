@@ -19,6 +19,14 @@
 [x] - Deploy the web application to Vercel
 [x] - Test the deployed application and verify functionality
 
+### Avatar Component Implementation
+[x] - Use profile's image if exist as Avatar, else use the First letter of name.
+[x] - Implement Avatar component with Coil image loading
+[x] - Add initials fallback functionality for names
+[x] - Create size variants (Small, Medium, Large, ExtraLarge)
+[x] - Test Avatar component with comprehensive test screen
+[x] - Verify image loading and fallback behavior
+
 ## Pending Tasks 📋
 
 [] - Add the possibility to chat between users that participate to the same event.
@@ -28,7 +36,6 @@
 [] - Add OpenStreetMap when a user creates an event in order to pick up the location of event. 
 [] - Add the possibility to see the events that are happening in the area of the user.
 [] - Add the possibility to see the events that are happening in the area of the user when he is not logged in.
-[] - Use profile's image if exist as Avatar, else use the First letter of name.
 [] - Add the possibility to add picture/image when user create an event.
 
 ## Project Status
@@ -41,6 +48,14 @@
 - Coil library integrated for efficient image loading
 - Category filtering works in `EventsHomeScreen.kt`
 - Modern teal/green environmental UI theme implemented
+
+✅ **Avatar Component System**: Fully functional with image loading and fallback
+- `Avatar.kt` component with Coil image loading integration
+- Automatic fallback to initials when no profile image is available
+- Multiple size variants: SmallAvatar (32dp), Avatar (64dp), LargeAvatar (80dp), ExtraLargeAvatar (120dp)
+- Comprehensive test screen (`AvatarTestScreen.kt`) with various test cases
+- Proper initials extraction from display names (handles single names, multiple names, empty names)
+- Circular design with Material 3 theming
 
 ### Web Application (EarthMAX Web)
 ✅ **Deployment**: Successfully deployed to Vercel
