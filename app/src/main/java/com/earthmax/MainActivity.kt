@@ -7,24 +7,33 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.earthmax.core.network.SupabaseClient
+import com.earthmax.core.preferences.ThemePreferences
 import com.earthmax.navigation.EarthMaxNavigation
-import com.earthmax.ui.theme.EarthMaxTheme
+import com.earthmax.core.ui.theme.EarthMaxTheme
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var themePreferences: ThemePreferences
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("MainActivity", "=== MainActivity onCreate called ===")
         val splashScreen = installSplashScreen()
@@ -38,7 +47,17 @@ class MainActivity : ComponentActivity() {
         
         Log.d("MainActivity", "=== Setting content ===")
         setContent {
-            EarthMaxTheme {
+            val isDarkMode by themePreferences.isDarkMode.collectAsState(initial = false)
+            val isHighContrast by themePreferences.isHighContrast.collectAsState(initial = false)
+            val followSystemTheme by themePreferences.followSystemTheme.collectAsState(initial = true)
+            
+            val systemInDarkTheme = isSystemInDarkTheme()
+            val shouldUseDarkTheme = if (followSystemTheme) systemInDarkTheme else isDarkMode
+            
+            EarthMaxTheme(
+                darkTheme = shouldUseDarkTheme,
+                highContrast = isHighContrast
+            ) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
                     EarthMaxNavigation()
                 }

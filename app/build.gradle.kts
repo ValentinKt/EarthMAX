@@ -53,6 +53,7 @@ dependencies {
     // Core modules
     implementation(project(":core"))
     implementation(project(":core:core-network"))
+    implementation(project(":core-ui"))
     implementation(project(":data"))
     
     // Feature modules
@@ -64,6 +65,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    
+    // DataStore for preferences
+    implementation(libs.androidx.datastore.preferences)
     
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))

@@ -25,18 +25,18 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = SurfaceDarkVariant,
     error = ErrorDark,
     errorContainer = ErrorContainer,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
-    onSurfaceVariant = Color(0xFFB0BEC5),
-    onError = Color.Black,
-    outline = Color(0xFF4A5568),
-    outlineVariant = Color(0xFF2D3748),
+    onPrimary = HighContrastBackground,  // Use high contrast white
+    onSecondary = HighContrastBackground,
+    onTertiary = HighContrastBackground,
+    onBackground = HighContrastBackground,
+    onSurface = HighContrastBackground,
+    onSurfaceVariant = Color(0xFFE0E0E0),  // Improved contrast
+    onError = HighContrastText,  // Use high contrast black
+    outline = Color(0xFF6A7A6A),  // Improved contrast
+    outlineVariant = Color(0xFF3A4A3A),  // Improved contrast
     scrim = OverlayDark,
     inverseSurface = SurfaceLight,
-    inverseOnSurface = Color.Black,
+    inverseOnSurface = HighContrastText,
     inversePrimary = Teal40,
     surfaceTint = Teal80
 )
@@ -50,27 +50,90 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = SurfaceLightVariant,
     error = ErrorLight,
     errorContainer = ErrorContainer,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    onSurfaceVariant = Color(0xFF455A64),
-    onError = Color.White,
-    outline = Color(0xFF79747E),
-    outlineVariant = Color(0xFFCAC4D0),
+    onPrimary = HighContrastBackground,  // Use high contrast white
+    onSecondary = HighContrastBackground,
+    onTertiary = HighContrastBackground,
+    onBackground = HighContrastText,  // Use high contrast black
+    onSurface = HighContrastText,
+    onSurfaceVariant = Color(0xFF2A3A2A),  // Improved contrast
+    onError = HighContrastBackground,
+    outline = Color(0xFF5A6A5A),  // Improved contrast
+    outlineVariant = Color(0xFFAABAA0),  // Improved contrast
     scrim = OverlayDark,
     inverseSurface = SurfaceDark,
-    inverseOnSurface = Color.White,
+    inverseOnSurface = HighContrastBackground,
     inversePrimary = Teal80,
     surfaceTint = Teal40,
-    // Enhanced semantic colors
+    // Enhanced semantic colors with improved contrast
     primaryContainer = Color(0xFFE0F2F1),
-    onPrimaryContainer = Color(0xFF002020),
+    onPrimaryContainer = HighContrastPrimary,  // Use high contrast primary
     secondaryContainer = Color(0xFFE0F7FA),
     onSecondaryContainer = Color(0xFF001F24),
     tertiaryContainer = Color(0xFFE8F5E8),
-    onTertiaryContainer = Color(0xFF0D2818)
+    onTertiaryContainer = HighContrastSecondary  // Use high contrast secondary
+)
+
+// High contrast theme for accessibility
+private val HighContrastLightColorScheme = lightColorScheme(
+    primary = HighContrastPrimary,
+    secondary = HighContrastSecondary,
+    tertiary = HighContrastSecondary,
+    background = HighContrastBackground,
+    surface = HighContrastBackground,
+    surfaceVariant = Color(0xFFF5F5F5),
+    error = Color(0xFF8B0000),  // Dark red for high contrast
+    errorContainer = Color(0xFFFFE6E6),
+    onPrimary = HighContrastBackground,
+    onSecondary = HighContrastBackground,
+    onTertiary = HighContrastBackground,
+    onBackground = HighContrastText,
+    onSurface = HighContrastText,
+    onSurfaceVariant = HighContrastText,
+    onError = HighContrastBackground,
+    outline = HighContrastText,
+    outlineVariant = Color(0xFF666666),
+    scrim = Color(0xCC000000),
+    inverseSurface = HighContrastText,
+    inverseOnSurface = HighContrastBackground,
+    inversePrimary = Color(0xFF66CCCC),
+    surfaceTint = HighContrastPrimary,
+    primaryContainer = Color(0xFFE6F7F7),
+    onPrimaryContainer = HighContrastText,
+    secondaryContainer = Color(0xFFE6F2E6),
+    onSecondaryContainer = HighContrastText,
+    tertiaryContainer = Color(0xFFE6F2E6),
+    onTertiaryContainer = HighContrastText
+)
+
+private val HighContrastDarkColorScheme = darkColorScheme(
+    primary = Color(0xFF66CCCC),  // Bright teal for high contrast
+    secondary = Color(0xFF66CC66),  // Bright green for high contrast
+    tertiary = Color(0xFF66CC66),
+    background = HighContrastText,
+    surface = HighContrastText,
+    surfaceVariant = Color(0xFF1A1A1A),
+    error = Color(0xFFFF6666),  // Bright red for high contrast
+    errorContainer = Color(0xFF330000),
+    onPrimary = HighContrastText,
+    onSecondary = HighContrastText,
+    onTertiary = HighContrastText,
+    onBackground = HighContrastBackground,
+    onSurface = HighContrastBackground,
+    onSurfaceVariant = HighContrastBackground,
+    onError = HighContrastText,
+    outline = HighContrastBackground,
+    outlineVariant = Color(0xFF999999),
+    scrim = Color(0xCC000000),
+    inverseSurface = HighContrastBackground,
+    inverseOnSurface = HighContrastText,
+    inversePrimary = HighContrastPrimary,
+    surfaceTint = Color(0xFF66CCCC),
+    primaryContainer = Color(0xFF003333),
+    onPrimaryContainer = HighContrastBackground,
+    secondaryContainer = Color(0xFF003300),
+    onSecondaryContainer = HighContrastBackground,
+    tertiaryContainer = Color(0xFF003300),
+    onTertiaryContainer = HighContrastBackground
 )
 
 @Composable
@@ -78,9 +141,12 @@ fun EarthMaxTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false, // Disabled to maintain environmental theme consistency
+    highContrast: Boolean = false, // New parameter for high contrast mode
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
+        highContrast && darkTheme -> HighContrastDarkColorScheme
+        highContrast && !darkTheme -> HighContrastLightColorScheme
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)

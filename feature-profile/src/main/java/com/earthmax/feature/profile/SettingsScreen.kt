@@ -11,18 +11,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.earthmax.core.ui.components.EcoCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var locationEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(false) }
-
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -68,9 +69,9 @@ fun SettingsScreen(
                     SettingsItem(
                         icon = Icons.Default.Notifications,
                         title = "Push Notifications",
-                        subtitle = "Receive notifications about events and updates",
-                        isToggled = notificationsEnabled,
-                        onToggle = { notificationsEnabled = it }
+                        subtitle = "Receive updates about events and activities",
+                        isToggled = uiState.notificationsEnabled,
+                        onToggle = viewModel::toggleNotifications
                     )
                 }
             }
@@ -92,9 +93,9 @@ fun SettingsScreen(
                     SettingsItem(
                         icon = Icons.Default.LocationOn,
                         title = "Location Services",
-                        subtitle = "Allow app to access your location for nearby events",
-                        isToggled = locationEnabled,
-                        onToggle = { locationEnabled = it }
+                        subtitle = "Allow location access for nearby events",
+                        isToggled = uiState.locationEnabled,
+                        onToggle = viewModel::toggleLocation
                     )
                 }
             }
@@ -116,9 +117,29 @@ fun SettingsScreen(
                     SettingsItem(
                         icon = Icons.Default.DarkMode,
                         title = "Dark Mode",
-                        subtitle = "Switch to dark theme",
-                        isToggled = darkModeEnabled,
-                        onToggle = { darkModeEnabled = it }
+                        subtitle = "Switch to dark theme for better visibility",
+                        isToggled = uiState.darkModeEnabled,
+                        onToggle = viewModel::toggleDarkMode
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingsItem(
+                        icon = Icons.Default.Contrast,
+                        title = "High Contrast",
+                        subtitle = "Increase contrast for better readability",
+                        isToggled = uiState.highContrastEnabled,
+                        onToggle = viewModel::toggleHighContrast
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingsItem(
+                        icon = Icons.Default.PhoneAndroid,
+                        title = "Follow System Theme",
+                        subtitle = "Use system dark mode setting",
+                        isToggled = uiState.followSystemTheme,
+                        onToggle = viewModel::toggleFollowSystemTheme
                     )
                 }
             }

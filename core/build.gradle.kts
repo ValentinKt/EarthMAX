@@ -38,6 +38,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     
+    // DataStore for preferences
+    implementation(libs.androidx.datastore.preferences)
+    
     // Google Play Services
     implementation(libs.play.services.location)
     
