@@ -38,6 +38,18 @@ android {
 apollo {
     service("service") {
         packageName.set("com.earthmax.data.graphql")
+        schemaFile.set(file("src/main/graphql/schema.json"))
+        generateKotlinModels.set(true)
+        generateApolloMetadata.set(true)
+        mapScalar("BigFloat", "kotlin.String")
+        mapScalar("BigInt", "kotlin.Long")
+        mapScalar("Date", "kotlinx.datetime.LocalDate")
+        mapScalar("Datetime", "kotlinx.datetime.Instant")
+        mapScalar("Time", "kotlinx.datetime.LocalTime")
+        mapScalar("UUID", "kotlin.String")
+        mapScalar("JSON", "kotlin.String")
+        mapScalar("Cursor", "kotlin.String")
+        mapScalar("Opaque", "kotlin.String")
     }
 }
 

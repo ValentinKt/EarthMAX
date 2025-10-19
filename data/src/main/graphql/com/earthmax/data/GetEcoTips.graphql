@@ -1,15 +1,21 @@
 query GetEcoTips($category: String, $limit: Int) {
-    getEcoTips(category: $category, limit: $limit) {
+  eco_tipsCollection(
+    first: $limit
+  ) {
+    edges {
+      node {
         id
         title
         description
         category
         difficulty
-        estimatedImpact
+        estimated_impact
         steps
-        imageUrl
+        image_url
         tags
-        createdAt
-        updatedAt
+        created_at
+        updated_at
+      }
     }
+  }
 }

@@ -1,44 +1,16 @@
 # Mutation to mark an eco-tip as completed by a user
 # Records completion, updates statistics, and checks for achievements
-mutation CompleteEcoTip($input: CompleteEcoTipInput!) {
-  completeEcoTip(input: $input) {
-    success
-    message
-    errors {
-      field
-      code
-      message
-    }
-    completion {
+mutation CompleteEcoTip($objects: [user_eco_tip_completionsInsertInput!]!) {
+  insertIntouser_eco_tip_completionsCollection(objects: $objects) {
+    records {
       id
-      ecoTipId
-      userId
-      completedAt
+      eco_tip_id
+      user_id
+      completed_at
       notes
-      carbonSaved
-      costSaved
-      photosUrls
       rating
-      feedback
-    }
-    
-    # Updated user statistics
-    userStats {
-      totalEcoTipsCompleted
-      totalCarbonSaved
-      totalCostSaved
-      currentStreak
-      longestStreak
-    }
-    
-    # Any new achievements unlocked
-    newAchievements {
-      id
-      title
-      description
-      category
-      iconUrl
-      unlockedAt
+      carbon_saved_kg
+      cost_saved_usd
     }
   }
 }

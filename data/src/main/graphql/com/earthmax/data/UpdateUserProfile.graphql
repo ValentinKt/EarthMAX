@@ -1,43 +1,17 @@
 # Mutation to update user profile information
 # Updates user profile with validation and returns updated profile
-mutation UpdateUserProfile($input: UpdateUserProfileInput!) {
-  updateUserProfile(input: $input) {
-    success
-    message
-    errors {
-      field
-      code
-      message
-    }
-    user {
+mutation UpdateUserProfile($filter: profilesFilter!, $set: profilesUpdateInput!) {
+  updateprofilesCollection(filter: $filter, set: $set) {
+    records {
       id
-      username
       email
-      firstName
-      lastName
-      avatarUrl
+      display_name
       bio
+      avatar_url
       location
-      isVerified
-      
-      # User preferences
-      preferences {
-        notifications {
-          email
-          push
-          weeklyDigest
-          achievementAlerts
-        }
-        privacy {
-          profileVisibility
-          showStatistics
-          showAchievements
-        }
-        language
-        theme
-      }
-      
-      updatedAt
+      preferences
+      created_at
+      updated_at
     }
   }
 }

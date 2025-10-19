@@ -1,36 +1,38 @@
 # Query to get user achievements with filtering and pagination
 # Returns achievements with progress tracking and category filtering
 query GetUserAchievements(
-  $userId: ID!
-  $category: AchievementCategory
-  $unlocked: Boolean
+  $userId: UUID!
+  $category: String
   $first: Int = 20
-  $after: String
+  $after: Cursor
 ) {
-  getUserAchievements(
-    userId: $userId
-    category: $category
-    unlocked: $unlocked
+  user_achievementsCollection(
+    filter: { 
+      user_id: { eq: $userId }
+    }
     first: $first
     after: $after
   ) {
     edges {
       node {
         id
-        title
-        description
-        category
-        iconUrl
-        badgeUrl
-        unlockedAt
+        user_id
+        achievement_id
         progress
-        maxProgress
-        isUnlocked
-        requirements
-        rewards {
-          type
-          value
+        is_completed
+        completed_at
+        created_at
+        updated_at
+        achievements {
+          id
+          title
           description
+          category
+          icon_url
+          points
+          requirements
+          is_active
+          created_at
         }
       }
       cursor
@@ -41,6 +43,5 @@ query GetUserAchievements(
       startCursor
       endCursor
     }
-    totalCount
   }
 }

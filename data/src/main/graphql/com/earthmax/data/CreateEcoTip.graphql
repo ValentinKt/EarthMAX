@@ -1,39 +1,24 @@
 # Mutation to create a new eco-tip
 # Creates a new eco-tip with comprehensive validation and returns the created tip
-mutation CreateEcoTip($input: CreateEcoTipInput!) {
-  createEcoTip(input: $input) {
-    success
-    message
-    errors {
-      field
-      code
-      message
-    }
-    ecoTip {
+mutation CreateEcoTip($objects: [eco_tipsInsertInput!]!) {
+  insertIntoeco_tipsCollection(objects: $objects) {
+    records {
       id
       title
       description
       category
       difficulty
-      estimatedImpact
-      impactLevel
+      estimated_impact
       steps
-      imageUrl
-      videoUrl
+      image_url
       tags
-      resourceLinks {
-        title
-        url
-        type
-      }
-      prerequisites
-      estimatedTimeMinutes
-      carbonSavingKg
-      costSaving
-      isVerified
-      authorId
-      createdAt
-      updatedAt
+      resources
+      carbon_savings_kg
+      cost_savings_usd
+      time_required_minutes
+      is_active
+      created_at
+      updated_at
     }
   }
 }

@@ -1,34 +1,26 @@
 # Query to get a specific eco-tip by ID
 # Returns detailed information about a single eco-tip including all fields
-query GetEcoTipById($id: ID!) {
-  getEcoTip(id: $id) {
-    id
-    title
-    description
-    category
-    difficulty
-    estimatedImpact
-    impactLevel
-    steps
-    imageUrl
-    videoUrl
-    tags
-    resourceLinks {
-      title
-      url
-      type
+query GetEcoTipById($id: UUID!) {
+  eco_tipsCollection(filter: { id: { eq: $id } }) {
+    edges {
+      node {
+        id
+        title
+        description
+        category
+        difficulty
+        estimated_impact
+        steps
+        image_url
+        tags
+        resources
+        carbon_savings_kg
+        cost_savings_usd
+        time_required_minutes
+        is_active
+        created_at
+        updated_at
+      }
     }
-    prerequisites
-    estimatedTimeMinutes
-    carbonSavingKg
-    costSaving
-    isVerified
-    verificationDate
-    authorId
-    likes
-    views
-    completions
-    createdAt
-    updatedAt
   }
 }

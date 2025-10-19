@@ -1,53 +1,39 @@
 # Query to get user profile information
 # Returns comprehensive user data including achievements and statistics
-query GetUserProfile($userId: ID!) {
-  getUserProfile(userId: $userId) {
-    id
-    username
-    email
-    firstName
-    lastName
-    avatarUrl
-    bio
-    location
-    joinedAt
-    lastActiveAt
-    isVerified
-    
-    # User statistics
-    totalEcoTipsCompleted
-    totalCarbonSaved
-    totalCostSaved
-    currentStreak
-    longestStreak
-    
-    # User preferences
-    preferences {
-      notifications {
+query GetUserProfile($userId: UUID!) {
+  profilesCollection(filter: { id: { eq: $userId } }) {
+    edges {
+      node {
+        id
         email
-        push
-        weeklyDigest
-        achievementAlerts
+        display_name
+        bio
+        avatar_url
+        location
+        preferences
+        created_at
+        updated_at
       }
-      privacy {
-        profileVisibility
-        showStatistics
-        showAchievements
-      }
-      language
-      theme
     }
-    
-    # User achievements
-    achievements {
-      id
-      title
-      description
-      category
-      iconUrl
-      unlockedAt
-      progress
-      maxProgress
+  }
+  
+  # User statistics
+  user_statsCollection(filter: { user_id: { eq: $userId } }) {
+    edges {
+      node {
+        id
+        user_id
+        completed_tips_count
+        total_carbon_saved_kg
+        total_cost_saved_usd
+        current_streak
+        longest_streak
+        last_activity_date
+        level
+        experience_points
+        created_at
+        updated_at
+      }
     }
   }
 }

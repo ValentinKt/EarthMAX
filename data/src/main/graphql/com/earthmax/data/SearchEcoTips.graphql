@@ -1,16 +1,14 @@
 # Query to search eco-tips with advanced filtering and pagination
-# Supports full-text search, category filtering, difficulty levels, and sorting
+# Supports filtering, sorting, and pagination using Supabase collections
 query SearchEcoTips(
-  $searchTerm: String
-  $filter: EcoTipsFilterInput
-  $sort: EcoTipSortInput
+  $filter: eco_tipsFilter
+  $orderBy: [eco_tipsOrderBy!]
   $first: Int = 20
-  $after: String
+  $after: Cursor
 ) {
-  searchEcoTips(
-    searchTerm: $searchTerm
+  eco_tipsCollection(
     filter: $filter
-    sort: $sort
+    orderBy: $orderBy
     first: $first
     after: $after
   ) {
@@ -21,17 +19,17 @@ query SearchEcoTips(
         description
         category
         difficulty
-        estimatedImpact
-        impactLevel
-        imageUrl
+        estimated_impact
+        steps
+        image_url
         tags
-        estimatedTimeMinutes
-        carbonSavingKg
-        isVerified
-        likes
-        views
-        completions
-        createdAt
+        resources
+        carbon_savings_kg
+        cost_savings_usd
+        time_required_minutes
+        is_active
+        created_at
+        updated_at
       }
       cursor
     }
@@ -41,6 +39,5 @@ query SearchEcoTips(
       startCursor
       endCursor
     }
-    totalCount
   }
 }
