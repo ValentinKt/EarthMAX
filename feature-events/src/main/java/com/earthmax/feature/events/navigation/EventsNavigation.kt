@@ -14,11 +14,13 @@ import androidx.navigation.navigation
 import com.earthmax.feature.events.create.CreateEventScreen
 import com.earthmax.feature.events.detail.EventDetailScreen
 import com.earthmax.feature.events.home.EventsHomeScreen
+import com.earthmax.presentation.chat.ChatScreen
 
 const val EVENTS_GRAPH_ROUTE = "events_graph"
 const val EVENTS_HOME_ROUTE = "events_home"
 const val CREATE_EVENT_ROUTE = "create_event"
 const val EVENT_DETAIL_ROUTE = "event_detail"
+const val CHAT_ROUTE = "chat"
 
 fun NavGraphBuilder.eventsGraph(
     navController: NavHostController,
@@ -84,7 +86,44 @@ fun NavGraphBuilder.eventsGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onNavigateToMap = onNavigateToMap
+                onNavigateToMap = onNavigateToMap,
+                onNavigateToChat = { eventId, eventTitle ->
+                    navController.navigate("$CHAT_ROUTE/$eventId/$eventTitle")
+                }
+            )
+        }
+        
+        composable(
+            route = "$CHAT_ROUTE/{eventId}/{eventTitle}",
+            arguments = listOf(
+                navArgument("eventId") { type = NavType.StringType },
+                navArgument("eventTitle") { type = NavType.StringType }
+            ),
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(400)
+                ) + fadeIn(animationSpec = tween(400))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(400)
+                ) + fadeOut(animationSpec = tween(400))
+            }
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            val eventTitle = backStackEntry.arguments?.getString("eventTitle") ?: ""
+            
+            ChatScreen(
+                eventId = eventId,
+                eventTitle = eventTitle,
+                userId = "current_user_id", // TODO: Get from auth state
+                userName = "Current User", // TODO: Get from auth state
+                userAvatarUrl = null, // TODO: Get from auth state
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }

@@ -50,157 +50,136 @@ fun EventsHomeScreen(
     
     var showSearchBar by remember { mutableStateOf(false) }
     
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        // Top App Bar
-        TopAppBar(
-            title = {
-                Column {
-                    Text(
-                        text = "EarthMAX",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    uiState.currentUser?.let { user ->
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
                         Text(
-                            text = "Welcome back, ${user.displayName}!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = "EarthMAX",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
                         )
+                        uiState.currentUser?.let { user ->
+                            Text(
+                                text = "Welcome back, ${user.displayName}!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
-                }
-            },
-            actions = {
-                IconButton(onClick = { showSearchBar = !showSearchBar }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search events"
-                    )
-                }
-                IconButton(onClick = onNavigateToMap) {
-                    Icon(
-                        imageVector = Icons.Default.Map,
-                        contentDescription = "View map"
-                    )
-                }
-                IconButton(onClick = onNavigateToProfile) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile"
-                    )
-                }
-            }
-        )
-        
-        // Search Bar
-        AnimatedVisibility(
-            visible = showSearchBar,
-            enter = slideInVertically(
-                initialOffsetY = { -it },
-                animationSpec = tween(300)
-            ) + fadeIn(animationSpec = tween(300)),
-            exit = slideOutVertically(
-                targetOffsetY = { -it },
-                animationSpec = tween(300)
-            ) + fadeOut(animationSpec = tween(300))
-        ) {
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = viewModel::setSearchQuery,
-                onSearchClose = { showSearchBar = false },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
-        
-        // Category Filter
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            item {
-                FilterChip(
-                    selected = uiState.selectedCategory == null,
-                    onClick = { viewModel.setSelectedCategory(null) },
-                    label = { Text("All") },
-                    leadingIcon = {
+                },
+                actions = {
+                    IconButton(onClick = { showSearchBar = !showSearchBar }) {
                         Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search events"
                         )
                     }
-                )
-            }
-            
-            items(EventCategory.entries) { category ->
-                EventCategoryChip(
-                    category = category,
-                    isSelected = uiState.selectedCategory == category,
-                    onClick = { 
-                        viewModel.setSelectedCategory(
-                            if (uiState.selectedCategory == category) null else category
+                    IconButton(onClick = onNavigateToMap) {
+                        Icon(
+                            imageVector = Icons.Default.Map,
+                            contentDescription = "View map"
                         )
                     }
-                )
-            }
-        }
-        
-        // Events List
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            if (events.itemCount == 0 && !uiState.isLoading) {
-                item {
-                    EmptyEventsState(
-                        onCreateEvent = onNavigateToCreateEvent,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            } else {
-                items(
-                    count = events.itemCount,
-                    key = events.itemKey { event -> event.id }
-                ) { index ->
-                    val event = events[index]
-                    event?.let { eventItem ->
-                        EventCard(
-                            event = eventItem,
-                            currentUserId = uiState.currentUser?.id,
-                            onEventClick = onNavigateToEventDetail,
-                            onJoinClick = viewModel::joinEvent,
-                            onLeaveClick = viewModel::leaveEvent,
-                            isLoading = uiState.isLoading,
-                            modifier = Modifier
-                                .fadeInAnimation(visible = true)
-                                .slideInFromBottom(visible = true)
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile"
                         )
                     }
                 }
-            }
-        }
-        
-        // Floating Action Button
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
+            )
+        },
+        floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToCreateEvent,
-                containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fadeInAnimation(visible = true)
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Create event"
                 )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Search Bar
+            AnimatedVisibility(
+                visible = showSearchBar,
+                enter = slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = tween(300)
+                ) + fadeIn(animationSpec = tween(300)),
+                exit = slideOutVertically(
+                    targetOffsetY = { -it },
+                    animationSpec = tween(300)
+                ) + fadeOut(animationSpec = tween(300))
+            ) {
+                SearchBar(
+                    query = uiState.searchQuery,
+                    onQueryChange = viewModel::setSearchQuery,
+                    onSearchClose = { showSearchBar = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+            
+            // Category Filter
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                items(EventCategory.values()) { category ->
+                    EventCategoryChip(
+                        category = category,
+                        isSelected = uiState.selectedCategory == category,
+                        onClick = { viewModel.setSelectedCategory(category) }
+                    )
+                }
+            }
+            
+            // Events List
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                if (events.itemCount == 0 && !uiState.isLoading) {
+                    item {
+                        EmptyEventsState(
+                            onCreateEvent = onNavigateToCreateEvent,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                } else {
+                    items(
+                        count = events.itemCount,
+                        key = events.itemKey { it.id }
+                    ) { index ->
+                        val event = events[index]
+                        event?.let {
+                             EventCard(
+                                 event = it,
+                                 currentUserId = uiState.currentUser?.id,
+                                 onEventClick = onNavigateToEventDetail,
+                                 onJoinClick = viewModel::joinEvent,
+                                 onLeaveClick = viewModel::leaveEvent,
+                                 isLoading = uiState.isLoading,
+                                 modifier = Modifier
+                                     .fillMaxWidth()
+                                     .fadeInAnimation(visible = true)
+                             )
+                        }
+                    }
+                }
             }
         }
     }
@@ -220,33 +199,33 @@ private fun EmptyEventsState(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.padding(32.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "🌱",
-            style = MaterialTheme.typography.displayMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+            text = "No events found",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         
-        Text(
-            text = "No Events Yet",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "Be the first to create an environmental event in your area!",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(vertical = 16.dp)
+            text = "Be the first to create an event in your area!",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        
+        Spacer(modifier = Modifier.height(16.dp))
         
         Button(
             onClick = onCreateEvent,
-            modifier = Modifier.fillMaxWidth()
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
             Icon(
                 imageVector = Icons.Default.Add,

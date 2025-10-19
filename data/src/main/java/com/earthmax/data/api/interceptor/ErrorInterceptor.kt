@@ -1,5 +1,6 @@
 package com.earthmax.data.api.interceptor
 
+import com.earthmax.core.utils.Logger
 import com.earthmax.data.api.dto.ApiError
 import com.google.gson.Gson
 import okhttp3.Interceptor
@@ -16,42 +17,128 @@ class ErrorInterceptor @Inject constructor(
     private val gson: Gson
 ) : Interceptor {
     
+    companion object {
+        private const val TAG = "ErrorInterceptor"
+    }
+    
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-        val response = chain.proceed(request)
+        val startTime = System.currentTimeMillis()
+        Logger.enter(TAG, "intercept")
         
-        // Handle error responses
-        if (!response.isSuccessful) {
-            val errorBody = response.body?.string()
+        try {
+            val request = chain.request()
+            val url = request.url.toString()
+            val method = request.method
             
-            // Try to parse error response
-            val apiError = try {
-                if (!errorBody.isNullOrEmpty()) {
-                    gson.fromJson(errorBody, ApiError::class.java)
-                } else {
+            Logger.logNetworkRequest(TAG, method, url)
+            
+            val response = chain.proceed(request)
+            val responseTime = System.currentTimeMillis() - startTime
+            
+            Logger.logNetworkResponse(TAG, url, response.code, responseTime)
+            
+            // Handle error responses
+            if (!response.isSuccessful) {
+                Logger.w(TAG, "Received error response: ${response.code} for $method $url")
+                
+                val errorBody = response.body?.string()
+                Logger.d(TAG, "Error response body length: ${errorBody?.length ?: 0}")
+                
+                // Try to parse error response
+                val apiError = try {
+                    if (!errorBody.isNullOrEmpty()) {
+                        val parsedError = gson.fromJson(errorBody, ApiError::class.java)
+                        Logger.d(TAG, "Successfully parsed API error response")
+                        parsedError
+                    } else {
+                        Logger.d(TAG, "Empty error body, creating default error")
+                        createDefaultError(response.code, response.message)
+                    }
+                } catch (e: Exception) {
+                    Logger.logError(TAG, "Failed to parse error response", e, mapOf(
+                        "statusCode" to response.code,
+                        "errorBodyLength" to (errorBody?.length ?: 0),
+                        "errorType" to e.javaClass.simpleName,
+                        "errorMessage" to (e.message ?: "Unknown error")
+                    ))
                     createDefaultError(response.code, response.message)
                 }
-            } catch (e: Exception) {
-                createDefaultError(response.code, response.message)
+                
+                // Create new response with parsed error
+                val newErrorBody = gson.toJson(apiError).toResponseBody(response.body?.contentType())
+                
+                Logger.logBusinessEvent(TAG, "Error Response Processed", mapOf(
+                    "method" to method,
+                    "url" to Logger.maskSensitiveData(url),
+                    "statusCode" to response.code,
+                    "errorType" to apiError.error,
+                    "errorMessage" to apiError.message,
+                    "responseTime" to responseTime
+                ))
+                
+                Logger.logPerformance(TAG, "intercept", responseTime)
+                
+                return response.newBuilder()
+                    .body(newErrorBody)
+                    .build()
             }
             
-            // Create new response with parsed error
-            val newErrorBody = gson.toJson(apiError).toResponseBody(response.body?.contentType())
+            Logger.logBusinessEvent(TAG, "Successful Response", mapOf(
+                "method" to method,
+                "url" to Logger.maskSensitiveData(url),
+                "statusCode" to response.code,
+                "responseTime" to responseTime
+            ))
             
-            return response.newBuilder()
-                .body(newErrorBody)
-                .build()
+            Logger.logPerformance(TAG, "intercept", responseTime)
+            
+            return response
+            
+        } catch (e: Exception) {
+            val responseTime = System.currentTimeMillis() - startTime
+            Logger.logError(TAG, "Failed to intercept request", e, mapOf(
+                "responseTime" to responseTime,
+                "errorType" to e.javaClass.simpleName,
+                "errorMessage" to (e.message ?: "Unknown error")
+            ))
+            throw e
+        } finally {
+            Logger.exit(TAG, "intercept")
         }
-        
-        return response
     }
     
     private fun createDefaultError(code: Int, message: String): ApiError {
-        return ApiError(
-            error = getErrorTypeFromCode(code),
-            message = message.ifEmpty { getDefaultMessageForCode(code) },
-            code = code
-        )
+        Logger.enter(TAG, "createDefaultError", "code" to code, "message" to message)
+        
+        try {
+            val errorType = getErrorTypeFromCode(code)
+            val defaultMessage = message.ifEmpty { getDefaultMessageForCode(code) }
+            
+            val apiError = ApiError(
+                error = errorType,
+                message = defaultMessage,
+                code = code
+            )
+            
+            Logger.logBusinessEvent(TAG, "Default Error Created", mapOf(
+                "code" to code,
+                "errorType" to errorType,
+                "message" to defaultMessage
+            ))
+            
+            return apiError
+            
+        } catch (e: Exception) {
+            Logger.logError(TAG, "Failed to create default error", e, mapOf(
+                "code" to code,
+                "message" to message,
+                "errorType" to e.javaClass.simpleName,
+                "errorMessage" to (e.message ?: "Unknown error")
+            ))
+            throw e
+        } finally {
+            Logger.exit(TAG, "createDefaultError")
+        }
     }
     
     private fun getErrorTypeFromCode(code: Int): String {

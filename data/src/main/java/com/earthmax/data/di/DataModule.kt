@@ -5,8 +5,13 @@ import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.okHttpClient
 import com.earthmax.data.local.EarthMaxDatabase
 import com.earthmax.data.local.dao.EventDao
+import com.earthmax.data.local.dao.MessageDao
 import com.earthmax.data.local.dao.UserDao
+import com.earthmax.data.local.dao.PerformanceDao
 import com.earthmax.data.auth.SupabaseAuthRepository
+import com.earthmax.data.chat.SupabaseChatRepository
+import com.earthmax.data.chat.ChatRepository
+import com.earthmax.data.chat.ChatRepositoryImpl
 import com.earthmax.data.events.SupabaseEventsRepository
 import com.earthmax.data.repository.SupabaseUserRepository
 import com.earthmax.data.repository.UserRepository
@@ -18,6 +23,7 @@ import com.earthmax.data.api.repository.EventApiRepository
 import com.earthmax.data.api.interceptor.AuthInterceptor
 import com.earthmax.data.api.interceptor.ErrorInterceptor
 import com.earthmax.data.api.interceptor.RateLimitInterceptor
+import com.earthmax.data.repository.PerformanceRepository
 import com.earthmax.core.network.SupabaseClient
 import com.earthmax.core.network.BuildConfig
 import com.google.gson.Gson
@@ -51,6 +57,16 @@ object DataModule {
     @Provides
     fun provideUserDao(database: EarthMaxDatabase): UserDao {
         return database.userDao()
+    }
+    
+    @Provides
+    fun provideMessageDao(database: EarthMaxDatabase): MessageDao {
+        return database.messageDao()
+    }
+    
+    @Provides
+    fun providePerformanceDao(database: EarthMaxDatabase): PerformanceDao {
+        return database.performanceDao()
     }
     
     @Provides
@@ -169,5 +185,28 @@ object DataModule {
             .serverUrl("${BuildConfig.SUPABASE_URL}/graphql/v1")
             .okHttpClient(okHttpClient)
             .build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideSupabaseChatRepository(): SupabaseChatRepository {
+        return SupabaseChatRepository()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideChatRepository(
+        supabaseChatRepository: SupabaseChatRepository,
+        messageDao: MessageDao
+    ): ChatRepository {
+        return ChatRepositoryImpl(supabaseChatRepository, messageDao)
+    }
+    
+    @Provides
+    @Singleton
+    fun providePerformanceRepository(
+        performanceDao: PerformanceDao
+    ): PerformanceRepository {
+        return PerformanceRepository(performanceDao)
     }
 }

@@ -24,6 +24,7 @@ import java.util.*
 fun EventDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToMap: () -> Unit,
+    onNavigateToChat: (String, String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EventDetailViewModel = hiltViewModel()
 ) {
@@ -58,6 +59,25 @@ fun EventDetailScreen(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = "View on map"
                     )
+                }
+                // Chat button - only show if user is joined or is organizer
+                uiState.event?.let { event ->
+                    val currentUser = uiState.currentUser
+                    val isOrganizer = currentUser?.id == event.organizerId
+                    val isJoined = event.isJoined
+                    
+                    if (isOrganizer || isJoined) {
+                        IconButton(
+                            onClick = { 
+                                onNavigateToChat(event.id, event.title)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Chat,
+                                contentDescription = "Chat with participants"
+                            )
+                        }
+                    }
                 }
                 IconButton(onClick = { /* Share event */ }) {
                     Icon(

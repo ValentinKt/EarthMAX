@@ -27,6 +27,7 @@ fun EarthMaxNavigation(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
+    // Determine start destination based on authentication state
     val startDestination = if (uiState.isAuthenticated) {
         EVENTS_GRAPH_ROUTE
     } else {

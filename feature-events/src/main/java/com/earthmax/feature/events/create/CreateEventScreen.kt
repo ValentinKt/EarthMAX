@@ -3,6 +3,7 @@ package com.earthmax.feature.events.create
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -93,29 +94,57 @@ fun CreateEventScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Event Image
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                onClick = { imagePickerLauncher.launch("image/*") }
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+            Column {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (uiState.imageError != null) 
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+                        else 
+                            MaterialTheme.colorScheme.surface
+                    ),
+                    border = if (uiState.imageError != null) 
+                        androidx.compose.foundation.BorderStroke(
+                            1.dp, 
+                            MaterialTheme.colorScheme.error
+                        ) 
+                    else null
                 ) {
-                    if (uiState.selectedImageUri != null) {
-                        AsyncImage(
-                            model = uiState.selectedImageUri,
-                            contentDescription = "Event image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(
-                            text = "Tap to add event image",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState.selectedImageUri != null) {
+                            AsyncImage(
+                                model = uiState.selectedImageUri,
+                                contentDescription = "Event image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Text(
+                                text = "Tap to add event image",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (uiState.imageError != null) 
+                                    MaterialTheme.colorScheme.error 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
+                }
+                
+                // Display image validation error
+                uiState.imageError?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
                 }
             }
 

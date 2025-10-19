@@ -19,6 +19,7 @@ import com.earthmax.core.ui.components.EcoCard
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToMonitoring: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -181,6 +182,15 @@ fun SettingsScreen(
                         title = "Privacy Policy",
                         subtitle = "Learn how we protect your data",
                         onClick = { /* Navigate to privacy policy */ }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    SettingsClickableItem(
+                        icon = Icons.Default.Analytics,
+                        title = "Performance Monitoring",
+                        subtitle = "View app performance and logs",
+                        onClick = onNavigateToMonitoring
                     )
                 }
             }

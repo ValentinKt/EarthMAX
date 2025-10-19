@@ -32,6 +32,7 @@ import com.earthmax.core.ui.components.EcoButton
 import com.earthmax.core.ui.components.EcoButtonType
 import com.earthmax.core.ui.components.EcoTextField
 import com.earthmax.core.ui.components.LoadingIndicator
+import com.earthmax.core.ui.components.ExtraLargeAvatar
 import com.earthmax.core.ui.components.SmallLoadingIndicator
 import com.earthmax.core.models.ProfileTheme
 import com.earthmax.core.models.ProfileVisibility
@@ -50,11 +51,11 @@ fun EditProfileScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { viewModel.updateProfileImage(it) }
+        uri?.let { viewModel.updateProfileImage(it.toString()) }
     }
 
-    LaunchedEffect(uiState.isUpdateSuccessful) {
-        if (uiState.isUpdateSuccessful) {
+    LaunchedEffect(uiState.updateSuccess) {
+        if (uiState.updateSuccess) {
             snackbarHostState.showSnackbar("Profile updated successfully!")
             onNavigateBack()
         }
@@ -169,22 +170,15 @@ private fun EditProfileContent(
                 Box(
                     contentAlignment = Alignment.BottomEnd
                 ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(uiState.profileImageUri ?: uiState.currentUser?.profileImageUrl)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Current profile image. Tap to change",
-                        modifier = Modifier
-                            .size(120.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop,
-                        fallback = androidx.compose.ui.res.painterResource(
-                            android.R.drawable.ic_menu_gallery
-                        ),
-                        error = androidx.compose.ui.res.painterResource(
-                            android.R.drawable.ic_menu_gallery
-                        )
+                    ExtraLargeAvatar(
+                        profileImageUrl = if (uiState.selectedImageUri != null) 
+                            uiState.selectedImageUri 
+                        else 
+                            uiState.currentUser?.profileImageUrl,
+                        displayName = uiState.currentUser?.displayName ?: "",
+                        modifier = Modifier.semantics {
+                            contentDescription = "Current profile image. Tap to change"
+                        }
                     )
                     
                     FloatingActionButton(

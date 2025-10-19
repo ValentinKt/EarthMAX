@@ -44,6 +44,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":core-ui"))
     implementation(project(":data"))
+    implementation(project(":presentation"))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

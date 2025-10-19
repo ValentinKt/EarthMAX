@@ -35,6 +35,9 @@
 
 ## Pending Tasks 📋
 
+[] - Test event creation flow with all required fields (ISSUE: Event not appearing after creation)
+[] - Debug event creation form validation and submission
+[] - Navigate to created event and test event details screen functionality
 [] - Add the possibility to chat between users that participate to the same event.
 [] - Add the possibility to see the events that a user is participating to.
 [] - Add the possibility to see the events that a user is creating.

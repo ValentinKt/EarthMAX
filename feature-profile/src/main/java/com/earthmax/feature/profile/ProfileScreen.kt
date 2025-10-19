@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.WaterDrop
@@ -70,6 +71,8 @@ import com.earthmax.core.ui.components.EcoButtonType
 import com.earthmax.core.ui.components.EcoCard
 import com.earthmax.core.ui.components.ErrorState
 import com.earthmax.core.ui.components.LoadingIndicator
+import com.earthmax.core.ui.components.ExtraLargeAvatar
+import com.earthmax.core.ui.components.LargeAvatar
 import com.earthmax.feature.profile.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,6 +81,8 @@ fun ProfileScreen(
     onNavigateToAuth: () -> Unit,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToAvatarTest: () -> Unit = {},
+    onNavigateToMonitoring: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -108,6 +113,17 @@ fun ProfileScreen(
                     ) 
                 },
                 actions = {
+                    IconButton(
+                        onClick = onNavigateToAvatarTest,
+                        modifier = Modifier.semantics {
+                            contentDescription = "Test Avatar component"
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Face,
+                            contentDescription = "Avatar test icon"
+                        )
+                    }
                     IconButton(
                         onClick = onNavigateToSettings,
                         modifier = Modifier.semantics {
@@ -252,22 +268,9 @@ private fun ProfileContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Profile Image
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(user.profileImageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Profile Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                    fallback = androidx.compose.ui.res.painterResource(
-                        android.R.drawable.ic_menu_gallery
-                    ),
-                    error = androidx.compose.ui.res.painterResource(
-                        android.R.drawable.ic_menu_gallery
-                    )
+                ExtraLargeAvatar(
+                    profileImageUrl = user.profileImageUrl,
+                    displayName = user.displayName
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -595,24 +598,17 @@ private fun ProfileHeader(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(profileImageUrl)
-                    .placeholder(androidx.core.R.drawable.ic_call_answer)
-                    .error(androidx.core.R.drawable.ic_call_answer)
-                    .build(),
-                contentDescription = "Profile picture for $name",
+            LargeAvatar(
+                profileImageUrl = profileImageUrl,
+                displayName = name,
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
                     .semantics {
                         contentDescription = if (profileImageUrl != null) {
                             "Profile picture for $name"
                         } else {
                             "Default profile picture placeholder for $name"
                         }
-                    },
-                contentScale = ContentScale.Crop
+                    }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
