@@ -1,0 +1,43 @@
+# Mutation to update user profile information
+# Updates user profile with validation and returns updated profile
+mutation UpdateUserProfile($input: UpdateUserProfileInput!) {
+  updateUserProfile(input: $input) {
+    success
+    message
+    errors {
+      field
+      code
+      message
+    }
+    user {
+      id
+      username
+      email
+      firstName
+      lastName
+      avatarUrl
+      bio
+      location
+      isVerified
+      
+      # User preferences
+      preferences {
+        notifications {
+          email
+          push
+          weeklyDigest
+          achievementAlerts
+        }
+        privacy {
+          profileVisibility
+          showStatistics
+          showAchievements
+        }
+        language
+        theme
+      }
+      
+      updatedAt
+    }
+  }
+}

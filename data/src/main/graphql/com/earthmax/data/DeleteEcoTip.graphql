@@ -1,0 +1,13 @@
+# Mutation to delete an eco-tip
+# Soft deletes an eco-tip and returns confirmation
+mutation DeleteEcoTip($id: ID!) {
+  deleteEcoTip(id: $id) {
+    success
+    message
+    errors {
+      field
+      code
+      message
+    }
+  }
+}

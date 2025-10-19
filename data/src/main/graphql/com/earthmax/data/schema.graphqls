@@ -1,24 +1,379 @@
+# EarthMAX GraphQL Schema
+# Comprehensive schema for eco-tips management with CRUD operations and real-time updates
+
+# Custom Scalars
+scalar DateTime
+scalar URL
+
+# Root Types
 type Query {
-    getEcoTips(category: String, limit: Int): [EcoTip!]!
+    # Eco Tips Queries
+    getEcoTips(input: EcoTipsFilterInput): EcoTipsConnection!
     getEcoTip(id: ID!): EcoTip
+    searchEcoTips(input: SearchEcoTipsInput!): EcoTipsConnection!
+    
+    # Category Queries
+    getCategories: [Category!]!
+    getCategoryStats: [CategoryStats!]!
+    
+    # User Progress Queries
+    getUserProgress(userId: ID!): UserProgress
+    getCompletedTips(userId: ID!, input: PaginationInput): EcoTipsConnection!
 }
 
+type Mutation {
+    # Eco Tips Mutations
+    createEcoTip(input: CreateEcoTipInput!): EcoTipMutationPayload!
+    updateEcoTip(id: ID!, input: UpdateEcoTipInput!): EcoTipMutationPayload!
+    deleteEcoTip(id: ID!): DeleteEcoTipPayload!
+    
+    # User Progress Mutations
+    markTipAsCompleted(input: CompleteTipInput!): UserProgressPayload!
+    markTipAsIncomplete(input: IncompleteTipInput!): UserProgressPayload!
+    rateTip(input: RateTipInput!): RatingPayload!
+    
+    # Category Mutations
+    createCategory(input: CreateCategoryInput!): CategoryMutationPayload!
+    updateCategory(id: ID!, input: UpdateCategoryInput!): CategoryMutationPayload!
+}
+
+type Subscription {
+    # Real-time updates for eco tips
+    ecoTipAdded(category: String): EcoTip!
+    ecoTipUpdated(id: ID): EcoTip!
+    ecoTipDeleted: ID!
+    
+    # User progress updates
+    userProgressUpdated(userId: ID!): UserProgress!
+    
+    # Category statistics updates
+    categoryStatsUpdated: CategoryStats!
+}
+
+# Core Types
 type EcoTip {
     id: ID!
     title: String!
     description: String!
-    category: String!
+    category: Category!
     difficulty: Difficulty!
-    estimatedImpact: String!
-    steps: [String!]!
-    imageUrl: String
-    tags: [String!]!
-    createdAt: String!
-    updatedAt: String!
+    estimatedImpact: ImpactLevel!
+    impactDescription: String!
+    steps: [Step!]!
+    imageUrl: URL
+    tags: [Tag!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    
+    # Engagement metrics
+    completionCount: Int!
+    averageRating: Float
+    ratingCount: Int!
+    
+    # Related content
+    relatedTips(limit: Int = 5): [EcoTip!]!
+    prerequisites: [EcoTip!]!
 }
 
+type Step {
+    id: ID!
+    order: Int!
+    title: String!
+    description: String!
+    estimatedTime: Int # in minutes
+    isOptional: Boolean!
+    resources: [Resource!]!
+}
+
+type Resource {
+    id: ID!
+    title: String!
+    url: URL!
+    type: ResourceType!
+}
+
+type Category {
+    id: ID!
+    name: String!
+    description: String!
+    icon: String
+    color: String
+    parentCategory: Category
+    subCategories: [Category!]!
+    tipCount: Int!
+    createdAt: DateTime!
+}
+
+type Tag {
+    id: ID!
+    name: String!
+    color: String
+    usageCount: Int!
+}
+
+type UserProgress {
+    userId: ID!
+    completedTips: [CompletedTip!]!
+    totalCompletedTips: Int!
+    totalImpactPoints: Int!
+    currentStreak: Int!
+    longestStreak: Int!
+    achievements: [Achievement!]!
+    lastActivityAt: DateTime
+}
+
+type CompletedTip {
+    tipId: ID!
+    tip: EcoTip!
+    completedAt: DateTime!
+    rating: Int
+    notes: String
+    impactPoints: Int!
+}
+
+type Achievement {
+    id: ID!
+    title: String!
+    description: String!
+    icon: String!
+    unlockedAt: DateTime!
+    category: AchievementCategory!
+}
+
+type CategoryStats {
+    category: Category!
+    totalTips: Int!
+    completedTips: Int!
+    averageDifficulty: Float!
+    totalImpactPoints: Int!
+}
+
+# Connection Types for Pagination
+type EcoTipsConnection {
+    edges: [EcoTipEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type EcoTipEdge {
+    node: EcoTip!
+    cursor: String!
+}
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
+}
+
+# Input Types
+input EcoTipsFilterInput {
+    category: String
+    categories: [String!]
+    difficulty: Difficulty
+    difficulties: [Difficulty!]
+    impactLevel: ImpactLevel
+    impactLevels: [ImpactLevel!]
+    tags: [String!]
+    minRating: Float
+    hasImage: Boolean
+    pagination: PaginationInput
+    sortBy: EcoTipSortField
+    sortOrder: SortOrder
+}
+
+input SearchEcoTipsInput {
+    query: String!
+    filters: EcoTipsFilterInput
+    pagination: PaginationInput
+}
+
+input PaginationInput {
+    first: Int
+    after: String
+    last: Int
+    before: String
+}
+
+input CreateEcoTipInput {
+    title: String!
+    description: String!
+    categoryId: ID!
+    difficulty: Difficulty!
+    estimatedImpact: ImpactLevel!
+    impactDescription: String!
+    steps: [CreateStepInput!]!
+    imageUrl: URL
+    tags: [String!]!
+}
+
+input UpdateEcoTipInput {
+    title: String
+    description: String
+    categoryId: ID
+    difficulty: Difficulty
+    estimatedImpact: ImpactLevel
+    impactDescription: String
+    steps: [UpdateStepInput!]
+    imageUrl: URL
+    tags: [String!]
+}
+
+input CreateStepInput {
+    title: String!
+    description: String!
+    estimatedTime: Int
+    isOptional: Boolean = false
+    resources: [CreateResourceInput!]
+}
+
+input UpdateStepInput {
+    id: ID
+    title: String
+    description: String
+    estimatedTime: Int
+    isOptional: Boolean
+    resources: [UpdateResourceInput!]
+}
+
+input CreateResourceInput {
+    title: String!
+    url: URL!
+    type: ResourceType!
+}
+
+input UpdateResourceInput {
+    id: ID
+    title: String
+    url: URL
+    type: ResourceType
+}
+
+input CompleteTipInput {
+    userId: ID!
+    tipId: ID!
+    rating: Int
+    notes: String
+}
+
+input IncompleteTipInput {
+    userId: ID!
+    tipId: ID!
+}
+
+input RateTipInput {
+    userId: ID!
+    tipId: ID!
+    rating: Int! # 1-5 stars
+    review: String
+}
+
+input CreateCategoryInput {
+    name: String!
+    description: String!
+    icon: String
+    color: String
+    parentCategoryId: ID
+}
+
+input UpdateCategoryInput {
+    name: String
+    description: String
+    icon: String
+    color: String
+    parentCategoryId: ID
+}
+
+# Payload Types for Mutations
+type EcoTipMutationPayload {
+    ecoTip: EcoTip
+    errors: [Error!]!
+    success: Boolean!
+}
+
+type DeleteEcoTipPayload {
+    deletedId: ID
+    errors: [Error!]!
+    success: Boolean!
+}
+
+type UserProgressPayload {
+    userProgress: UserProgress
+    errors: [Error!]!
+    success: Boolean!
+}
+
+type RatingPayload {
+    rating: CompletedTip
+    errors: [Error!]!
+    success: Boolean!
+}
+
+type CategoryMutationPayload {
+    category: Category
+    errors: [Error!]!
+    success: Boolean!
+}
+
+type Error {
+    message: String!
+    code: ErrorCode!
+    field: String
+}
+
+# Enums
 enum Difficulty {
     EASY
     MEDIUM
     HARD
+    EXPERT
+}
+
+enum ImpactLevel {
+    LOW
+    MEDIUM
+    HIGH
+    VERY_HIGH
+}
+
+enum ResourceType {
+    ARTICLE
+    VIDEO
+    TOOL
+    CALCULATOR
+    GUIDE
+    EXTERNAL_LINK
+}
+
+enum AchievementCategory {
+    COMPLETION
+    STREAK
+    IMPACT
+    SOCIAL
+    SPECIAL
+}
+
+enum EcoTipSortField {
+    CREATED_AT
+    UPDATED_AT
+    TITLE
+    DIFFICULTY
+    IMPACT_LEVEL
+    RATING
+    COMPLETION_COUNT
+}
+
+enum SortOrder {
+    ASC
+    DESC
+}
+
+enum ErrorCode {
+    VALIDATION_ERROR
+    NOT_FOUND
+    UNAUTHORIZED
+    FORBIDDEN
+    INTERNAL_ERROR
+    DUPLICATE_ENTRY
 }

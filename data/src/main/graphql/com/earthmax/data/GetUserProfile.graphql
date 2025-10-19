@@ -1,0 +1,53 @@
+# Query to get user profile information
+# Returns comprehensive user data including achievements and statistics
+query GetUserProfile($userId: ID!) {
+  getUserProfile(userId: $userId) {
+    id
+    username
+    email
+    firstName
+    lastName
+    avatarUrl
+    bio
+    location
+    joinedAt
+    lastActiveAt
+    isVerified
+    
+    # User statistics
+    totalEcoTipsCompleted
+    totalCarbonSaved
+    totalCostSaved
+    currentStreak
+    longestStreak
+    
+    # User preferences
+    preferences {
+      notifications {
+        email
+        push
+        weeklyDigest
+        achievementAlerts
+      }
+      privacy {
+        profileVisibility
+        showStatistics
+        showAchievements
+      }
+      language
+      theme
+    }
+    
+    # User achievements
+    achievements {
+      id
+      title
+      description
+      category
+      iconUrl
+      unlockedAt
+      progress
+      maxProgress
+    }
+  }
+}

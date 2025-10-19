@@ -1,0 +1,33 @@
+# Subscription for real-time user statistics updates
+# Notifies when user statistics change (completions, streaks, etc.)
+subscription UserStatsUpdated($userId: ID!) {
+  userStatsUpdated(userId: $userId) {
+    userId
+    stats {
+      totalEcoTipsCompleted
+      totalCarbonSaved
+      totalCostSaved
+      currentStreak
+      longestStreak
+      weeklyGoalProgress
+      monthlyGoalProgress
+    }
+    
+    # Recent activity that triggered the update
+    recentActivity {
+      type
+      ecoTipId
+      ecoTipTitle
+      carbonSaved
+      costSaved
+      completedAt
+    }
+    
+    # Streak information
+    streakInfo {
+      isActive
+      daysRemaining
+      nextMilestone
+    }
+  }
+}

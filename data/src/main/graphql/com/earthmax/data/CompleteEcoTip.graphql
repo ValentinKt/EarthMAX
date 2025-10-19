@@ -1,0 +1,44 @@
+# Mutation to mark an eco-tip as completed by a user
+# Records completion, updates statistics, and checks for achievements
+mutation CompleteEcoTip($input: CompleteEcoTipInput!) {
+  completeEcoTip(input: $input) {
+    success
+    message
+    errors {
+      field
+      code
+      message
+    }
+    completion {
+      id
+      ecoTipId
+      userId
+      completedAt
+      notes
+      carbonSaved
+      costSaved
+      photosUrls
+      rating
+      feedback
+    }
+    
+    # Updated user statistics
+    userStats {
+      totalEcoTipsCompleted
+      totalCarbonSaved
+      totalCostSaved
+      currentStreak
+      longestStreak
+    }
+    
+    # Any new achievements unlocked
+    newAchievements {
+      id
+      title
+      description
+      category
+      iconUrl
+      unlockedAt
+    }
+  }
+}

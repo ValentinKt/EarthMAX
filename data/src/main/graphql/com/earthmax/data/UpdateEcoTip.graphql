@@ -1,0 +1,43 @@
+# Mutation to update an existing eco-tip
+# Updates eco-tip fields with validation and returns the updated tip
+mutation UpdateEcoTip($id: ID!, $input: UpdateEcoTipInput!) {
+  updateEcoTip(id: $id, input: $input) {
+    success
+    message
+    errors {
+      field
+      code
+      message
+    }
+    ecoTip {
+      id
+      title
+      description
+      category
+      difficulty
+      estimatedImpact
+      impactLevel
+      steps
+      imageUrl
+      videoUrl
+      tags
+      resourceLinks {
+        title
+        url
+        type
+      }
+      prerequisites
+      estimatedTimeMinutes
+      carbonSavingKg
+      costSaving
+      isVerified
+      verificationDate
+      authorId
+      likes
+      views
+      completions
+      createdAt
+      updatedAt
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# Query to search eco-tips with advanced filtering and pagination
+# Supports full-text search, category filtering, difficulty levels, and sorting
+query SearchEcoTips(
+  $searchTerm: String
+  $filter: EcoTipsFilterInput
+  $sort: EcoTipSortInput
+  $first: Int = 20
+  $after: String
+) {
+  searchEcoTips(
+    searchTerm: $searchTerm
+    filter: $filter
+    sort: $sort
+    first: $first
+    after: $after
+  ) {
+    edges {
+      node {
+        id
+        title
+        description
+        category
+        difficulty
+        estimatedImpact
+        impactLevel
+        imageUrl
+        tags
+        estimatedTimeMinutes
+        carbonSavingKg
+        isVerified
+        likes
+        views
+        completions
+        createdAt
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    totalCount
+  }
+}
