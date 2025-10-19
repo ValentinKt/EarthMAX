@@ -327,8 +327,9 @@ class LogFilterManager @Inject constructor() {
         
         val timeSpan = if (filteredLogs.isNotEmpty()) {
             filteredLogs.maxOf { it.timestamp } - filteredLogs.minOf { it.timestamp }
-        } else 0L
-        
+        } else {
+            0L
+        }
         _filterStats.value = FilterStats(
             totalLogs = allLogs.size,
             filteredLogs = filteredLogs.size,
