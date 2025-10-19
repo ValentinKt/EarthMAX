@@ -40,15 +40,15 @@ fun MonitoringDashboard(
     onNavigateBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val systemHealth by viewModel.systemHealth.collectAsStateWithLifecycle()
-    val filteredLogs by viewModel.filteredLogs.collectAsStateWithLifecycle()
-    val filterStats by viewModel.filterStats.collectAsStateWithLifecycle()
+    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
+    val timeRange by viewModel.timeRange.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     
-    var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Performance", "Logs", "Health")
     
     LaunchedEffect(Unit) {
-        viewModel.startMonitoring()
+        viewModel.refreshData()
     }
     
     Column(
@@ -70,11 +70,11 @@ fun MonitoringDashboard(
                 }
             },
             actions = {
-                IconButton(onClick = { viewModel.refreshMetrics() }) {
+                IconButton(onClick = { viewModel.refreshData() }) {
                     Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                 }
-                IconButton(onClick = { viewModel.clearAllData() }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear")
+                IconButton(onClick = { viewModel.exportPerformanceData() }) {
+                    Icon(Icons.Default.FileDownload, contentDescription = "Export")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -84,14 +84,16 @@ fun MonitoringDashboard(
         
         // Tab Row
         TabRow(
-            selectedTabIndex = selectedTab,
+            selectedTabIndex = selectedTab.ordinal,
             containerColor = Color(0xFF20B2AA), // Light Sea Green
             contentColor = Color.White
         ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
+                    selected = selectedTab.ordinal == index,
+                    onClick = { 
+                        viewModel.selectTab(MonitoringViewModel.MonitoringTab.values()[index])
+                    },
                     text = { Text(title) }
                 )
             }
@@ -99,18 +101,17 @@ fun MonitoringDashboard(
         
         // Content based on selected tab
         when (selectedTab) {
-            0 -> OverviewTab(uiState, systemHealth)
-            1 -> PerformanceTab(uiState)
-            2 -> LogsTab(filteredLogs, filterStats, viewModel)
-            3 -> HealthTab(systemHealth, uiState)
+            MonitoringViewModel.MonitoringTab.OVERVIEW -> OverviewTab(uiState)
+            MonitoringViewModel.MonitoringTab.PERFORMANCE -> PerformanceTab(uiState)
+            MonitoringViewModel.MonitoringTab.LOGS -> LogsTab(uiState, viewModel)
+            MonitoringViewModel.MonitoringTab.HEALTH -> HealthTab(uiState)
         }
     }
 }
 
 @Composable
 private fun OverviewTab(
-    uiState: MonitoringUiState,
-    systemHealth: PerformanceMetricsCollector.SystemHealth
+    uiState: MonitoringViewModel.MonitoringUiState
 ) {
     LazyColumn(
         modifier = Modifier
@@ -119,68 +120,76 @@ private fun OverviewTab(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // System Health Card
-        item {
-            HealthStatusCard(systemHealth)
-        }
-        
-        // Quick Stats Row
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                QuickStatCard(
-                    title = "Total Logs",
-                    value = uiState.aggregatedMetrics.totalLogs.toString(),
-                    icon = Icons.Default.List,
-                    modifier = Modifier.weight(1f)
-                )
-                QuickStatCard(
-                    title = "Errors",
-                    value = uiState.aggregatedMetrics.errorCount.toString(),
-                    icon = Icons.Default.Error,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.weight(1f)
-                )
+        uiState.systemHealth?.let { health ->
+            item {
+                HealthStatusCard(health)
             }
         }
         
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                QuickStatCard(
-                    title = "Network Requests",
-                    value = uiState.aggregatedMetrics.networkRequests.toString(),
-                    icon = Icons.Default.NetworkCheck,
-                    modifier = Modifier.weight(1f)
-                )
-                QuickStatCard(
-                    title = "Avg Response",
-                    value = "${uiState.aggregatedMetrics.averageResponseTime.toInt()}ms",
-                    icon = Icons.Default.Speed,
-                    modifier = Modifier.weight(1f)
-                )
+        // Quick Stats Row
+        uiState.realtimeMetrics?.let { metrics ->
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    QuickStatCard(
+                        title = "Total Logs",
+                        value = uiState.historicalLogs.size.toString(),
+                        icon = Icons.Default.List,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickStatCard(
+                        title = "Errors",
+                        value = metrics.errorCount.toString(),
+                        icon = Icons.Default.Error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    QuickStatCard(
+                        title = "Network Requests",
+                        value = metrics.networkRequests.toString(),
+                        icon = Icons.Default.NetworkCheck,
+                        modifier = Modifier.weight(1f)
+                    )
+                    QuickStatCard(
+                        title = "Avg Response",
+                        value = "${metrics.averageResponseTime.toInt()}ms",
+                        icon = Icons.Default.Speed,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
         
         // Recent Critical Issues
-        if (systemHealth.criticalIssues.isNotEmpty()) {
-            item {
-                CriticalIssuesCard(systemHealth.criticalIssues)
+        uiState.systemHealth?.let { health ->
+            if (health.criticalIssues.isNotEmpty()) {
+                item {
+                    CriticalIssuesCard(health.criticalIssues)
+                }
             }
         }
         
         // Performance Chart Placeholder
-        item {
-            PerformanceChartCard(uiState.aggregatedMetrics.hourlyMetrics)
+        uiState.realtimeMetrics?.let { metrics ->
+            item {
+                PerformanceChartCard(metrics.hourlyMetrics)
+            }
         }
     }
 }
 
 @Composable
-private fun PerformanceTab(uiState: MonitoringUiState) {
+private fun PerformanceTab(uiState: MonitoringViewModel.MonitoringUiState) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -206,32 +215,35 @@ private fun PerformanceTab(uiState: MonitoringUiState) {
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     
-                    PerformanceMetricRow(
-                        "Average Response Time",
-                        "${uiState.aggregatedMetrics.averageResponseTime.toInt()}ms"
-                    )
-                    PerformanceMetricRow(
-                        "Total Network Requests",
-                        uiState.aggregatedMetrics.networkRequests.toString()
-                    )
-                    PerformanceMetricRow(
-                        "Network Errors",
-                        uiState.aggregatedMetrics.networkErrors.toString()
-                    )
-                    PerformanceMetricRow(
-                        "User Actions",
-                        uiState.aggregatedMetrics.userActions.toString()
-                    )
-                    PerformanceMetricRow(
-                        "Business Events",
-                        uiState.aggregatedMetrics.businessEvents.toString()
-                    )
+                    uiState.realtimeMetrics?.let { metrics ->
+                        PerformanceMetricRow(
+                            "Average Response Time",
+                            "${metrics.averageResponseTime.toInt()}ms"
+                        )
+                        PerformanceMetricRow(
+                            "Total Network Requests",
+                            metrics.networkRequests.toString()
+                        )
+                        PerformanceMetricRow(
+                            "Network Errors",
+                            metrics.networkErrors.toString()
+                        )
+                        PerformanceMetricRow(
+                            "User Actions",
+                            metrics.userActions.toString()
+                        )
+                        PerformanceMetricRow(
+                            "Business Events",
+                            metrics.businessEvents.toString()
+                        )
+                    }
                 }
             }
         }
         
         // Slowest Operations
-        if (uiState.aggregatedMetrics.slowestOperations.isNotEmpty()) {
+        uiState.realtimeMetrics?.let { metrics ->
+            if (metrics.slowestOperations.isNotEmpty()) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -250,7 +262,7 @@ private fun PerformanceTab(uiState: MonitoringUiState) {
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         
-                        uiState.aggregatedMetrics.slowestOperations.take(5).forEach { metric ->
+                        metrics.slowestOperations.take(5).forEach { metric ->
                             SlowOperationItem(metric)
                         }
                     }
@@ -259,7 +271,7 @@ private fun PerformanceTab(uiState: MonitoringUiState) {
         }
         
         // Performance by Tag
-        if (uiState.aggregatedMetrics.performanceByTag.isNotEmpty()) {
+        if (metrics.performanceByTag.isNotEmpty()) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -278,7 +290,7 @@ private fun PerformanceTab(uiState: MonitoringUiState) {
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         
-                        uiState.aggregatedMetrics.performanceByTag.entries
+                        metrics.performanceByTag.entries
                             .sortedByDescending { it.value }
                             .take(10)
                             .forEach { (tag, avgTime) ->
@@ -293,8 +305,7 @@ private fun PerformanceTab(uiState: MonitoringUiState) {
 
 @Composable
 private fun LogsTab(
-    filteredLogs: List<Logger.LogEntry>,
-    filterStats: LogFilterManager.FilterStats,
+    uiState: MonitoringViewModel.MonitoringUiState,
     viewModel: MonitoringViewModel
 ) {
     var showFilters by remember { mutableStateOf(false) }
@@ -321,7 +332,7 @@ private fun LogsTab(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Logs (${filterStats.filteredLogs}/${filterStats.totalLogs})",
+                        "Logs (${uiState.filterStats?.filteredLogs ?: 0}/${uiState.filterStats?.totalLogs ?: 0})",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -427,7 +438,7 @@ private fun LogsTab(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filteredLogs) { logEntry ->
+            items(uiState.filteredLogs) { logEntry ->
                 LogEntryCard(logEntry)
             }
         }
@@ -436,8 +447,7 @@ private fun LogsTab(
 
 @Composable
 private fun HealthTab(
-    systemHealth: PerformanceMetricsCollector.SystemHealth,
-    uiState: MonitoringUiState
+    uiState: MonitoringViewModel.MonitoringUiState
 ) {
     LazyColumn(
         modifier = Modifier
@@ -446,8 +456,10 @@ private fun HealthTab(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // System Health Overview
-        item {
-            HealthStatusCard(systemHealth)
+        uiState.systemHealth?.let { health ->
+            item {
+                HealthStatusCard(health)
+            }
         }
         
         // Health Metrics

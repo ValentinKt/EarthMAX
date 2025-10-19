@@ -59,6 +59,7 @@ class PerformanceRepository @Inject constructor(
             performanceDao.insertLogs(logEntities)
             
             Logger.logBusinessEvent(
+                "PerformanceRepository",
                 "performance_data_stored",
                 mapOf(
                     "metrics_count" to metricEntities.size,
@@ -67,7 +68,7 @@ class PerformanceRepository @Inject constructor(
             )
             
         } catch (e: Exception) {
-            Logger.logError("Failed to store performance metrics", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to store performance metrics", e, mapOf(
                 "operation" to "storeCurrentMetrics"
             ))
         } finally {
@@ -96,6 +97,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }.also {
                 Logger.logBusinessEvent(
+                    "PerformanceRepository",
                     "metrics_retrieved",
                     mapOf(
                         "count" to it.size,
@@ -104,7 +106,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Logger.logError("Failed to retrieve metrics for time range", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to retrieve metrics for time range", e, mapOf(
                 "startTime" to startTime,
                 "endTime" to endTime
             ))
@@ -136,6 +138,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }.also {
                 Logger.logBusinessEvent(
+                    "PerformanceRepository",
                     "logs_retrieved",
                     mapOf(
                         "count" to it.size,
@@ -144,7 +147,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Logger.logError("Failed to retrieve logs for time range", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to retrieve logs for time range", e, mapOf(
                 "startTime" to startTime,
                 "endTime" to endTime
             ))
@@ -174,6 +177,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }.also {
                 Logger.logBusinessEvent(
+                    "PerformanceRepository",
                     "operation_metrics_retrieved",
                     mapOf(
                         "operation" to operation,
@@ -182,7 +186,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Logger.logError("Failed to retrieve metrics by operation", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to retrieve metrics by operation", e, mapOf(
                 "operation" to operation
             ))
             emptyList()
@@ -212,6 +216,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }.also {
                 Logger.logBusinessEvent(
+                    "PerformanceRepository",
                     "level_logs_retrieved",
                     mapOf(
                         "level" to level.name,
@@ -220,7 +225,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Logger.logError("Failed to retrieve logs by level", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to retrieve logs by level", e, mapOf(
                 "level" to level.name
             ))
             emptyList()
@@ -274,6 +279,7 @@ class PerformanceRepository @Inject constructor(
                 hourlyDistribution = getHourlyDistribution(metrics, startTime, endTime)
             ).also { stats ->
                 Logger.logBusinessEvent(
+                    "PerformanceRepository",
                     "performance_statistics_calculated",
                     mapOf(
                         "total_metrics" to stats.totalMetrics,
@@ -284,7 +290,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Logger.logError("Failed to calculate performance statistics", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to calculate performance statistics", e, mapOf(
                 "startTime" to startTime,
                 "endTime" to endTime
             ))
@@ -319,6 +325,7 @@ class PerformanceRepository @Inject constructor(
             val deletedLogs = performanceDao.deleteLogsOlderThan(cutoffTime)
             
             Logger.logBusinessEvent(
+                "PerformanceRepository",
                 "old_data_cleaned",
                 mapOf(
                     "deleted_metrics" to deletedMetrics,
@@ -328,7 +335,7 @@ class PerformanceRepository @Inject constructor(
             )
             
         } catch (e: Exception) {
-            Logger.logError("Failed to cleanup old data", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to cleanup old data", e, mapOf(
                 "olderThanDays" to olderThanDays
             ))
         } finally {
@@ -377,6 +384,7 @@ class PerformanceRepository @Inject constructor(
                 appendLine("}")
             }.also { json ->
                 Logger.logBusinessEvent(
+                    "PerformanceRepository",
                     "performance_data_exported",
                     mapOf(
                         "metrics_count" to metrics.size,
@@ -386,7 +394,7 @@ class PerformanceRepository @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Logger.logError("Failed to export performance data", e, mapOf(
+            Logger.logError("PerformanceRepository", "Failed to export performance data", e, mapOf(
                 "startTime" to startTime,
                 "endTime" to endTime
             ))

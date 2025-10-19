@@ -74,7 +74,7 @@ class MonitoringViewModel @Inject constructor(
                         filterStats = filterStats
                     )
                 }.catch { e ->
-                    Logger.logError("Failed to collect realtime data", e)
+                    Logger.logError("MonitoringViewModel", "Failed to collect realtime data", e)
                     _errorMessage.value = "Failed to load real-time data: ${e.message}"
                 }.collect { realtimeData ->
                     _uiState.value = _uiState.value.copy(
@@ -85,7 +85,7 @@ class MonitoringViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                Logger.logError("Failed to setup realtime data collection", e)
+                Logger.logError("MonitoringViewModel", "Failed to setup realtime data collection", e)
                 _errorMessage.value = "Failed to setup real-time monitoring: ${e.message}"
             }
         }
@@ -129,7 +129,7 @@ class MonitoringViewModel @Inject constructor(
                 )
                 
             } catch (e: Exception) {
-                Logger.logError("Failed to refresh monitoring data", e, mapOf(
+                Logger.logError("MonitoringViewModel", "Failed to refresh monitoring data", e, mapOf(
                     "time_range" to _timeRange.value.name
                 ))
                 _errorMessage.value = "Failed to refresh data: ${e.message}"
@@ -233,7 +233,7 @@ class MonitoringViewModel @Inject constructor(
         
         logFilterManager.clearFilters()
         
-        Logger.logBusinessEvent("log_filters_cleared", emptyMap())
+        Logger.logBusinessEvent("MonitoringViewModel", "log_filters_cleared", emptyMap())
         
         Logger.exit("MonitoringViewModel", "clearLogFilters")
     }
@@ -258,6 +258,7 @@ class MonitoringViewModel @Inject constructor(
                 )
                 
                 Logger.logBusinessEvent(
+                    "MonitoringViewModel",
                     "performance_data_exported",
                     mapOf(
                         "time_range" to currentTimeRange.name,
@@ -266,7 +267,7 @@ class MonitoringViewModel @Inject constructor(
                 )
                 
             } catch (e: Exception) {
-                Logger.logError("Failed to export performance data", e, mapOf(
+                Logger.logError("MonitoringViewModel", "Failed to export performance data", e, mapOf(
                     "time_range" to _timeRange.value.name
                 ))
                 _errorMessage.value = "Failed to export data: ${e.message}"
@@ -288,10 +289,10 @@ class MonitoringViewModel @Inject constructor(
             try {
                 performanceRepository.storeCurrentMetrics()
                 
-                Logger.logBusinessEvent("current_metrics_stored", emptyMap())
+                Logger.logBusinessEvent("MonitoringViewModel", "current_metrics_stored", emptyMap())
                 
             } catch (e: Exception) {
-                Logger.logError("Failed to store current metrics", e)
+                Logger.logError("MonitoringViewModel", "Failed to store current metrics", e)
                 _errorMessage.value = "Failed to store metrics: ${e.message}"
             }
         }
@@ -317,12 +318,13 @@ class MonitoringViewModel @Inject constructor(
                 refreshData()
                 
                 Logger.logBusinessEvent(
+                    "MonitoringViewModel",
                     "old_data_cleaned",
                     mapOf("olderThanDays" to olderThanDays)
                 )
                 
             } catch (e: Exception) {
-                Logger.logError("Failed to cleanup old data", e, mapOf(
+                Logger.logError("MonitoringViewModel", "Failed to cleanup old data", e, mapOf(
                     "olderThanDays" to olderThanDays
                 ))
                 _errorMessage.value = "Failed to cleanup data: ${e.message}"
