@@ -9,7 +9,7 @@ import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.engine.android.*
 
-import io.ktor.client.plugins.observer.*
+
 import javax.inject.Singleton
 
 @Singleton
@@ -156,7 +156,7 @@ object SupabaseClient {
                 "hasKey" to (BuildConfig.SUPABASE_ANON_KEY.isNotEmpty()),
                 "initTime" to initTime,
                 "success" to true,
-                "pluginsInstalled" to listOf("Auth", "Postgrest", "Realtime", "Storage", "Logging", "ResponseObserver")
+                "pluginsInstalled" to listOf("Auth", "Postgrest", "Realtime", "Storage")
             ))
             
             Logger.logPerformance(TAG, "createSupabaseClient", initTime)
