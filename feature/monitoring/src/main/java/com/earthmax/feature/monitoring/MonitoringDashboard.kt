@@ -483,33 +483,33 @@ private fun HealthTab(
                     
                     HealthMetricRow(
                         "Error Rate",
-                        "${String.format("%.2f", systemHealth.errorRate)}%",
-                        systemHealth.errorRate > 5.0
+                        "${String.format("%.2f", health.errorRate)}%",
+                        health.errorRate > 5.0
                     )
                     HealthMetricRow(
                         "Average Response Time",
-                        "${systemHealth.averageResponseTime.toInt()}ms",
-                        systemHealth.averageResponseTime > 3000
+                        "${health.averageResponseTime.toInt()}ms",
+                        health.averageResponseTime > 3000
                     )
                     HealthMetricRow(
                         "Slow Operations",
-                        systemHealth.slowOperationsCount.toString(),
-                        systemHealth.slowOperationsCount > 10
+                        health.slowOperationsCount.toString(),
+                        health.slowOperationsCount > 10
                     )
                 }
             }
         }
         
         // Critical Issues
-        if (systemHealth.criticalIssues.isNotEmpty()) {
+        if (health.criticalIssues.isNotEmpty()) {
             item {
-                CriticalIssuesCard(systemHealth.criticalIssues)
+                CriticalIssuesCard(health.criticalIssues)
             }
         }
         
         // System Recommendations
         item {
-            SystemRecommendationsCard(systemHealth, uiState)
+            SystemRecommendationsCard(health, uiState)
         }
     }
 }
@@ -893,7 +893,7 @@ private fun HealthMetricRow(label: String, value: String, isWarning: Boolean) {
 @Composable
 private fun SystemRecommendationsCard(
     systemHealth: PerformanceMetricsCollector.SystemHealth,
-    uiState: MonitoringUiState
+    uiState: MonitoringViewModel.MonitoringUiState
 ) {
     val recommendations = mutableListOf<String>()
     
