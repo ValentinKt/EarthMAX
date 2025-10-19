@@ -36,9 +36,9 @@ class PerformanceRepository @Inject constructor(
                     id = 0, // Auto-generated
                     operation = metric.operation,
                     tag = metric.tag,
-                    duration = metric.duration,
+                    duration = metric.duration.toDouble(),
                     timestamp = metric.timestamp,
-                    metadata = metric.metadata.entries.joinToString(";") { "${it.key}=${it.value}" }
+                    metadata = metric.additionalMetrics.entries.joinToString(";") { "${it.key}=${it.value}" }
                 )
             }
             
@@ -50,8 +50,8 @@ class PerformanceRepository @Inject constructor(
                     tag = log.tag,
                     message = log.message,
                     timestamp = log.timestamp,
-                    exception = log.exception,
-                    metadata = log.metadata.entries.joinToString(";") { "${it.key}=${it.value}" }
+                    exception = log.throwable?.toString(),
+                    metadata = "" // LogEntry doesn't have metadata property
                 )
             }
             
@@ -91,9 +91,9 @@ class PerformanceRepository @Inject constructor(
                 Logger.PerformanceMetric(
                     operation = entity.operation,
                     tag = entity.tag,
-                    duration = entity.duration,
+                    duration = entity.duration.toLong(),
                     timestamp = entity.timestamp,
-                    metadata = parseMetadata(entity.metadata)
+                    additionalMetrics = parseMetadata(entity.metadata)
                 )
             }.also {
                 Logger.logBusinessEvent(
@@ -133,8 +133,8 @@ class PerformanceRepository @Inject constructor(
                     tag = entity.tag,
                     message = entity.message,
                     timestamp = entity.timestamp,
-                    exception = entity.exception,
-                    metadata = parseMetadata(entity.metadata)
+                    threadName = Thread.currentThread().name,
+                    throwable = entity.exception?.let { Exception(it) }
                 )
             }.also {
                 Logger.logBusinessEvent(
@@ -171,9 +171,9 @@ class PerformanceRepository @Inject constructor(
                 Logger.PerformanceMetric(
                     operation = entity.operation,
                     tag = entity.tag,
-                    duration = entity.duration,
+                    duration = entity.duration.toLong(),
                     timestamp = entity.timestamp,
-                    metadata = parseMetadata(entity.metadata)
+                    additionalMetrics = parseMetadata(entity.metadata)
                 )
             }.also {
                 Logger.logBusinessEvent(
@@ -211,8 +211,8 @@ class PerformanceRepository @Inject constructor(
                     tag = entity.tag,
                     message = entity.message,
                     timestamp = entity.timestamp,
-                    exception = entity.exception,
-                    metadata = parseMetadata(entity.metadata)
+                    threadName = Thread.currentThread().name,
+                    throwable = entity.exception?.let { Exception(it) }
                 )
             }.also {
                 Logger.logBusinessEvent(
