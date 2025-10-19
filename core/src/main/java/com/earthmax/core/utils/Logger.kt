@@ -87,6 +87,13 @@ object Logger {
     }
     
     /**
+     * Get all log entries
+     */
+    fun getLogEntries(): List<LogEntry> {
+        return logEntries.toList()
+    }
+    
+    /**
      * Get filtered log entries
      */
     fun getFilteredLogs(): List<LogEntry> {
@@ -409,33 +416,45 @@ object Logger {
         var masked = input
         
         // Mask email addresses (keep first 2 chars and domain)
-        masked = emailPattern.matcher(masked).replaceAll { matchResult ->
-            val localPart = matchResult.group(1)
-            val domain = matchResult.group(2)
+        val emailMatcher = emailPattern.matcher(masked)
+        val emailBuffer = StringBuffer()
+        while (emailMatcher.find()) {
+            val localPart = emailMatcher.group(1)
+            val domain = emailMatcher.group(2)
             val maskedLocal = if (localPart.length > 2) {
                 localPart.substring(0, 2) + "*".repeat(localPart.length - 2)
             } else {
                 "*".repeat(localPart.length)
             }
-            "$maskedLocal@$domain"
+            emailMatcher.appendReplacement(emailBuffer, "$maskedLocal@$domain")
         }
+        emailMatcher.appendTail(emailBuffer)
+        masked = emailBuffer.toString()
         
         // Mask passwords completely
-        masked = passwordPattern.matcher(masked).replaceAll { matchResult ->
-            "${matchResult.group(1)}: ****"
+        val passwordMatcher = passwordPattern.matcher(masked)
+        val passwordBuffer = StringBuffer()
+        while (passwordMatcher.find()) {
+            passwordMatcher.appendReplacement(passwordBuffer, "${passwordMatcher.group(1)}: ****")
         }
+        passwordMatcher.appendTail(passwordBuffer)
+        masked = passwordBuffer.toString()
         
         // Mask tokens/keys (show first 4 and last 4 characters)
-        masked = tokenPattern.matcher(masked).replaceAll { matchResult ->
-            val key = matchResult.group(1)
-            val value = matchResult.group(2)
+        val tokenMatcher = tokenPattern.matcher(masked)
+        val tokenBuffer = StringBuffer()
+        while (tokenMatcher.find()) {
+            val key = tokenMatcher.group(1)
+            val value = tokenMatcher.group(2)
             val maskedValue = if (value.length > 8) {
                 "${value.substring(0, 4)}****${value.substring(value.length - 4)}"
             } else {
                 "****"
             }
-            "$key: $maskedValue"
+            tokenMatcher.appendReplacement(tokenBuffer, "$key: $maskedValue")
         }
+        tokenMatcher.appendTail(tokenBuffer)
+        masked = tokenBuffer.toString()
         
         return masked
     }

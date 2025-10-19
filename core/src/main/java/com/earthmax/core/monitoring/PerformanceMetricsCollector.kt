@@ -75,7 +75,7 @@ class PerformanceMetricsCollector @Inject constructor() {
             errorCount = counters["errors"] ?: 0,
             warningCount = counters["logs_warning"] ?: 0,
             networkRequests = counters["network_requests"] ?: 0,
-            networkErrors = counters["network_responses_4xx"] ?: 0 + counters["network_responses_5xx"] ?: 0,
+            networkErrors = (counters["network_responses_4xx"] ?: 0L) + (counters["network_responses_5xx"] ?: 0L),
             userActions = counters["user_actions"] ?: 0,
             businessEvents = counters["business_events"] ?: 0,
             averageResponseTime = calculateAverageResponseTime(performanceMetrics),

@@ -127,7 +127,7 @@ class PerformanceRepository @Inject constructor(
             val entities = performanceDao.getLogsInTimeRange(startTime, endTime)
             entities.map { entity ->
                 Logger.LogEntry(
-                    level = Logger.LogLevel.valueOf(entity.level),
+                    level = Logger.Level.valueOf(entity.level),
                     tag = entity.tag,
                     message = entity.message,
                     timestamp = entity.timestamp,
@@ -194,7 +194,7 @@ class PerformanceRepository @Inject constructor(
     /**
      * Get log entries by level
      */
-    suspend fun getLogsByLevel(level: Logger.LogLevel): List<Logger.LogEntry> {
+    suspend fun getLogsByLevel(level: Logger.Level): List<Logger.LogEntry> {
         Logger.enter("PerformanceRepository", "getLogsByLevel", mapOf(
             "level" to level.name
         ))
@@ -203,7 +203,7 @@ class PerformanceRepository @Inject constructor(
             val entities = performanceDao.getLogsByLevel(level.name)
             entities.map { entity ->
                 Logger.LogEntry(
-                    level = Logger.LogLevel.valueOf(entity.level),
+                    level = Logger.Level.valueOf(entity.level),
                     tag = entity.tag,
                     message = entity.message,
                     timestamp = entity.timestamp,
@@ -243,8 +243,8 @@ class PerformanceRepository @Inject constructor(
             val logs = performanceDao.getLogsInTimeRange(startTime, endTime)
             
             val avgResponseTime = metrics.map { it.duration }.average().takeIf { !it.isNaN() } ?: 0.0
-            val errorCount = logs.count { it.level == Logger.LogLevel.ERROR.name }
-            val warningCount = logs.count { it.level == Logger.LogLevel.WARNING.name }
+            val errorCount = logs.count { it.level == Logger.Level.ERROR.name }
+            val warningCount = logs.count { it.level == Logger.Level.WARNING.name }
             val slowOperations = metrics.filter { it.duration > 2000 }
             
             val operationStats = metrics.groupBy { it.operation }
@@ -256,7 +256,7 @@ class PerformanceRepository @Inject constructor(
                         minDuration = operationMetrics.minOf { it.duration },
                         maxDuration = operationMetrics.maxOf { it.duration },
                         errorCount = logs.count { log -> 
-                            log.level == Logger.LogLevel.ERROR.name && 
+                            log.level == Logger.Level.ERROR.name && 
                             log.message.contains(operationMetrics.first().operation, ignoreCase = true)
                         }
                     )

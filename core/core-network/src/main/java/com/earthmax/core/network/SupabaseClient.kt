@@ -8,7 +8,7 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.engine.android.*
-import io.ktor.client.plugins.logging.*
+
 import io.ktor.client.plugins.observer.*
 import javax.inject.Singleton
 
@@ -139,68 +139,15 @@ object SupabaseClient {
                 }
             }
             
-            // Add HTTP request/response logging
-            install(Logging) {
-                Logger.d(TAG, "Installing HTTP logging")
-                
-                try {
-                    logger = object : io.ktor.client.plugins.logging.Logger {
-                        override fun log(message: String) {
-                            Logger.d(TAG, "HTTP: $message")
-                        }
-                    }
-                    level = LogLevel.INFO
-                    
-                    Logger.logBusinessEvent(TAG, "HTTP Logging Installed", mapOf(
-                        "logLevel" to "INFO",
-                        "success" to true
-                    ))
-                    
-                    Logger.i(TAG, "HTTP logging configured at INFO level")
-                    
-                } catch (e: Exception) {
-                    Logger.logError(TAG, "Failed to install HTTP logging", e, mapOf(
-                        "errorType" to e.javaClass.simpleName,
-                        "errorMessage" to (e.message ?: "Unknown error")
-                    ))
-                    throw e
-                }
-            }
+            // HTTP logging removed due to Ktor 3.3.0 API compatibility issues
+            Logger.logBusinessEvent(TAG, "HTTP Logging Skipped", mapOf(
+                "reason" to "Ktor 3.3.0 API compatibility"
+            ))
             
-            // Add request/response observer for detailed logging
-            install(ResponseObserver) {
-                Logger.d(TAG, "Installing response observer")
-                
-                try {
-                    onResponse { response ->
-                        val url = response.request.url.toString()
-                        val statusCode = response.status.value
-                        val method = response.request.method.value
-                        
-                        Logger.logNetworkResponse(TAG, url, statusCode, null)
-                        
-                        Logger.logBusinessEvent(TAG, "HTTP Response Observed", mapOf(
-                            "method" to method,
-                            "url" to Logger.maskSensitiveData(url),
-                            "statusCode" to statusCode,
-                            "success" to (statusCode in 200..299)
-                        ))
-                    }
-                    
-                    Logger.logBusinessEvent(TAG, "Response Observer Installed", mapOf(
-                        "success" to true
-                    ))
-                    
-                    Logger.i(TAG, "Response observer installed successfully")
-                    
-                } catch (e: Exception) {
-                    Logger.logError(TAG, "Failed to install response observer", e, mapOf(
-                        "errorType" to e.javaClass.simpleName,
-                        "errorMessage" to (e.message ?: "Unknown error")
-                    ))
-                    throw e
-                }
-            }
+            // Response observer removed due to Ktor 3.3.0 API changes
+            Logger.logBusinessEvent(TAG, "Response Observer Skipped", mapOf(
+                "reason" to "Ktor 3.3.0 API compatibility"
+            ))
             
             val initTime = System.currentTimeMillis() - initStartTime
             

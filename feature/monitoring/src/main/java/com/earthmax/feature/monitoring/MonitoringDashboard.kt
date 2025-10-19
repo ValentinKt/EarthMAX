@@ -398,7 +398,7 @@ private fun LogsTab(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.padding(vertical = 8.dp)
                         ) {
-                            items(Logger.LogLevel.values()) { level ->
+                            items(Logger.Level.values()) { level ->
                                 val isSelected = viewModel.isLevelSelected(level)
                                 FilterChip(
                                     onClick = { viewModel.toggleLogLevel(level) },
@@ -406,10 +406,10 @@ private fun LogsTab(
                                     selected = isSelected,
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = when (level) {
-                                            Logger.LogLevel.ERROR -> Color(0xFFFFEBEE)
-                                            Logger.LogLevel.WARNING -> Color(0xFFFFF3E0)
-                                            Logger.LogLevel.INFO -> Color(0xFFE3F2FD)
-                                            Logger.LogLevel.DEBUG -> Color(0xFFF3E5F5)
+                                            Logger.Level.ERROR -> Color(0xFFFFEBEE)
+                                        Logger.Level.WARNING -> Color(0xFFFFF3E0)
+                                        Logger.Level.INFO -> Color(0xFFE3F2FD)
+                                        Logger.Level.DEBUG -> Color(0xFFF3E5F5)
                                         }
                                     )
                                 )
@@ -703,10 +703,10 @@ private fun LogEntryCard(logEntry: Logger.LogEntry) {
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = when (logEntry.level) {
-                Logger.LogLevel.ERROR -> Color(0xFFFFEBEE)
-                Logger.LogLevel.WARNING -> Color(0xFFFFF3E0)
-                Logger.LogLevel.INFO -> Color(0xFFE3F2FD)
-                Logger.LogLevel.DEBUG -> Color(0xFFF3E5F5)
+                Logger.Level.ERROR -> Color(0xFFFFEBEE)
+                Logger.Level.WARNING -> Color(0xFFFFF3E0)
+                Logger.Level.INFO -> Color(0xFFE3F2FD)
+                Logger.Level.DEBUG -> Color(0xFFF3E5F5)
             }
         )
     ) {
@@ -723,17 +723,17 @@ private fun LogEntryCard(logEntry: Logger.LogEntry) {
                 ) {
                     Icon(
                         imageVector = when (logEntry.level) {
-                            Logger.LogLevel.ERROR -> Icons.Default.Error
-                            Logger.LogLevel.WARNING -> Icons.Default.Warning
-                            Logger.LogLevel.INFO -> Icons.Default.Info
-                            Logger.LogLevel.DEBUG -> Icons.Default.BugReport
+                            Logger.Level.ERROR -> Icons.Default.Error
+                            Logger.Level.WARNING -> Icons.Default.Warning
+                            Logger.Level.INFO -> Icons.Default.Info
+                            Logger.Level.DEBUG -> Icons.Default.BugReport
                         },
                         contentDescription = null,
                         tint = when (logEntry.level) {
-                            Logger.LogLevel.ERROR -> Color(0xFFF44336)
-                            Logger.LogLevel.WARNING -> Color(0xFFFF9800)
-                            Logger.LogLevel.INFO -> Color(0xFF2196F3)
-                            Logger.LogLevel.DEBUG -> Color(0xFF9C27B0)
+                            Logger.Level.ERROR -> Color(0xFFF44336)
+                            Logger.Level.WARNING -> Color(0xFFFF9800)
+                            Logger.Level.INFO -> Color(0xFF2196F3)
+                            Logger.Level.DEBUG -> Color(0xFF9C27B0)
                         },
                         modifier = Modifier.size(16.dp)
                     )

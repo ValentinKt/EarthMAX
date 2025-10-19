@@ -18,7 +18,7 @@ import javax.inject.Singleton
 class LogFilterManager @Inject constructor() {
     
     data class FilterCriteria(
-        val levels: Set<Logger.LogLevel> = emptySet(),
+        val levels: Set<Logger.Level> = emptySet(),
         val tags: Set<String> = emptySet(),
         val searchQuery: String = "",
         val timeRange: TimeRange? = null,
@@ -40,7 +40,7 @@ class LogFilterManager @Inject constructor() {
     data class FilterStats(
         val totalLogs: Int,
         val filteredLogs: Int,
-        val levelCounts: Map<Logger.LogLevel, Int>,
+        val levelCounts: Map<Logger.Level, Int>,
         val tagCounts: Map<String, Int>,
         val timeSpan: Long
     )
@@ -54,11 +54,11 @@ class LogFilterManager @Inject constructor() {
     // Predefined filter presets
     private val filterPresets = mapOf(
         "errors_only" to FilterCriteria(
-            levels = setOf(Logger.LogLevel.ERROR),
+            levels = setOf(Logger.Level.ERROR),
             sortOrder = SortOrder.NEWEST_FIRST
         ),
         "warnings_and_errors" to FilterCriteria(
-            levels = setOf(Logger.LogLevel.WARNING, Logger.LogLevel.ERROR),
+            levels = setOf(Logger.Level.WARNING, Logger.Level.ERROR),
             sortOrder = SortOrder.LEVEL_PRIORITY
         ),
         "network_logs" to FilterCriteria(
@@ -71,7 +71,7 @@ class LogFilterManager @Inject constructor() {
         ),
         "performance_issues" to FilterCriteria(
             includePatterns = setOf("slow", "timeout", "performance", "latency"),
-            levels = setOf(Logger.LogLevel.WARNING, Logger.LogLevel.ERROR),
+            levels = setOf(Logger.Level.WARNING, Logger.Level.ERROR),
             sortOrder = SortOrder.NEWEST_FIRST
         ),
         "last_hour" to FilterCriteria(
@@ -105,7 +105,7 @@ class LogFilterManager @Inject constructor() {
     /**
      * Add log level to current filter
      */
-    fun addLogLevel(level: Logger.LogLevel) {
+    fun addLogLevel(level: Logger.Level) {
         val current = _currentFilter.value
         _currentFilter.value = current.copy(
             levels = current.levels + level
@@ -115,7 +115,7 @@ class LogFilterManager @Inject constructor() {
     /**
      * Remove log level from current filter
      */
-    fun removeLogLevel(level: Logger.LogLevel) {
+    fun removeLogLevel(level: Logger.Level) {
         val current = _currentFilter.value
         _currentFilter.value = current.copy(
             levels = current.levels - level
@@ -204,9 +204,9 @@ class LogFilterManager @Inject constructor() {
         val pattern = Pattern.compile(errorPattern, Pattern.CASE_INSENSITIVE)
         
         return allLogs.filter { log ->
-            log.level == Logger.LogLevel.ERROR && 
+            log.level == Logger.Level.ERROR && 
             (pattern.matcher(log.message).find() || 
-             log.exception?.let { pattern.matcher(it).find() } == true)
+             log.throwable?.message?.let { pattern.matcher(it).find() } == true)
         }
     }
     
@@ -236,11 +236,8 @@ class LogFilterManager @Inject constructor() {
         
         logs.forEach { log ->
             sb.appendLine("${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(java.util.Date(log.timestamp))} [${log.level}] ${log.tag}: ${log.message}")
-            log.exception?.let { exception ->
-                sb.appendLine("  Exception: $exception")
-            }
-            if (log.metadata.isNotEmpty()) {
-                sb.appendLine("  Metadata: ${log.metadata}")
+            log.throwable?.let { throwable ->
+                sb.appendLine("  Exception: ${throwable.message}")
             }
             sb.appendLine()
         }
@@ -267,11 +264,7 @@ class LogFilterManager @Inject constructor() {
             filtered = filtered.filter { log ->
                 log.message.lowercase().contains(query) ||
                 log.tag.lowercase().contains(query) ||
-                log.exception?.lowercase()?.contains(query) == true ||
-                log.metadata.any { (key, value) -> 
-                    key.lowercase().contains(query) || 
-                    value.toString().lowercase().contains(query) 
-                }
+                log.throwable?.message?.lowercase()?.contains(query) == true
             }
         }
         
@@ -315,10 +308,10 @@ class LogFilterManager @Inject constructor() {
             SortOrder.LEVEL_PRIORITY -> filtered.sortedWith(
                 compareByDescending<Logger.LogEntry> { 
                     when (it.level) {
-                        Logger.LogLevel.ERROR -> 4
-                        Logger.LogLevel.WARNING -> 3
-                        Logger.LogLevel.INFO -> 2
-                        Logger.LogLevel.DEBUG -> 1
+                        Logger.Level.ERROR -> 4
+                        Logger.Level.WARNING -> 3
+                        Logger.Level.INFO -> 2
+                        Logger.Level.DEBUG -> 1
                     }
                 }.thenByDescending { it.timestamp }
             )
