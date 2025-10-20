@@ -247,9 +247,9 @@ class SupabaseAuthRepository @Inject constructor() {
     }
     
     suspend fun resetPassword(email: String): Result<Unit> {
-        Logger.enter(TAG, "resetPassword", mapOf(
+        Logger.enter(TAG, "resetPassword", 
             "email" to Logger.maskSensitiveData(email)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -288,7 +288,7 @@ class SupabaseAuthRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to reset password", e, mapOf(
+            Logger.logError(TAG, "Failed to reset password", e, mapOf(
                 "email" to Logger.maskSensitiveData(email),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()

@@ -120,6 +120,7 @@ class MonitoringViewModel @Inject constructor(
                 )
                 
                 Logger.logBusinessEvent(
+                    "MonitoringViewModel",
                     "monitoring_data_refreshed",
                     mapOf(
                         "metrics_count" to metrics.size,
@@ -145,13 +146,14 @@ class MonitoringViewModel @Inject constructor(
      * Change selected tab
      */
     fun selectTab(tab: MonitoringTab) {
-        Logger.enter("MonitoringViewModel", "selectTab", mapOf(
+        Logger.enter("MonitoringViewModel", "selectTab", 
             "tab" to tab.name
-        ))
+        )
         
         _selectedTab.value = tab
         
         Logger.logBusinessEvent(
+            "MonitoringViewModel",
             "monitoring_tab_selected",
             mapOf("tab" to tab.name)
         )
@@ -163,15 +165,16 @@ class MonitoringViewModel @Inject constructor(
      * Change time range for historical data
      */
     fun changeTimeRange(newTimeRange: TimeRange) {
-        Logger.enter("MonitoringViewModel", "changeTimeRange", mapOf(
+        Logger.enter("MonitoringViewModel", "changeTimeRange", 
             "old_range" to _timeRange.value.name,
             "new_range" to newTimeRange.name
-        ))
+        )
         
         _timeRange.value = newTimeRange
         refreshData()
         
         Logger.logBusinessEvent(
+            "MonitoringViewModel",
             "monitoring_time_range_changed",
             mapOf(
                 "old_range" to _timeRange.value.name,
@@ -186,15 +189,16 @@ class MonitoringViewModel @Inject constructor(
      * Update log filter
      */
     fun updateLogFilter(filter: LogFilterManager.FilterCriteria) {
-        Logger.enter("MonitoringViewModel", "updateLogFilter", mapOf(
+        Logger.enter("MonitoringViewModel", "updateLogFilter", 
             "levels" to filter.levels.joinToString(",") { it.name },
             "tags_count" to filter.tags.size,
             "has_search" to filter.searchQuery.isNotEmpty()
-        ))
+        )
         
         logFilterManager.updateFilter(filter)
         
         Logger.logBusinessEvent(
+            "MonitoringViewModel",
             "log_filter_updated",
             mapOf(
                 "levels_count" to filter.levels.size,
@@ -211,13 +215,14 @@ class MonitoringViewModel @Inject constructor(
      * Apply log filter preset
      */
     fun applyLogFilterPreset(preset: LogFilterManager.FilterPreset) {
-        Logger.enter("MonitoringViewModel", "applyLogFilterPreset", mapOf(
+        Logger.enter("MonitoringViewModel", "applyLogFilterPreset", 
             "preset" to preset.name
-        ))
+        )
         
-        logFilterManager.applyPreset(preset)
+        logFilterManager.applyPreset(preset.name)
         
         Logger.logBusinessEvent(
+            "MonitoringViewModel",
             "log_filter_preset_applied",
             mapOf("preset" to preset.name)
         )
@@ -236,6 +241,21 @@ class MonitoringViewModel @Inject constructor(
         Logger.logBusinessEvent("MonitoringViewModel", "log_filters_cleared", emptyMap())
         
         Logger.exit("MonitoringViewModel", "clearLogFilters")
+    }
+    
+    /**
+     * Filter logs by level
+     */
+    fun filterLogsByLevel(level: Logger.Level) {
+        Logger.enter("MonitoringViewModel", "filterLogsByLevel", "level" to level.name)
+        
+        val currentFilter = logFilterManager.currentFilter.value
+        val newFilter = currentFilter.copy(
+            levels = setOf(level)
+        )
+        logFilterManager.updateFilter(newFilter)
+        
+        Logger.exit("MonitoringViewModel", "filterLogsByLevel")
     }
     
     /**
@@ -304,9 +324,7 @@ class MonitoringViewModel @Inject constructor(
      * Clean up old performance data
      */
     fun cleanupOldData(olderThanDays: Int = 7) {
-        Logger.enter("MonitoringViewModel", "cleanupOldData", mapOf(
-            "olderThanDays" to olderThanDays
-        ))
+        Logger.enter("MonitoringViewModel", "cleanupOldData", "olderThanDays" to olderThanDays)
         
         viewModelScope.launch {
             try {
@@ -369,17 +387,23 @@ class MonitoringViewModel @Inject constructor(
      */
     data class MonitoringUiState(
         val realtimeMetrics: PerformanceMetricsCollector.AggregatedMetrics? = null,
+        val realtimeData: RealtimeData? = null,
         val systemHealth: PerformanceMetricsCollector.SystemHealth? = null,
         val historicalMetrics: List<Logger.PerformanceMetric> = emptyList(),
         val historicalLogs: List<Logger.LogEntry> = emptyList(),
         val filteredLogs: List<Logger.LogEntry> = emptyList(),
         val performanceStatistics: PerformanceRepository.PerformanceStatistics? = null,
+        val performanceMetrics: PerformanceMetricsCollector.AggregatedMetrics? = null,
         val filterStats: LogFilterManager.FilterStats? = null,
         val exportData: String? = null,
-        val lastRefresh: Long = 0L
+        val lastRefresh: Long = 0L,
+        val healthAlerts: List<String> = emptyList(),
+        val selectedLogLevel: Logger.Level? = null,
+        val slowOperations: List<SlowOperation> = emptyList(),
+        val recentLogs: List<Logger.LogEntry> = emptyList()
     )
     
-    private data class RealtimeData(
+    data class RealtimeData(
         val metrics: PerformanceMetricsCollector.AggregatedMetrics,
         val systemHealth: PerformanceMetricsCollector.SystemHealth,
         val filteredLogs: List<Logger.LogEntry>,
@@ -400,4 +424,35 @@ class MonitoringViewModel @Inject constructor(
         LAST_7_DAYS("Last 7 Days"),
         LAST_30_DAYS("Last 30 Days")
     }
+    
+    /**
+     * Data class representing a slow operation
+     */
+    data class SlowOperation(
+        val name: String,
+        val duration: Long,
+        val details: String
+    )
+    
+    /**
+     * Data class representing performance data
+     */
+    data class PerformanceData(
+        val cpuUsage: Double = 0.0,
+        val memoryUsage: Double = 0.0,
+        val networkIO: Double = 0.0,
+        val diskIO: Double = 0.0,
+        val responseTime: Double = 0.0,
+        val throughput: Double = 0.0
+    )
+    
+    /**
+     * Data class representing a log entry for UI display
+     */
+    data class LogEntry(
+        val level: String,
+        val message: String,
+        val timestamp: Long,
+        val tag: String = ""
+    )
 }

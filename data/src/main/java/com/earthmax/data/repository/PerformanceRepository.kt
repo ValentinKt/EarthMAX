@@ -80,10 +80,10 @@ class PerformanceRepository @Inject constructor(
      * Get performance metrics for a specific time range
      */
     suspend fun getMetricsForTimeRange(startTime: Long, endTime: Long): List<Logger.PerformanceMetric> {
-        Logger.enter("PerformanceRepository", "getMetricsForTimeRange", mapOf(
+        Logger.enter("PerformanceRepository", "getMetricsForTimeRange", 
             "startTime" to startTime,
             "endTime" to endTime
-        ))
+        )
         
         return try {
             val entities = performanceDao.getMetricsInTimeRange(startTime, endTime)
@@ -120,10 +120,10 @@ class PerformanceRepository @Inject constructor(
      * Get log entries for a specific time range
      */
     suspend fun getLogsForTimeRange(startTime: Long, endTime: Long): List<Logger.LogEntry> {
-        Logger.enter("PerformanceRepository", "getLogsForTimeRange", mapOf(
+        Logger.enter("PerformanceRepository", "getLogsForTimeRange", 
             "startTime" to startTime,
             "endTime" to endTime
-        ))
+        )
         
         return try {
             val entities = performanceDao.getLogsInTimeRange(startTime, endTime)
@@ -161,9 +161,9 @@ class PerformanceRepository @Inject constructor(
      * Get performance metrics by operation
      */
     suspend fun getMetricsByOperation(operation: String): List<Logger.PerformanceMetric> {
-        Logger.enter("PerformanceRepository", "getMetricsByOperation", mapOf(
+        Logger.enter("PerformanceRepository", "getMetricsByOperation", 
             "operation" to operation
-        ))
+        )
         
         return try {
             val entities = performanceDao.getMetricsByOperation(operation)
@@ -199,9 +199,9 @@ class PerformanceRepository @Inject constructor(
      * Get log entries by level
      */
     suspend fun getLogsByLevel(level: Logger.Level): List<Logger.LogEntry> {
-        Logger.enter("PerformanceRepository", "getLogsByLevel", mapOf(
+        Logger.enter("PerformanceRepository", "getLogsByLevel", 
             "level" to level.name
-        ))
+        )
         
         return try {
             val entities = performanceDao.getLogsByLevel(level.name)
@@ -238,10 +238,10 @@ class PerformanceRepository @Inject constructor(
      * Get aggregated performance statistics
      */
     suspend fun getPerformanceStatistics(startTime: Long, endTime: Long): PerformanceStatistics {
-        Logger.enter("PerformanceRepository", "getPerformanceStatistics", mapOf(
+        Logger.enter("PerformanceRepository", "getPerformanceStatistics",
             "startTime" to startTime,
             "endTime" to endTime
-        ))
+        )
         
         return try {
             val metrics = performanceDao.getMetricsInTimeRange(startTime, endTime)
@@ -314,9 +314,9 @@ class PerformanceRepository @Inject constructor(
      * Clean up old performance data
      */
     suspend fun cleanupOldData(olderThanDays: Int = 7) {
-        Logger.enter("PerformanceRepository", "cleanupOldData", mapOf(
+        Logger.enter("PerformanceRepository", "cleanupOldData", 
             "olderThanDays" to olderThanDays
-        ))
+        )
         
         try {
             val cutoffTime = System.currentTimeMillis() - (olderThanDays * 24 * 60 * 60 * 1000L)
@@ -347,10 +347,10 @@ class PerformanceRepository @Inject constructor(
      * Export performance data as JSON
      */
     suspend fun exportPerformanceData(startTime: Long, endTime: Long): String {
-        Logger.enter("PerformanceRepository", "exportPerformanceData", mapOf(
+        Logger.enter("PerformanceRepository", "exportPerformanceData", 
             "startTime" to startTime,
             "endTime" to endTime
-        ))
+        )
         
         return try {
             val metrics = getMetricsForTimeRange(startTime, endTime)

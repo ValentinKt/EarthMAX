@@ -167,7 +167,7 @@ class SupabaseUserRepository @Inject constructor(
                 "email" to Logger.maskSensitiveData(user.email ?: "unknown")
             ))
             Logger.logPerformance(TAG, "createUser", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "createUser", Result.success(Unit))
+            Logger.exit(TAG, "createUser", Result.success<Unit>(Unit))
             Result.success(Unit)
         } catch (e: Exception) {
             Logger.e(TAG, "Error creating user", e)
@@ -177,7 +177,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "createUser_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "createUser", Result.failure(e))
+            Logger.exit(TAG, "createUser", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -195,7 +195,7 @@ class SupabaseUserRepository @Inject constructor(
                 "displayName" to (user.displayName ?: "unknown")
             ))
             Logger.logPerformance(TAG, "updateUser", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUser", Result.success(Unit))
+            Logger.exit(TAG, "updateUser", Result.success<Unit>(Unit))
             Result.success(Unit)
         } catch (e: Exception) {
             Logger.e(TAG, "Error updating user", e)
@@ -205,7 +205,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateUser_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUser", Result.failure(e))
+            Logger.exit(TAG, "updateUser", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -227,7 +227,7 @@ class SupabaseUserRepository @Inject constructor(
                     "newTotal" to updatedUser.ecoPoints.toString()
                 ))
                 Logger.logPerformance(TAG, "updateUserEcoPoints", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserEcoPoints", Result.success(Unit))
+                Logger.exit(TAG, "updateUserEcoPoints", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 Logger.w(TAG, "User not found for eco points update")
@@ -236,7 +236,7 @@ class SupabaseUserRepository @Inject constructor(
                     "pointsAttempted" to points.toString()
                 ))
                 Logger.logPerformance(TAG, "updateUserEcoPoints_not_found", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserEcoPoints", Result.failure(Exception("User not found")))
+                Logger.exit(TAG, "updateUserEcoPoints", Result.failure<Unit>(Exception("User not found")))
                 Result.failure(Exception("User not found"))
             }
         } catch (e: Exception) {
@@ -248,7 +248,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateUserEcoPoints_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUserEcoPoints", Result.failure(e))
+            Logger.exit(TAG, "updateUserEcoPoints", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -269,7 +269,7 @@ class SupabaseUserRepository @Inject constructor(
                     "imageUrl" to imageUrl
                 ))
                 Logger.logPerformance(TAG, "updateUserProfileImage", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserProfileImage", Result.success(Unit))
+                Logger.exit(TAG, "updateUserProfileImage", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 Logger.w(TAG, "User not found for profile image update")
@@ -277,7 +277,7 @@ class SupabaseUserRepository @Inject constructor(
                     "userId" to userId
                 ))
                 Logger.logPerformance(TAG, "updateUserProfileImage_not_found", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserProfileImage", Result.failure(Exception("User not found")))
+                Logger.exit(TAG, "updateUserProfileImage", Result.failure<Unit>(Exception("User not found")))
                 Result.failure(Exception("User not found"))
             }
         } catch (e: Exception) {
@@ -288,7 +288,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateUserProfileImage_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUserProfileImage", Result.failure(e))
+            Logger.exit(TAG, "updateUserProfileImage", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -309,7 +309,7 @@ class SupabaseUserRepository @Inject constructor(
                     "newDisplayName" to displayName
                 ))
                 Logger.logPerformance(TAG, "updateUserDisplayName", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserDisplayName", Result.success(Unit))
+                Logger.exit(TAG, "updateUserDisplayName", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 Logger.w(TAG, "User not found for display name update")
@@ -317,7 +317,7 @@ class SupabaseUserRepository @Inject constructor(
                     "userId" to userId
                 ))
                 Logger.logPerformance(TAG, "updateUserDisplayName_not_found", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserDisplayName", Result.failure(Exception("User not found")))
+                Logger.exit(TAG, "updateUserDisplayName", Result.failure<Unit>(Exception("User not found")))
                 Result.failure(Exception("User not found"))
             }
         } catch (e: Exception) {
@@ -328,7 +328,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateUserDisplayName_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUserDisplayName", Result.failure(e))
+            Logger.exit(TAG, "updateUserDisplayName", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -349,7 +349,7 @@ class SupabaseUserRepository @Inject constructor(
                     "bioLength" to bio.length.toString()
                 ))
                 Logger.logPerformance(TAG, "updateUserBio", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserBio", Result.success(Unit))
+                Logger.exit(TAG, "updateUserBio", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 Logger.w(TAG, "User not found for bio update")
@@ -357,7 +357,7 @@ class SupabaseUserRepository @Inject constructor(
                     "userId" to userId
                 ))
                 Logger.logPerformance(TAG, "updateUserBio_not_found", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserBio", Result.failure(Exception("User not found")))
+                Logger.exit(TAG, "updateUserBio", Result.failure<Unit>(Exception("User not found")))
                 Result.failure(Exception("User not found"))
             }
         } catch (e: Exception) {
@@ -368,7 +368,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateUserBio_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUserBio", Result.failure(e))
+            Logger.exit(TAG, "updateUserBio", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -389,7 +389,7 @@ class SupabaseUserRepository @Inject constructor(
                     "newLocation" to location
                 ))
                 Logger.logPerformance(TAG, "updateUserLocation", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserLocation", Result.success(Unit))
+                Logger.exit(TAG, "updateUserLocation", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 Logger.w(TAG, "User not found for location update")
@@ -397,7 +397,7 @@ class SupabaseUserRepository @Inject constructor(
                     "userId" to userId
                 ))
                 Logger.logPerformance(TAG, "updateUserLocation_not_found", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateUserLocation", Result.failure(Exception("User not found")))
+                Logger.exit(TAG, "updateUserLocation", Result.failure<Unit>(Exception("User not found")))
                 Result.failure(Exception("User not found"))
             }
         } catch (e: Exception) {
@@ -408,7 +408,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateUserLocation_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateUserLocation", Result.failure(e))
+            Logger.exit(TAG, "updateUserLocation", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -423,7 +423,7 @@ class SupabaseUserRepository @Inject constructor(
             Logger.i(TAG, "User deleted successfully")
             Logger.logBusinessEvent(TAG, "User Deleted", mapOf("userId" to userId))
             Logger.logPerformance(TAG, "deleteUser", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "deleteUser", Result.success(Unit))
+            Logger.exit(TAG, "deleteUser", Result.success<Unit>(Unit))
             Result.success(Unit)
         } catch (e: Exception) {
             Logger.e(TAG, "Error deleting user", e)
@@ -433,7 +433,7 @@ class SupabaseUserRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "deleteUser_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "deleteUser", Result.failure(e))
+            Logger.exit(TAG, "deleteUser", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }

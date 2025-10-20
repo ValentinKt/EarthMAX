@@ -35,26 +35,24 @@ class ApiValidator @Inject constructor() {
      */
     fun validateCreateUserRequest(request: CreateUserRequest): ValidationResult {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "validateCreateUserRequest", mapOf(
+        Logger.enter(TAG, "validateCreateUserRequest", 
             "email" to Logger.maskSensitiveData(request.email),
-            "displayName" to request.displayName,
-            "hasPhone" to (request.phone != null).toString(),
-            "hasBio" to (request.bio != null).toString()
-        ))
+            "displayName" to Logger.maskSensitiveData(request.displayName)
+        )
         
         val errors = mutableListOf<String>()
         
         // Email validation
         if (request.email.isBlank()) {
             errors.add("Email is required")
-            Logger.error(TAG, "User validation failed - email required", mapOf(
+            Logger.logError(TAG, "User validation failed - email required", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "email",
                 "errorMessage" to "Email is required"
             ))
         } else if (!EMAIL_PATTERN.matcher(request.email).matches()) {
             errors.add("Invalid email format")
-            Logger.error(TAG, "User validation failed - invalid email format", mapOf(
+            Logger.logError(TAG, "User validation failed - invalid email format", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "email",
                 "errorMessage" to "Invalid email format",
@@ -65,14 +63,14 @@ class ApiValidator @Inject constructor() {
         // Display name validation
         if (request.displayName.isBlank()) {
             errors.add("Display name is required")
-            Logger.error(TAG, "User validation failed - display name required", mapOf(
+            Logger.logError(TAG, "User validation failed - display name required", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "displayName",
                 "errorMessage" to "Display name is required"
             ))
         } else if (request.displayName.length < 2) {
             errors.add("Display name must be at least 2 characters")
-            Logger.error(TAG, "User validation failed - display name too short", mapOf(
+            Logger.logError(TAG, "User validation failed - display name too short", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "displayName",
                 "errorMessage" to "Display name must be at least 2 characters",
@@ -80,7 +78,7 @@ class ApiValidator @Inject constructor() {
             ))
         } else if (request.displayName.length > 50) {
             errors.add("Display name must not exceed 50 characters")
-            Logger.error(TAG, "User validation failed - display name too long", mapOf(
+            Logger.logError(TAG, "User validation failed - display name too long", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "displayName",
                 "errorMessage" to "Display name must not exceed 50 characters",
@@ -92,7 +90,7 @@ class ApiValidator @Inject constructor() {
         request.phone?.let { phone ->
             if (phone.isNotBlank() && !PHONE_PATTERN.matcher(phone).matches()) {
                 errors.add("Invalid phone number format")
-                Logger.error(TAG, "User validation failed - invalid phone format", mapOf(
+                Logger.logError(TAG, "User validation failed - invalid phone format", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "phone",
                     "errorMessage" to "Invalid phone number format",
@@ -105,7 +103,7 @@ class ApiValidator @Inject constructor() {
         request.bio?.let { bio ->
             if (bio.length > 500) {
                 errors.add("Bio must not exceed 500 characters")
-                Logger.error(TAG, "User validation failed - bio too long", mapOf(
+                Logger.logError(TAG, "User validation failed - bio too long", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "bio",
                     "errorMessage" to "Bio must not exceed 500 characters",
@@ -117,25 +115,25 @@ class ApiValidator @Inject constructor() {
         val result = ValidationResult(errors.isEmpty(), errors)
         val duration = System.currentTimeMillis() - startTime
         
-        Logger.performance(TAG, "validateCreateUserRequest", duration, mapOf(
+        Logger.logPerformance(TAG, "validateCreateUserRequest", duration, mapOf(
             "email" to Logger.maskSensitiveData(request.email),
+            "displayName" to Logger.maskSensitiveData(request.displayName),
             "isValid" to result.isValid.toString(),
             "errorCount" to errors.size.toString()
         ))
         
-        if (result.isValid) {
-            Logger.business(TAG, "user_validation_success", mapOf(
-                "email" to Logger.maskSensitiveData(request.email),
-                "validationType" to "create_user"
-            ))
-        } else {
-            Logger.business(TAG, "user_validation_failed", mapOf(
-                "email" to Logger.maskSensitiveData(request.email),
-                "validationType" to "create_user",
-                "errorCount" to errors.size.toString(),
-                "errors" to errors.joinToString(", ")
-            ))
-        }
+        Logger.logBusinessEvent(TAG, "user_validation_success", mapOf(
+            "email" to Logger.maskSensitiveData(request.email),
+            "displayName" to Logger.maskSensitiveData(request.displayName)
+        ))
+        
+        Logger.logBusinessEvent(TAG, "user_validation_failed", mapOf(
+            "email" to Logger.maskSensitiveData(request.email),
+            "displayName" to Logger.maskSensitiveData(request.displayName),
+            "validationType" to "create_user",
+            "errorCount" to errors.size.toString(),
+            "errors" to errors.joinToString(", ")
+        ))
         
         Logger.exit(TAG, "validateCreateUserRequest", mapOf(
             "email" to Logger.maskSensitiveData(request.email),
@@ -151,11 +149,11 @@ class ApiValidator @Inject constructor() {
      */
     fun validateUpdateUserRequest(request: UpdateUserRequest): ValidationResult {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "validateUpdateUserRequest", mapOf(
-            "hasDisplayName" to (request.displayName != null).toString(),
-            "hasPhone" to (request.phone != null).toString(),
-            "hasBio" to (request.bio != null).toString()
-        ))
+        Logger.enter(TAG, "validateUpdateUserRequest", 
+            "hasDisplayName" to request.displayName?.isNotBlank().toString(),
+            "hasPhone" to request.phone?.isNotBlank().toString(),
+            "hasBio" to request.bio?.isNotBlank().toString()
+        )
         
         val errors = mutableListOf<String>()
         
@@ -163,14 +161,14 @@ class ApiValidator @Inject constructor() {
         request.displayName?.let { displayName ->
             if (displayName.isBlank()) {
                 errors.add("Display name cannot be empty")
-                Logger.error(TAG, "User update validation failed - display name empty", mapOf(
+                Logger.logError(TAG, "User update validation failed - display name empty", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "displayName",
                     "errorMessage" to "Display name cannot be empty"
                 ))
             } else if (displayName.length < 2) {
                 errors.add("Display name must be at least 2 characters")
-                Logger.error(TAG, "User update validation failed - display name too short", mapOf(
+                Logger.logError(TAG, "User update validation failed - display name too short", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "displayName",
                     "errorMessage" to "Display name must be at least 2 characters",
@@ -178,7 +176,7 @@ class ApiValidator @Inject constructor() {
                 ))
             } else if (displayName.length > 50) {
                 errors.add("Display name must not exceed 50 characters")
-                Logger.error(TAG, "User update validation failed - display name too long", mapOf(
+                Logger.logError(TAG, "User update validation failed - display name too long", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "displayName",
                     "errorMessage" to "Display name must not exceed 50 characters",
@@ -191,7 +189,7 @@ class ApiValidator @Inject constructor() {
         request.phone?.let { phone ->
             if (phone.isNotBlank() && !PHONE_PATTERN.matcher(phone).matches()) {
                 errors.add("Invalid phone number format")
-                Logger.error(TAG, "User update validation failed - invalid phone format", mapOf(
+                Logger.logError(TAG, "User update validation failed - invalid phone format", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "phone",
                     "errorMessage" to "Invalid phone number format",
@@ -204,7 +202,7 @@ class ApiValidator @Inject constructor() {
         request.bio?.let { bio ->
             if (bio.length > 500) {
                 errors.add("Bio must not exceed 500 characters")
-                Logger.error(TAG, "User update validation failed - bio too long", mapOf(
+                Logger.logError(TAG, "User update validation failed - bio too long", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "bio",
                     "errorMessage" to "Bio must not exceed 500 characters",
@@ -216,17 +214,17 @@ class ApiValidator @Inject constructor() {
         val result = ValidationResult(errors.isEmpty(), errors)
         val duration = System.currentTimeMillis() - startTime
         
-        Logger.performance(TAG, "validateUpdateUserRequest", duration, mapOf(
+        Logger.logPerformance(TAG, "validateUpdateUserRequest", duration, mapOf(
             "isValid" to result.isValid.toString(),
             "errorCount" to errors.size.toString()
         ))
         
         if (result.isValid) {
-            Logger.business(TAG, "user_validation_success", mapOf(
+            Logger.logBusinessEvent(TAG, "user_validation_success", mapOf(
                 "validationType" to "update_user"
             ))
         } else {
-            Logger.business(TAG, "user_validation_failed", mapOf(
+            Logger.logBusinessEvent(TAG, "user_validation_failed", mapOf(
                 "validationType" to "update_user",
                 "errorCount" to errors.size.toString(),
                 "errors" to errors.joinToString(", ")
@@ -246,27 +244,24 @@ class ApiValidator @Inject constructor() {
      */
     fun validateCreateEventRequest(request: CreateEventRequest): ValidationResult {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "validateCreateEventRequest", mapOf(
-            "title" to request.title,
-            "category" to request.category,
-            "location" to request.location,
-            "hasCoordinates" to (request.latitude != null && request.longitude != null).toString(),
-            "hasMaxParticipants" to (request.maxParticipants != null).toString()
-        ))
+        Logger.enter(TAG, "validateCreateEventRequest", 
+            "title" to Logger.maskSensitiveData(request.title),
+            "category" to request.category
+        )
         
         val errors = mutableListOf<String>()
         
         // Title validation
         if (request.title.isBlank()) {
             errors.add("Event title is required")
-            Logger.error(TAG, "Event validation failed - title required", mapOf(
+            Logger.logError(TAG, "Event validation failed - title required", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "title",
                 "errorMessage" to "Event title is required"
             ))
         } else if (request.title.length < 3) {
             errors.add("Event title must be at least 3 characters")
-            Logger.error(TAG, "Event validation failed - title too short", mapOf(
+            Logger.logError(TAG, "Event validation failed - title too short", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "title",
                 "errorMessage" to "Event title must be at least 3 characters",
@@ -274,7 +269,7 @@ class ApiValidator @Inject constructor() {
             ))
         } else if (request.title.length > 100) {
             errors.add("Event title must not exceed 100 characters")
-            Logger.error(TAG, "Event validation failed - title too long", mapOf(
+            Logger.logError(TAG, "Event validation failed - title too long", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "title",
                 "errorMessage" to "Event title must not exceed 100 characters",
@@ -285,14 +280,14 @@ class ApiValidator @Inject constructor() {
         // Description validation
         if (request.description.isBlank()) {
             errors.add("Event description is required")
-            Logger.error(TAG, "Event validation failed - description required", mapOf(
+            Logger.logError(TAG, "Event validation failed - description required", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "description",
                 "errorMessage" to "Event description is required"
             ))
         } else if (request.description.length < 10) {
             errors.add("Event description must be at least 10 characters")
-            Logger.error(TAG, "Event validation failed - description too short", mapOf(
+            Logger.logError(TAG, "Event validation failed - description too short", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "description",
                 "errorMessage" to "Event description must be at least 10 characters",
@@ -300,7 +295,7 @@ class ApiValidator @Inject constructor() {
             ))
         } else if (request.description.length > 1000) {
             errors.add("Event description must not exceed 1000 characters")
-            Logger.error(TAG, "Event validation failed - description too long", mapOf(
+            Logger.logError(TAG, "Event validation failed - description too long", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "description",
                 "errorMessage" to "Event description must not exceed 1000 characters",
@@ -311,7 +306,7 @@ class ApiValidator @Inject constructor() {
         // Category validation
         if (request.category.isBlank()) {
             errors.add("Event category is required")
-            Logger.error(TAG, "Event validation failed - category required", mapOf(
+            Logger.logError(TAG, "Event validation failed - category required", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "category",
                 "errorMessage" to "Event category is required"
@@ -321,7 +316,7 @@ class ApiValidator @Inject constructor() {
         // Location validation
         if (request.location.isBlank()) {
             errors.add("Event location is required")
-            Logger.error(TAG, "Event validation failed - location required", mapOf(
+            Logger.logError(TAG, "Event validation failed - location required", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "location",
                 "errorMessage" to "Event location is required"
@@ -332,7 +327,7 @@ class ApiValidator @Inject constructor() {
         request.latitude?.let { latitude ->
             if (latitude < -90 || latitude > 90) {
                 errors.add("Invalid latitude value")
-                Logger.error(TAG, "Event validation failed - invalid latitude", mapOf(
+                Logger.logError(TAG, "Event validation failed - invalid latitude", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "latitude",
                     "errorMessage" to "Invalid latitude value",
@@ -344,7 +339,7 @@ class ApiValidator @Inject constructor() {
         request.longitude?.let { longitude ->
             if (longitude < -180 || longitude > 180) {
                 errors.add("Invalid longitude value")
-                Logger.error(TAG, "Event validation failed - invalid longitude", mapOf(
+                Logger.logError(TAG, "Event validation failed - invalid longitude", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "longitude",
                     "errorMessage" to "Invalid longitude value",
@@ -357,7 +352,7 @@ class ApiValidator @Inject constructor() {
         request.maxParticipants?.let { maxParticipants ->
             if (maxParticipants <= 0) {
                 errors.add("Maximum participants must be greater than 0")
-                Logger.error(TAG, "Event validation failed - invalid max participants", mapOf(
+                Logger.logError(TAG, "Event validation failed - invalid max participants", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "maxParticipants",
                     "errorMessage" to "Maximum participants must be greater than 0",
@@ -365,7 +360,7 @@ class ApiValidator @Inject constructor() {
                 ))
             } else if (maxParticipants > 10000) {
                 errors.add("Maximum participants cannot exceed 10,000")
-                Logger.error(TAG, "Event validation failed - max participants too high", mapOf(
+                Logger.logError(TAG, "Event validation failed - max participants too high", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "maxParticipants",
                     "errorMessage" to "Maximum participants cannot exceed 10,000",
@@ -377,7 +372,7 @@ class ApiValidator @Inject constructor() {
         val result = ValidationResult(errors.isEmpty(), errors)
         val duration = System.currentTimeMillis() - startTime
         
-        Logger.performance(TAG, "validateCreateEventRequest", duration, mapOf(
+        Logger.logPerformance(TAG, "validateCreateEventRequest", duration, mapOf(
             "title" to request.title,
             "category" to request.category,
             "isValid" to result.isValid.toString(),
@@ -385,13 +380,13 @@ class ApiValidator @Inject constructor() {
         ))
         
         if (result.isValid) {
-            Logger.business(TAG, "event_validation_success", mapOf(
+            Logger.logBusinessEvent(TAG, "event_validation_success", mapOf(
                 "title" to request.title,
                 "category" to request.category,
                 "validationType" to "create_event"
             ))
         } else {
-            Logger.business(TAG, "event_validation_failed", mapOf(
+            Logger.logBusinessEvent(TAG, "event_validation_failed", mapOf(
                 "title" to request.title,
                 "category" to request.category,
                 "validationType" to "create_event",
@@ -415,13 +410,11 @@ class ApiValidator @Inject constructor() {
      */
     fun validateUpdateEventRequest(request: UpdateEventRequest): ValidationResult {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "validateUpdateEventRequest", mapOf(
-            "hasTitle" to (request.title != null).toString(),
-            "hasDescription" to (request.description != null).toString(),
-            "hasLocation" to (request.location != null).toString(),
-            "hasCoordinates" to (request.latitude != null && request.longitude != null).toString(),
-            "hasMaxParticipants" to (request.maxParticipants != null).toString()
-        ))
+        Logger.enter(TAG, "validateUpdateEventRequest", 
+            "hasTitle" to request.title?.isNotBlank().toString(),
+            "hasDescription" to request.description?.isNotBlank().toString(),
+            "hasLocation" to request.location?.isNotBlank().toString()
+        )
         
         val errors = mutableListOf<String>()
         
@@ -429,14 +422,14 @@ class ApiValidator @Inject constructor() {
         request.title?.let { title ->
             if (title.isBlank()) {
                 errors.add("Event title cannot be empty")
-                Logger.error(TAG, "Event update validation failed - title empty", mapOf(
+                Logger.logError(TAG, "Event update validation failed - title empty", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "title",
                     "errorMessage" to "Event title cannot be empty"
                 ))
             } else if (title.length < 3) {
                 errors.add("Event title must be at least 3 characters")
-                Logger.error(TAG, "Event update validation failed - title too short", mapOf(
+                Logger.logError(TAG, "Event update validation failed - title too short", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "title",
                     "errorMessage" to "Event title must be at least 3 characters",
@@ -444,7 +437,7 @@ class ApiValidator @Inject constructor() {
                 ))
             } else if (title.length > 100) {
                 errors.add("Event title must not exceed 100 characters")
-                Logger.error(TAG, "Event update validation failed - title too long", mapOf(
+                Logger.logError(TAG, "Event update validation failed - title too long", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "title",
                     "errorMessage" to "Event title must not exceed 100 characters",
@@ -457,14 +450,14 @@ class ApiValidator @Inject constructor() {
         request.description?.let { description ->
             if (description.isBlank()) {
                 errors.add("Event description cannot be empty")
-                Logger.error(TAG, "Event update validation failed - description empty", mapOf(
+                Logger.logError(TAG, "Event update validation failed - description empty", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "description",
                     "errorMessage" to "Event description cannot be empty"
                 ))
             } else if (description.length < 10) {
                 errors.add("Event description must be at least 10 characters")
-                Logger.error(TAG, "Event update validation failed - description too short", mapOf(
+                Logger.logError(TAG, "Event update validation failed - description too short", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "description",
                     "errorMessage" to "Event description must be at least 10 characters",
@@ -472,7 +465,7 @@ class ApiValidator @Inject constructor() {
                 ))
             } else if (description.length > 1000) {
                 errors.add("Event description must not exceed 1000 characters")
-                Logger.error(TAG, "Event update validation failed - description too long", mapOf(
+                Logger.logError(TAG, "Event update validation failed - description too long", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "description",
                     "errorMessage" to "Event description must not exceed 1000 characters",
@@ -485,7 +478,7 @@ class ApiValidator @Inject constructor() {
         request.location?.let { location ->
             if (location.isBlank()) {
                 errors.add("Event location cannot be empty")
-                Logger.error(TAG, "Event update validation failed - location empty", mapOf(
+                Logger.logError(TAG, "Event update validation failed - location empty", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "location",
                     "errorMessage" to "Event location cannot be empty"
@@ -497,7 +490,7 @@ class ApiValidator @Inject constructor() {
         request.latitude?.let { latitude ->
             if (latitude < -90 || latitude > 90) {
                 errors.add("Invalid latitude value")
-                Logger.error(TAG, "Event update validation failed - invalid latitude", mapOf(
+                Logger.logError(TAG, "Event update validation failed - invalid latitude", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "latitude",
                     "errorMessage" to "Invalid latitude value",
@@ -509,7 +502,7 @@ class ApiValidator @Inject constructor() {
         request.longitude?.let { longitude ->
             if (longitude < -180 || longitude > 180) {
                 errors.add("Invalid longitude value")
-                Logger.error(TAG, "Event update validation failed - invalid longitude", mapOf(
+                Logger.logError(TAG, "Event update validation failed - invalid longitude", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "longitude",
                     "errorMessage" to "Invalid longitude value",
@@ -522,7 +515,7 @@ class ApiValidator @Inject constructor() {
         request.maxParticipants?.let { maxParticipants ->
             if (maxParticipants <= 0) {
                 errors.add("Maximum participants must be greater than 0")
-                Logger.error(TAG, "Event update validation failed - invalid max participants", mapOf(
+                Logger.logError(TAG, "Event update validation failed - invalid max participants", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "maxParticipants",
                     "errorMessage" to "Maximum participants must be greater than 0",
@@ -530,7 +523,7 @@ class ApiValidator @Inject constructor() {
                 ))
             } else if (maxParticipants > 10000) {
                 errors.add("Maximum participants cannot exceed 10,000")
-                Logger.error(TAG, "Event update validation failed - max participants too high", mapOf(
+                Logger.logError(TAG, "Event update validation failed - max participants too high", null, mapOf(
                     "errorType" to "VALIDATION_ERROR",
                     "field" to "maxParticipants",
                     "errorMessage" to "Maximum participants cannot exceed 10,000",
@@ -542,17 +535,17 @@ class ApiValidator @Inject constructor() {
         val result = ValidationResult(errors.isEmpty(), errors)
         val duration = System.currentTimeMillis() - startTime
         
-        Logger.performance(TAG, "validateUpdateEventRequest", duration, mapOf(
+        Logger.logPerformance(TAG, "validateUpdateEventRequest", duration, mapOf(
             "isValid" to result.isValid.toString(),
             "errorCount" to errors.size.toString()
         ))
         
         if (result.isValid) {
-            Logger.business(TAG, "event_validation_success", mapOf(
+            Logger.logBusinessEvent(TAG, "event_validation_success", mapOf(
                 "validationType" to "update_event"
             ))
         } else {
-            Logger.business(TAG, "event_validation_failed", mapOf(
+            Logger.logBusinessEvent(TAG, "event_validation_failed", mapOf(
                 "validationType" to "update_event",
                 "errorCount" to errors.size.toString(),
                 "errors" to errors.joinToString(", ")
@@ -572,23 +565,22 @@ class ApiValidator @Inject constructor() {
      */
     fun validateSearchQuery(query: String): ValidationResult {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "validateSearchQuery", mapOf(
-            "queryLength" to query.length.toString(),
-            "isEmpty" to query.isBlank().toString()
-        ))
+        Logger.enter(TAG, "validateSearchQuery", 
+            "queryLength" to query.length.toString()
+        )
         
         val errors = mutableListOf<String>()
         
         if (query.isBlank()) {
             errors.add("Search query cannot be empty")
-            Logger.error(TAG, "Search validation failed - query empty", mapOf(
+            Logger.logError(TAG, "Search validation failed - query empty", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "query",
                 "errorMessage" to "Search query cannot be empty"
             ))
         } else if (query.length < 2) {
             errors.add("Search query must be at least 2 characters")
-            Logger.error(TAG, "Search validation failed - query too short", mapOf(
+            Logger.logError(TAG, "Search validation failed - query too short", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "query",
                 "errorMessage" to "Search query must be at least 2 characters",
@@ -596,7 +588,7 @@ class ApiValidator @Inject constructor() {
             ))
         } else if (query.length > 100) {
             errors.add("Search query must not exceed 100 characters")
-            Logger.error(TAG, "Search validation failed - query too long", mapOf(
+            Logger.logError(TAG, "Search validation failed - query too long", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "query",
                 "errorMessage" to "Search query must not exceed 100 characters",
@@ -607,18 +599,18 @@ class ApiValidator @Inject constructor() {
         val result = ValidationResult(errors.isEmpty(), errors)
         val duration = System.currentTimeMillis() - startTime
         
-        Logger.performance(TAG, "validateSearchQuery", duration, mapOf(
+        Logger.logPerformance(TAG, "validateSearchQuery", duration, mapOf(
             "queryLength" to query.length.toString(),
             "isValid" to result.isValid.toString(),
             "errorCount" to errors.size.toString()
         ))
         
         if (result.isValid) {
-            Logger.business(TAG, "search_validation_success", mapOf(
+            Logger.logBusinessEvent(TAG, "search_validation_success", mapOf(
                 "queryLength" to query.length.toString()
             ))
         } else {
-            Logger.business(TAG, "search_validation_failed", mapOf(
+            Logger.logBusinessEvent(TAG, "search_validation_failed", mapOf(
                 "queryLength" to query.length.toString(),
                 "errorCount" to errors.size.toString(),
                 "errors" to errors.joinToString(", ")
@@ -639,16 +631,16 @@ class ApiValidator @Inject constructor() {
      */
     fun validatePaginationParams(page: Int, limit: Int): ValidationResult {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "validatePaginationParams", mapOf(
+        Logger.enter(TAG, "validatePaginationParams", 
             "page" to page.toString(),
             "limit" to limit.toString()
-        ))
+        )
         
         val errors = mutableListOf<String>()
         
         if (page < 1) {
             errors.add("Page number must be greater than 0")
-            Logger.error(TAG, "Pagination validation failed - invalid page", mapOf(
+            Logger.logError(TAG, "Pagination validation failed - invalid page", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "page",
                 "errorMessage" to "Page number must be greater than 0",
@@ -658,7 +650,7 @@ class ApiValidator @Inject constructor() {
         
         if (limit < 1) {
             errors.add("Limit must be greater than 0")
-            Logger.error(TAG, "Pagination validation failed - invalid limit", mapOf(
+            Logger.logError(TAG, "Pagination validation failed - invalid limit", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "limit",
                 "errorMessage" to "Limit must be greater than 0",
@@ -666,7 +658,7 @@ class ApiValidator @Inject constructor() {
             ))
         } else if (limit > 100) {
             errors.add("Limit cannot exceed 100")
-            Logger.error(TAG, "Pagination validation failed - limit too high", mapOf(
+            Logger.logError(TAG, "Pagination validation failed - limit too high", null, mapOf(
                 "errorType" to "VALIDATION_ERROR",
                 "field" to "limit",
                 "errorMessage" to "Limit cannot exceed 100",
@@ -677,7 +669,7 @@ class ApiValidator @Inject constructor() {
         val result = ValidationResult(errors.isEmpty(), errors)
         val duration = System.currentTimeMillis() - startTime
         
-        Logger.performance(TAG, "validatePaginationParams", duration, mapOf(
+        Logger.logPerformance(TAG, "validatePaginationParams", duration, mapOf(
             "page" to page.toString(),
             "limit" to limit.toString(),
             "isValid" to result.isValid.toString(),
@@ -685,12 +677,12 @@ class ApiValidator @Inject constructor() {
         ))
         
         if (result.isValid) {
-            Logger.business(TAG, "pagination_validation_success", mapOf(
+            Logger.logBusinessEvent(TAG, "pagination_validation_success", mapOf(
                 "page" to page.toString(),
                 "limit" to limit.toString()
             ))
         } else {
-            Logger.business(TAG, "pagination_validation_failed", mapOf(
+            Logger.logBusinessEvent(TAG, "pagination_validation_failed", mapOf(
                 "page" to page.toString(),
                 "limit" to limit.toString(),
                 "errorCount" to errors.size.toString(),

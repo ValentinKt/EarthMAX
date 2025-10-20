@@ -26,23 +26,23 @@ class UserApiRepository @Inject constructor(
     
     suspend fun createUser(request: CreateUserRequest): Flow<Result<UserResponse>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "createUser", mapOf(
-            "email" to request.email,
-            "name" to request.name
-        ))
+        Logger.enter(TAG, "createUser", 
+            "displayName" to request.displayName,
+            "bio" to (request.bio ?: "null")
+        )
         
         try {
             // Validate request
             val validation = apiValidator.validateCreateUserRequest(request)
             if (!validation.isValid) {
                 val validationError = validation.getErrorMessage()
-                Logger.error(TAG, "User creation validation failed", mapOf(
-                    "email" to request.email,
+                Logger.logError(TAG, "User creation validation failed", null, mapOf(
+                    "displayName" to request.displayName,
                     "validationError" to validationError,
                     "errorType" to "VALIDATION_ERROR"
                 ))
-                Logger.business(TAG, "user_creation_failed", mapOf(
-                    "email" to request.email,
+                Logger.logBusinessEvent(TAG, "user_creation_failed", mapOf(
+                    "displayName" to request.displayName,
                     "reason" to "validation_error",
                     "validationError" to validationError
                 ))
@@ -54,68 +54,68 @@ class UserApiRepository @Inject constructor(
             if (response.isSuccessful) {
                 response.body()?.let { userResponse ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "createUser", duration, mapOf(
-                        "userId" to userResponse.id,
-                        "email" to request.email,
-                        "success" to true
-                    ))
-                    Logger.business(TAG, "user_created", mapOf(
-                        "userId" to userResponse.id,
-                        "email" to request.email,
-                        "name" to request.name
-                    ))
+                    Logger.logPerformance(TAG, "createUser", duration, mapOf(
+                    "userId" to userResponse.id,
+                    "displayName" to request.displayName,
+                    "success" to "true"
+                ))
+                Logger.logBusinessEvent(TAG, "user_created", mapOf(
+                    "userId" to userResponse.id,
+                    "displayName" to request.displayName,
+                    "bio" to (request.bio ?: "null")
+                ))
                     Logger.exit(TAG, "createUser", mapOf(
                         "userId" to userResponse.id,
-                        "success" to true
+                        "success" to "true"
                     ))
                     emit(Result.success(userResponse))
                 } ?: run {
-                    Logger.error(TAG, "User creation failed - empty response body", mapOf(
-                        "email" to request.email,
-                        "httpCode" to response.code(),
+                    Logger.logError(TAG, "User creation failed - empty response body", null, mapOf(
+                        "displayName" to request.displayName,
+                        "httpCode" to response.code().toString(),
                         "httpMessage" to response.message(),
                         "errorType" to "EMPTY_RESPONSE"
                     ))
-                    Logger.business(TAG, "user_creation_failed", mapOf(
-                        "email" to request.email,
+                    Logger.logBusinessEvent(TAG, "user_creation_failed", mapOf(
+                        "displayName" to request.displayName,
                         "reason" to "empty_response"
                     ))
                     emit(Result.failure(Exception("Empty response body")))
                 }
             } else {
-                Logger.error(TAG, "User creation failed - HTTP error", mapOf(
-                    "email" to request.email,
-                    "httpCode" to response.code(),
+                Logger.logError(TAG, "User creation failed - HTTP error", null, mapOf(
+                    "displayName" to request.displayName,
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "user_creation_failed", mapOf(
-                    "email" to request.email,
+                Logger.logBusinessEvent(TAG, "user_creation_failed", mapOf(
+                    "displayName" to request.displayName,
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "createUser", duration, mapOf(
-                "email" to request.email,
-                "success" to false
+            Logger.logPerformance(TAG, "createUser", duration, mapOf(
+                "displayName" to request.displayName,
+                "success" to "false"
             ))
-            Logger.error(TAG, "User creation failed - exception", mapOf(
-                "email" to request.email,
-                "errorMessage" to e.message,
+            Logger.logError(TAG, "User creation failed - exception", e, mapOf(
+                "displayName" to request.displayName,
+                "errorMessage" to (e.message ?: "null"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "user_creation_failed", mapOf(
-                "email" to request.email,
+            ))
+            Logger.logBusinessEvent(TAG, "user_creation_failed", mapOf(
+                "displayName" to request.displayName,
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "null")
             ))
             Logger.exit(TAG, "createUser", mapOf(
-                "email" to request.email,
-                "success" to false,
-                "error" to e.message
+                "displayName" to request.displayName,
+                "success" to "false",
+                "error" to (e.message ?: "null")
             ))
             emit(Result.failure(e))
         }
@@ -123,75 +123,75 @@ class UserApiRepository @Inject constructor(
     
     suspend fun getUserById(userId: String): Flow<Result<UserResponse>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "getUserById", mapOf("userId" to userId))
+        Logger.enter(TAG, "getUserById", "userId" to userId)
         
         try {
             val response = userApiService.getUserById(userId)
             if (response.isSuccessful) {
                 response.body()?.let { userResponse ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "getUserById", duration, mapOf(
+                    Logger.logPerformance(TAG, "getUserById", duration, mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
-                        "success" to true
+                        "displayName" to userResponse.displayName,
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "user_retrieved", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_retrieved", mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
+                        "displayName" to userResponse.displayName,
                         "source" to "api"
                     ))
                     Logger.exit(TAG, "getUserById", mapOf(
                         "userId" to userId,
-                        "success" to true
+                        "success" to "true"
                     ))
                     emit(Result.success(userResponse))
                 } ?: run {
-                    Logger.error(TAG, "User retrieval failed - user not found", mapOf(
+                    Logger.logError(TAG, "User retrieval failed - user not found", null, mapOf(
                         "userId" to userId,
-                        "httpCode" to response.code(),
+                        "httpCode" to response.code().toString(),
                         "httpMessage" to response.message(),
                         "errorType" to "USER_NOT_FOUND"
                     ))
-                    Logger.business(TAG, "user_retrieval_failed", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_retrieval_failed", mapOf(
                         "userId" to userId,
                         "reason" to "user_not_found"
                     ))
                     emit(Result.failure(Exception("User not found")))
                 }
             } else {
-                Logger.error(TAG, "User retrieval failed - HTTP error", mapOf(
+                Logger.logError(TAG, "User retrieval failed - HTTP error", null, mapOf(
                     "userId" to userId,
-                    "httpCode" to response.code(),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "user_retrieval_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_retrieval_failed", mapOf(
                     "userId" to userId,
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "getUserById", duration, mapOf(
+            Logger.logPerformance(TAG, "getUserById", duration, mapOf(
                 "userId" to userId,
-                "success" to false
+                "success" to "false"
             ))
-            Logger.error(TAG, "User retrieval failed - exception", mapOf(
+            Logger.logError(TAG, "User retrieval failed - exception", e, mapOf(
                 "userId" to userId,
-                "errorMessage" to e.message,
+                "errorMessage" to (e.message ?: "Unknown error"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "user_retrieval_failed", mapOf(
+            ))
+            Logger.logBusinessEvent(TAG, "user_retrieval_failed", mapOf(
                 "userId" to userId,
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.exit(TAG, "getUserById", mapOf(
                 "userId" to userId,
-                "success" to false,
-                "error" to e.message
+                "success" to "false",
+                "error" to (e.message ?: "Unknown error")
             ))
             emit(Result.failure(e))
         }
@@ -199,23 +199,23 @@ class UserApiRepository @Inject constructor(
     
     suspend fun updateUser(userId: String, request: UpdateUserRequest): Flow<Result<UserResponse>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "updateUser", mapOf(
+        Logger.enter(TAG, "updateUser", 
             "userId" to userId,
-            "email" to request.email,
-            "name" to request.name
-        ))
+            "displayName" to request.displayName,
+            "bio" to (request.bio ?: "null")
+        )
         
         try {
             // Validate request
             val validation = apiValidator.validateUpdateUserRequest(request)
             if (!validation.isValid) {
                 val validationError = validation.getErrorMessage()
-                Logger.error(TAG, "User update validation failed", mapOf(
+                Logger.logError(TAG, "User update validation failed", null, mapOf(
                     "userId" to userId,
                     "validationError" to validationError,
                     "errorType" to "VALIDATION_ERROR"
                 ))
-                Logger.business(TAG, "user_update_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_update_failed", mapOf(
                     "userId" to userId,
                     "reason" to "validation_error",
                     "validationError" to validationError
@@ -228,68 +228,68 @@ class UserApiRepository @Inject constructor(
             if (response.isSuccessful) {
                 response.body()?.let { userResponse ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "updateUser", duration, mapOf(
+                    Logger.logPerformance(TAG, "updateUser", duration, mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
-                        "success" to true
+                        "displayName" to userResponse.displayName,
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "user_updated", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_updated", mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
-                        "name" to userResponse.name
+                        "displayName" to userResponse.displayName,
+                        "displayName" to userResponse.displayName
                     ))
                     Logger.exit(TAG, "updateUser", mapOf(
                         "userId" to userId,
-                        "success" to true
+                        "success" to "true"
                     ))
                     emit(Result.success(userResponse))
                 } ?: run {
-                    Logger.error(TAG, "User update failed - empty response body", mapOf(
+                    Logger.logError(TAG, "User update failed - empty response body", null, mapOf(
                         "userId" to userId,
-                        "httpCode" to response.code(),
+                        "httpCode" to response.code().toString(),
                         "httpMessage" to response.message(),
                         "errorType" to "EMPTY_RESPONSE"
                     ))
-                    Logger.business(TAG, "user_update_failed", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_update_failed", mapOf(
                         "userId" to userId,
                         "reason" to "empty_response"
                     ))
                     emit(Result.failure(Exception("Empty response body")))
                 }
             } else {
-                Logger.error(TAG, "User update failed - HTTP error", mapOf(
+                Logger.logError(TAG, "User update failed - HTTP error", null, mapOf(
                     "userId" to userId,
-                    "httpCode" to response.code(),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "user_update_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_update_failed", mapOf(
                     "userId" to userId,
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "updateUser", duration, mapOf(
+            Logger.logPerformance(TAG, "updateUser", duration, mapOf(
                 "userId" to userId,
-                "success" to false
+                "success" to "false"
             ))
-            Logger.error(TAG, "User update failed - exception", mapOf(
+            Logger.logError(TAG, "User update failed - exception", e, mapOf(
                 "userId" to userId,
-                "errorMessage" to e.message,
+                "errorMessage" to (e.message ?: "Unknown error"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "user_update_failed", mapOf(
+            ))
+            Logger.logBusinessEvent(TAG, "user_update_failed", mapOf(
                 "userId" to userId,
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.exit(TAG, "updateUser", mapOf(
                 "userId" to userId,
-                "success" to false,
-                "error" to e.message
+                "success" to "false",
+                "error" to (e.message ?: "Unknown error")
             ))
             emit(Result.failure(e))
         }
@@ -297,58 +297,58 @@ class UserApiRepository @Inject constructor(
     
     suspend fun deleteUser(userId: String): Flow<Result<Unit>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "deleteUser", mapOf("userId" to userId))
+        Logger.enter(TAG, "deleteUser", "userId" to userId)
         
         try {
             val response = userApiService.deleteUser(userId)
             if (response.isSuccessful) {
                 val duration = System.currentTimeMillis() - startTime
-                Logger.performance(TAG, "deleteUser", duration, mapOf(
+                Logger.logPerformance(TAG, "deleteUser", duration, mapOf(
                     "userId" to userId,
-                    "success" to true
+                    "success" to "true"
                 ))
-                Logger.business(TAG, "user_deleted", mapOf(
+                Logger.logBusinessEvent(TAG, "user_deleted", mapOf(
                     "userId" to userId
                 ))
                 Logger.exit(TAG, "deleteUser", mapOf(
                     "userId" to userId,
-                    "success" to true
+                    "success" to "true"
                 ))
                 emit(Result.success(Unit))
             } else {
-                Logger.error(TAG, "User deletion failed - HTTP error", mapOf(
+                Logger.logError(TAG, "User deletion failed - HTTP error", null, mapOf(
                     "userId" to userId,
-                    "httpCode" to response.code(),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "user_deletion_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_deletion_failed", mapOf(
                     "userId" to userId,
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "deleteUser", duration, mapOf(
+            Logger.logPerformance(TAG, "deleteUser", duration, mapOf(
                 "userId" to userId,
-                "success" to false
+                "success" to "false"
             ))
-            Logger.error(TAG, "User deletion failed - exception", mapOf(
+            Logger.logError(TAG, "User deletion failed - exception", e, mapOf(
                 "userId" to userId,
-                "errorMessage" to e.message,
+                "errorMessage" to (e.message ?: "Unknown error"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "user_deletion_failed", mapOf(
+            ))
+            Logger.logBusinessEvent(TAG, "user_deletion_failed", mapOf(
                 "userId" to userId,
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.exit(TAG, "deleteUser", mapOf(
                 "userId" to userId,
-                "success" to false,
-                "error" to e.message
+                "success" to "false",
+                "error" to (e.message ?: "Unknown error")
             ))
             emit(Result.failure(e))
         }
@@ -356,94 +356,94 @@ class UserApiRepository @Inject constructor(
     
     suspend fun getAllUsers(page: Int = 1, limit: Int = 20): Flow<Result<List<UserResponse>>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "getAllUsers", mapOf(
-            "page" to page,
-            "limit" to limit
-        ))
+        Logger.enter(TAG, "getAllUsers", 
+            "page" to page.toString(),
+            "limit" to limit.toString()
+        )
         
         try {
             val response = userApiService.getUsers(page, limit)
             if (response.isSuccessful) {
                 response.body()?.let { users ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "getAllUsers", duration, mapOf(
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to users.size,
-                        "success" to true
+                    Logger.logPerformance(TAG, "getAllUsers", duration, mapOf(
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to users.size.toString(),
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "users_retrieved", mapOf(
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to users.size,
+                    Logger.logBusinessEvent(TAG, "users_retrieved", mapOf(
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to users.size.toString(),
                         "source" to "api"
                     ))
                     Logger.exit(TAG, "getAllUsers", mapOf(
-                        "page" to page,
-                        "userCount" to users.size,
-                        "success" to true
+                        "page" to page.toString(),
+                        "userCount" to users.size.toString(),
+                        "success" to "true"
                     ))
                     emit(Result.success(users))
                 } ?: run {
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "getAllUsers", duration, mapOf(
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to 0,
-                        "success" to true
+                    Logger.logPerformance(TAG, "getAllUsers", duration, mapOf(
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to "0",
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "users_retrieved", mapOf(
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to 0,
+                    Logger.logBusinessEvent(TAG, "users_retrieved", mapOf(
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to "0",
                         "source" to "api"
                     ))
                     Logger.exit(TAG, "getAllUsers", mapOf(
-                        "page" to page,
-                        "userCount" to 0,
-                        "success" to true
+                        "page" to page.toString(),
+                        "userCount" to "0",
+                        "success" to "true"
                     ))
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.error(TAG, "User retrieval failed - HTTP error", mapOf(
-                    "page" to page,
-                    "limit" to limit,
-                    "httpCode" to response.code(),
+                Logger.logError(TAG, "User retrieval failed - HTTP error", null, mapOf(
+                    "page" to page.toString(),
+                    "limit" to limit.toString(),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "users_retrieval_failed", mapOf(
-                    "page" to page,
-                    "limit" to limit,
+                Logger.logBusinessEvent(TAG, "users_retrieval_failed", mapOf(
+                    "page" to page.toString(),
+                    "limit" to limit.toString(),
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "getAllUsers", duration, mapOf(
-                "page" to page,
-                "limit" to limit,
-                "success" to false
+            Logger.logPerformance(TAG, "getAllUsers", duration, mapOf(
+                "page" to page.toString(),
+                "limit" to limit.toString(),
+                "success" to "false"
             ))
-            Logger.error(TAG, "User retrieval failed - exception", mapOf(
-                "page" to page,
-                "limit" to limit,
-                "errorMessage" to e.message,
+            Logger.logError(TAG, "User retrieval failed - exception", e, mapOf(
+                "page" to page.toString(),
+                "limit" to limit.toString(),
+                "errorMessage" to (e.message ?: "Unknown error"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "users_retrieval_failed", mapOf(
-                "page" to page,
-                "limit" to limit,
+            ))
+            Logger.logBusinessEvent(TAG, "users_retrieval_failed", mapOf(
+                "page" to page.toString(),
+                "limit" to limit.toString(),
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.exit(TAG, "getAllUsers", mapOf(
-                "page" to page,
-                "success" to false,
-                "error" to e.message
+                "page" to page.toString(),
+                "success" to "false",
+                "error" to (e.message ?: "Unknown error")
             ))
             emit(Result.failure(e))
         }
@@ -457,121 +457,121 @@ class UserApiRepository @Inject constructor(
         limit: Int = 20
     ): Flow<Result<List<UserResponse>>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "getUsersByLocation", mapOf(
-            "latitude" to latitude,
-            "longitude" to longitude,
-            "radius" to radius,
-            "page" to page,
-            "limit" to limit
-        ))
+        Logger.enter(TAG, "getUsersByLocation", 
+            "latitude" to latitude.toString(),
+            "longitude" to longitude.toString(),
+            "radius" to radius.toString(),
+            "page" to page.toString(),
+            "limit" to limit.toString()
+        )
         
         try {
             val response = userApiService.getUsersByLocation(latitude, longitude, radius, page, limit)
             if (response.isSuccessful) {
                 response.body()?.let { users ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "getUsersByLocation", duration, mapOf(
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "radius" to radius,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to users.size,
-                        "success" to true
+                    Logger.logPerformance(TAG, "getUsersByLocation", duration, mapOf(
+                        "latitude" to latitude.toString(),
+                        "longitude" to longitude.toString(),
+                        "radius" to radius.toString(),
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to users.size.toString(),
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "users_retrieved_by_location", mapOf(
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "radius" to radius,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to users.size
+                    Logger.logBusinessEvent(TAG, "users_retrieved_by_location", mapOf(
+                        "latitude" to latitude.toString(),
+                        "longitude" to longitude.toString(),
+                        "radius" to radius.toString(),
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to users.size.toString()
                     ))
                     Logger.exit(TAG, "getUsersByLocation", mapOf(
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "userCount" to users.size,
-                        "success" to true
+                        "latitude" to latitude.toString(),
+                        "longitude" to longitude.toString(),
+                        "userCount" to users.size.toString(),
+                        "success" to "true"
                     ))
                     emit(Result.success(users))
                 } ?: run {
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "getUsersByLocation", duration, mapOf(
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "radius" to radius,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to 0,
-                        "success" to true
+                    Logger.logPerformance(TAG, "getUsersByLocation", duration, mapOf(
+                        "latitude" to latitude.toString(),
+                        "longitude" to longitude.toString(),
+                        "radius" to radius.toString(),
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to "0",
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "users_retrieved_by_location", mapOf(
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "radius" to radius,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to 0
+                    Logger.logBusinessEvent(TAG, "users_retrieved_by_location", mapOf(
+                        "latitude" to latitude.toString(),
+                        "longitude" to longitude.toString(),
+                        "radius" to radius.toString(),
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to "0"
                     ))
                     Logger.exit(TAG, "getUsersByLocation", mapOf(
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "userCount" to 0,
-                        "success" to true
+                        "latitude" to latitude.toString(),
+                        "longitude" to longitude.toString(),
+                        "userCount" to "0",
+                        "success" to "true"
                     ))
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.error(TAG, "User location retrieval failed - HTTP error", mapOf(
-                    "latitude" to latitude,
-                    "longitude" to longitude,
-                    "radius" to radius,
-                    "page" to page,
-                    "limit" to limit,
-                    "httpCode" to response.code(),
+                Logger.logError(TAG, "User location retrieval failed - HTTP error", null, mapOf(
+                    "latitude" to latitude.toString(),
+                    "longitude" to longitude.toString(),
+                    "radius" to radius.toString(),
+                    "page" to page.toString(),
+                    "limit" to limit.toString(),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "users_location_retrieval_failed", mapOf(
-                    "latitude" to latitude,
-                    "longitude" to longitude,
-                    "radius" to radius,
+                Logger.logBusinessEvent(TAG, "users_location_retrieval_failed", mapOf(
+                    "latitude" to latitude.toString(),
+                    "longitude" to longitude.toString(),
+                    "radius" to radius.toString(),
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "getUsersByLocation", duration, mapOf(
-                "latitude" to latitude,
-                "longitude" to longitude,
-                "radius" to radius,
-                "page" to page,
-                "limit" to limit,
-                "success" to false
+            Logger.logPerformance(TAG, "getUsersByLocation", duration, mapOf(
+                "latitude" to latitude.toString(),
+                "longitude" to longitude.toString(),
+                "radius" to radius.toString(),
+                "page" to page.toString(),
+                "limit" to limit.toString(),
+                "success" to "false"
             ))
-            Logger.error(TAG, "User location retrieval failed - exception", mapOf(
-                "latitude" to latitude,
-                "longitude" to longitude,
-                "radius" to radius,
-                "page" to page,
-                "limit" to limit,
-                "errorMessage" to e.message,
+            Logger.logError(TAG, "User location retrieval failed - exception", e, mapOf(
+                "latitude" to latitude.toString(),
+                "longitude" to longitude.toString(),
+                "radius" to radius.toString(),
+                "page" to page.toString(),
+                "limit" to limit.toString(),
+                "errorMessage" to (e.message ?: "Unknown error"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "users_location_retrieval_failed", mapOf(
-                "latitude" to latitude,
-                "longitude" to longitude,
-                "radius" to radius,
+            ))
+            Logger.logBusinessEvent(TAG, "users_location_retrieval_failed", mapOf(
+                "latitude" to latitude.toString(),
+                "longitude" to longitude.toString(),
+                "radius" to radius.toString(),
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.exit(TAG, "getUsersByLocation", mapOf(
-                "latitude" to latitude,
-                "longitude" to longitude,
-                "success" to false,
-                "error" to e.message
+                "latitude" to latitude.toString(),
+                "longitude" to longitude.toString(),
+                "success" to "false",
+                "error" to (e.message ?: "Unknown error")
             ))
             emit(Result.failure(e))
         }
@@ -579,23 +579,23 @@ class UserApiRepository @Inject constructor(
     
     suspend fun searchUsers(query: String, page: Int = 1, limit: Int = 20): Flow<Result<List<UserResponse>>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "searchUsers", mapOf(
+        Logger.enter(TAG, "searchUsers", 
             "query" to query,
-            "page" to page,
-            "limit" to limit
-        ))
+            "page" to page.toString(),
+            "limit" to limit.toString()
+        )
         
         try {
             // Validate search query
             val queryValidation = apiValidator.validateSearchQuery(query)
             if (!queryValidation.isValid) {
                 val validationError = queryValidation.getErrorMessage()
-                Logger.error(TAG, "User search validation failed - invalid query", mapOf(
+                Logger.logError(TAG, "User search validation failed - invalid query", null, mapOf(
                     "query" to query,
                     "validationError" to validationError,
                     "errorType" to "VALIDATION_ERROR"
                 ))
-                Logger.business(TAG, "user_search_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_search_failed", mapOf(
                     "query" to query,
                     "reason" to "query_validation_error",
                     "validationError" to validationError
@@ -608,14 +608,14 @@ class UserApiRepository @Inject constructor(
             val paginationValidation = apiValidator.validatePaginationParams(page, limit)
             if (!paginationValidation.isValid) {
                 val validationError = paginationValidation.getErrorMessage()
-                Logger.error(TAG, "User search validation failed - invalid pagination", mapOf(
+                Logger.logError(TAG, "User search validation failed - invalid pagination", null, mapOf(
                     "query" to query,
-                    "page" to page,
-                    "limit" to limit,
+                    "page" to page.toString(),
+                    "limit" to limit.toString(),
                     "validationError" to validationError,
                     "errorType" to "VALIDATION_ERROR"
                 ))
-                Logger.business(TAG, "user_search_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_search_failed", mapOf(
                     "query" to query,
                     "reason" to "pagination_validation_error",
                     "validationError" to validationError
@@ -628,87 +628,87 @@ class UserApiRepository @Inject constructor(
             if (response.isSuccessful) {
                 response.body()?.let { users ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "searchUsers", duration, mapOf(
+                    Logger.logPerformance(TAG, "searchUsers", duration, mapOf(
                         "query" to query,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to users.size,
-                        "success" to true
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to users.size.toString(),
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "user_search_completed", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_search_completed", mapOf(
                         "query" to query,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to users.size
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to users.size.toString()
                     ))
                     Logger.exit(TAG, "searchUsers", mapOf(
                         "query" to query,
-                        "userCount" to users.size,
-                        "success" to true
+                        "userCount" to users.size.toString(),
+                        "success" to "true"
                     ))
                     emit(Result.success(users))
                 } ?: run {
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "searchUsers", duration, mapOf(
+                    Logger.logPerformance(TAG, "searchUsers", duration, mapOf(
                         "query" to query,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to 0,
-                        "success" to true
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to "0",
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "user_search_completed", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_search_completed", mapOf(
                         "query" to query,
-                        "page" to page,
-                        "limit" to limit,
-                        "userCount" to 0
+                        "page" to page.toString(),
+                        "limit" to limit.toString(),
+                        "userCount" to "0"
                     ))
                     Logger.exit(TAG, "searchUsers", mapOf(
                         "query" to query,
-                        "userCount" to 0,
-                        "success" to true
+                        "userCount" to "0",
+                        "success" to "true"
                     ))
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.error(TAG, "User search failed - HTTP error", mapOf(
+                Logger.logError(TAG, "User search failed - HTTP error", null, mapOf(
                     "query" to query,
-                    "page" to page,
-                    "limit" to limit,
-                    "httpCode" to response.code(),
+                    "page" to page.toString(),
+                    "limit" to limit.toString(),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "user_search_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_search_failed", mapOf(
                     "query" to query,
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "searchUsers", duration, mapOf(
+            Logger.logPerformance(TAG, "searchUsers", duration, mapOf(
                 "query" to query,
-                "page" to page,
-                "limit" to limit,
-                "success" to false
+                "page" to page.toString(),
+                "limit" to limit.toString(),
+                "success" to "false"
             ))
-            Logger.error(TAG, "User search failed - exception", mapOf(
+            Logger.logError(TAG, "User search failed - exception", e, mapOf(
                 "query" to query,
-                "page" to page,
-                "limit" to limit,
-                "errorMessage" to e.message,
+                "page" to page.toString(),
+                "limit" to limit.toString(),
+                "errorMessage" to (e.message ?: "null"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "user_search_failed", mapOf(
+            ))
+            Logger.logBusinessEvent(TAG, "user_search_failed", mapOf(
                 "query" to query,
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "null")
             ))
             Logger.exit(TAG, "searchUsers", mapOf(
                 "query" to query,
-                "success" to false,
-                "error" to e.message
+                "success" to "false",
+                "error" to (e.message ?: "null")
             ))
             emit(Result.failure(e))
         }
@@ -716,87 +716,85 @@ class UserApiRepository @Inject constructor(
     
     suspend fun updateUserProfile(userId: String, request: UpdateUserRequest): Flow<Result<UserResponse>> = flow {
         val startTime = System.currentTimeMillis()
-        Logger.enter(TAG, "updateUserProfile", mapOf(
+        Logger.enter(TAG, "updateUserProfile", 
             "userId" to userId,
-            "email" to request.email,
-            "name" to request.name
-        ))
+            "displayName" to (request.displayName ?: "null"),
+            "bio" to (request.bio ?: "null")
+        )
         
         try {
             val response = userApiService.updateUserProfile(userId, request)
             if (response.isSuccessful) {
                 response.body()?.let { userResponse ->
                     val duration = System.currentTimeMillis() - startTime
-                    Logger.performance(TAG, "updateUserProfile", duration, mapOf(
+                    Logger.logPerformance(TAG, "updateUserProfile", duration, mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
-                        "name" to userResponse.name,
-                        "success" to true
+                        "displayName" to userResponse.displayName,
+                        "success" to "true"
                     ))
-                    Logger.business(TAG, "user_profile_updated", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_profile_updated", mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
-                        "name" to userResponse.name
+                        "displayName" to userResponse.displayName
                     ))
                     Logger.exit(TAG, "updateUserProfile", mapOf(
                         "userId" to userId,
-                        "email" to userResponse.email,
-                        "success" to true
+                        "displayName" to userResponse.displayName,
+                        "success" to "true"
                     ))
                     emit(Result.success(userResponse))
                 } ?: run {
-                    Logger.error(TAG, "User profile update failed - empty response body", mapOf(
+                    Logger.logError(TAG, "User profile update failed - empty response body", null, mapOf(
                         "userId" to userId,
-                        "email" to request.email,
-                        "name" to request.name,
+                        "displayName" to (request.displayName ?: "null"),
+                        "bio" to (request.bio ?: "null"),
                         "errorType" to "EMPTY_RESPONSE"
                     ))
-                    Logger.business(TAG, "user_profile_update_failed", mapOf(
+                    Logger.logBusinessEvent(TAG, "user_profile_update_failed", mapOf(
                         "userId" to userId,
                         "reason" to "empty_response_body"
                     ))
                     emit(Result.failure(Exception("Empty response body")))
                 }
             } else {
-                Logger.error(TAG, "User profile update failed - HTTP error", mapOf(
+                Logger.logError(TAG, "User profile update failed - HTTP error", null, mapOf(
                     "userId" to userId,
-                    "email" to request.email,
-                    "name" to request.name,
-                    "httpCode" to response.code(),
+                    "displayName" to (request.displayName ?: "null"),
+                    "bio" to (request.bio ?: "null"),
+                    "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "errorType" to "HTTP_ERROR"
                 ))
-                Logger.business(TAG, "user_profile_update_failed", mapOf(
+                Logger.logBusinessEvent(TAG, "user_profile_update_failed", mapOf(
                     "userId" to userId,
                     "reason" to "http_error",
-                    "httpCode" to response.code()
+                    "httpCode" to response.code().toString()
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
         } catch (e: Exception) {
             val duration = System.currentTimeMillis() - startTime
-            Logger.performance(TAG, "updateUserProfile", duration, mapOf(
+            Logger.logPerformance(TAG, "updateUserProfile", duration, mapOf(
                 "userId" to userId,
-                "email" to request.email,
-                "name" to request.name,
-                "success" to false
+                "displayName" to (request.displayName ?: "null"),
+                "bio" to (request.bio ?: "null"),
+                "success" to "false"
             ))
-            Logger.error(TAG, "User profile update failed - exception", mapOf(
+            Logger.logError(TAG, "User profile update failed - exception", e, mapOf(
                 "userId" to userId,
-                "email" to request.email,
-                "name" to request.name,
-                "errorMessage" to e.message,
+                "displayName" to (request.displayName ?: "null"),
+                "bio" to (request.bio ?: "null"),
+                "errorMessage" to (e.message ?: "null"),
                 "errorType" to "EXCEPTION"
-            ), e)
-            Logger.business(TAG, "user_profile_update_failed", mapOf(
+            ))
+            Logger.logBusinessEvent(TAG, "user_profile_update_failed", mapOf(
                 "userId" to userId,
                 "reason" to "exception",
-                "errorMessage" to e.message
+                "errorMessage" to (e.message ?: "null")
             ))
             Logger.exit(TAG, "updateUserProfile", mapOf(
                 "userId" to userId,
-                "success" to false,
-                "error" to e.message
+                "success" to "false",
+                "error" to (e.message ?: "null")
             ))
             emit(Result.failure(e))
         }

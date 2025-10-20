@@ -28,7 +28,9 @@ class PerformanceMetricsCollector @Inject constructor() {
         val slowestOperations: List<Logger.PerformanceMetric> = emptyList(),
         val mostFrequentErrors: Map<String, Long> = emptyMap(),
         val performanceByTag: Map<String, Double> = emptyMap(),
-        val hourlyMetrics: Map<String, Long> = emptyMap()
+        val hourlyMetrics: Map<String, Long> = emptyMap(),
+        val activeUsers: Long = 0,
+        val requestsPerMinute: Long = 0
     )
     
     data class SystemHealth(
@@ -36,7 +38,12 @@ class PerformanceMetricsCollector @Inject constructor() {
         val errorRate: Double,
         val averageResponseTime: Double,
         val slowOperationsCount: Int,
-        val criticalIssues: List<String>
+        val criticalIssues: List<String>,
+        val cpuUsage: Double = 0.0,
+        val memoryUsage: Double = 0.0,
+        val networkIO: Double = 0.0,
+        val diskIO: Double = 0.0,
+        val memoryUsagePercent: Double = 0.0
     )
     
     enum class HealthStatus {

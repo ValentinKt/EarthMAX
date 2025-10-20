@@ -1,12 +1,6 @@
 package com.earthmax.feature.monitoring
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,16 +12,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.earthmax.core.monitoring.LogFilterManager
 import com.earthmax.core.monitoring.PerformanceMetricsCollector
 import com.earthmax.core.utils.Logger
 import java.text.SimpleDateFormat
@@ -78,14 +67,17 @@ fun MonitoringDashboard(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFF008080) // Teal
+                containerColor = Color(0xFF1976D2),
+                titleContentColor = Color.White,
+                navigationIconContentColor = Color.White,
+                actionIconContentColor = Color.White
             )
         )
         
         // Tab Row
         TabRow(
             selectedTabIndex = selectedTab.ordinal,
-            containerColor = Color(0xFF20B2AA), // Light Sea Green
+            containerColor = Color(0xFF1976D2),
             contentColor = Color.White
         ) {
             tabs.forEachIndexed { index, title ->
@@ -127,177 +119,56 @@ private fun OverviewTab(
         }
         
         // Quick Stats Row
-        uiState.realtimeMetrics?.let { metrics ->
+        uiState.realtimeData?.let { metrics ->
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    QuickStatCard(
-                        title = "Total Logs",
-                        value = uiState.historicalLogs.size.toString(),
-                        icon = Icons.Default.List,
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickStatCard(
-                        title = "Errors",
-                        value = metrics.errorCount.toString(),
-                        icon = Icons.Default.Error,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-            
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    QuickStatCard(
-                        title = "Network Requests",
-                        value = metrics.networkRequests.toString(),
-                        icon = Icons.Default.NetworkCheck,
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickStatCard(
-                        title = "Avg Response",
-                        value = "${metrics.averageResponseTime.toInt()}ms",
-                        icon = Icons.Default.Speed,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                QuickStatsRow(metrics)
             }
         }
         
-        // Recent Critical Issues
+        // Recent Logs
+        if (uiState.recentLogs.isNotEmpty()) {
+            item {
+                RecentLogsCard(uiState.recentLogs.take(5))
+            }
+        }
+        
+        // Performance Recommendations
         uiState.systemHealth?.let { health ->
-            if (health.criticalIssues.isNotEmpty()) {
-                item {
-                    CriticalIssuesCard(health.criticalIssues)
-                }
-            }
-        }
-        
-        // Performance Chart Placeholder
-        uiState.realtimeMetrics?.let { metrics ->
             item {
-                PerformanceChartCard(metrics.hourlyMetrics)
+                SystemRecommendationsCard(health, uiState)
             }
         }
     }
 }
 
 @Composable
-private fun PerformanceTab(uiState: MonitoringViewModel.MonitoringUiState) {
+private fun PerformanceTab(
+    uiState: MonitoringViewModel.MonitoringUiState
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Performance Metrics Summary
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFE0F2F1) // Very light teal
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Performance Summary",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF004D40) // Dark teal
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    uiState.realtimeMetrics?.let { metrics ->
-                        PerformanceMetricRow(
-                            "Average Response Time",
-                            "${metrics.averageResponseTime.toInt()}ms"
-                        )
-                        PerformanceMetricRow(
-                            "Total Network Requests",
-                            metrics.networkRequests.toString()
-                        )
-                        PerformanceMetricRow(
-                            "Network Errors",
-                            metrics.networkErrors.toString()
-                        )
-                        PerformanceMetricRow(
-                            "User Actions",
-                            metrics.userActions.toString()
-                        )
-                        PerformanceMetricRow(
-                            "Business Events",
-                            metrics.businessEvents.toString()
-                        )
-                    }
-                }
+        // Performance Metrics
+        uiState.performanceMetrics?.let { metrics ->
+            item {
+                PerformanceMetricsCard(metrics)
             }
         }
         
-        // Slowest Operations
-        uiState.realtimeMetrics?.let { metrics ->
-            if (metrics.slowestOperations.isNotEmpty()) {
+        // Slow Operations
+        if (uiState.slowOperations.isNotEmpty()) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFF3E0) // Light orange
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            "Slowest Operations",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFE65100) // Dark orange
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        metrics.slowestOperations.take(5).forEach { metric ->
-                            SlowOperationItem(metric)
-                        }
-                    }
-                }
+                SlowOperationsCard(uiState.slowOperations)
             }
         }
         
-        // Performance by Tag
-        if (metrics.performanceByTag.isNotEmpty()) {
+        // Memory Usage
+        uiState.systemHealth?.let { health ->
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF3E5F5) // Light purple
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            "Performance by Tag",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF4A148C) // Dark purple
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        metrics.performanceByTag.entries
-                            .sortedByDescending { it.value }
-                            .take(10)
-                            .forEach { (tag, avgTime) ->
-                                PerformanceMetricRow(tag, "${avgTime.toInt()}ms")
-                            }
-                    }
-                }
+                MemoryUsageCard(health)
             }
         }
     }
@@ -308,138 +179,27 @@ private fun LogsTab(
     uiState: MonitoringViewModel.MonitoringUiState,
     viewModel: MonitoringViewModel
 ) {
-    var showFilters by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        // Filter Controls
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFE0F2F1) // Very light teal
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Logs (${uiState.filterStats?.filteredLogs ?: 0}/${uiState.filterStats?.totalLogs ?: 0})",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Row {
-                        IconButton(onClick = { showFilters = !showFilters }) {
-                            Icon(
-                                if (showFilters) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = "Toggle Filters"
-                            )
-                        }
-                        IconButton(onClick = { viewModel.exportLogs() }) {
-                            Icon(Icons.Default.Download, contentDescription = "Export")
-                        }
-                    }
-                }
-                
-                // Search Bar
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { 
-                        searchQuery = it
-                        viewModel.setSearchQuery(it)
-                    },
-                    label = { Text("Search logs...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                
-                // Filter Presets
-                AnimatedVisibility(
-                    visible = showFilters,
-                    enter = fadeIn(animationSpec = tween(300)),
-                    exit = fadeOut(animationSpec = tween(300))
-                ) {
-                    Column {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        Text(
-                            "Quick Filters",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        ) {
-                            items(listOf(
-                                "errors_only" to "Errors Only",
-                                "warnings_and_errors" to "Warnings & Errors",
-                                "network_logs" to "Network",
-                                "user_actions" to "User Actions",
-                                "performance_issues" to "Performance",
-                                "last_hour" to "Last Hour"
-                            )) { (preset, label) ->
-                                FilterChip(
-                                    onClick = { viewModel.applyFilterPreset(preset) },
-                                    label = { Text(label) },
-                                    selected = false
-                                )
-                            }
-                        }
-                        
-                        // Level Filters
-                        Text(
-                            "Log Levels",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        ) {
-                            items(Logger.Level.values()) { level ->
-                                val isSelected = viewModel.isLevelSelected(level)
-                                FilterChip(
-                                    onClick = { viewModel.toggleLogLevel(level) },
-                                    label = { Text(level.name) },
-                                    selected = isSelected,
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = when (level) {
-                                            Logger.Level.ERROR -> Color(0xFFFFEBEE)
-                                        Logger.Level.WARNING -> Color(0xFFFFF3E0)
-                                        Logger.Level.INFO -> Color(0xFFE3F2FD)
-                                        Logger.Level.DEBUG -> Color(0xFFF3E5F5)
-                                        }
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
+        // Log Level Filter
+        LogLevelFilter(
+            selectedLevel = uiState.selectedLogLevel,
+            onLevelSelected = { level -> 
+                level?.let { viewModel.filterLogsByLevel(it) }
             }
-        }
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
         
         // Logs List
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(uiState.filteredLogs) { logEntry ->
-                LogEntryCard(logEntry)
+            items(uiState.filteredLogs) { log ->
+                LogEntryCard(log)
             }
         }
     }
@@ -458,143 +218,175 @@ private fun HealthTab(
         // System Health Overview
         uiState.systemHealth?.let { health ->
             item {
-                HealthStatusCard(health)
+                SystemHealthOverviewCard(health)
             }
         }
         
         // Health Metrics
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFE8F5E8) // Light green
-                )
+        uiState.realtimeMetrics?.let { metrics ->
+            item {
+                HealthMetricsCard(metrics)
+            }
+        }
+        
+        // Health Alerts
+        if (uiState.healthAlerts.isNotEmpty()) {
+            item {
+                HealthAlertsCard(uiState.healthAlerts)
+            }
+        }
+    }
+}
+
+@Composable
+private fun HealthStatusCard(
+    systemHealth: PerformanceMetricsCollector.SystemHealth
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = when {
+                systemHealth.errorRate > 10.0 -> Color(0xFFFFEBEE)
+                systemHealth.errorRate > 5.0 -> Color(0xFFFFF3E0)
+                else -> Color(0xFFE8F5E8)
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
+                Icon(
+                    when {
+                        systemHealth.errorRate > 10.0 -> Icons.Default.Error
+                        systemHealth.errorRate > 5.0 -> Icons.Default.Warning
+                        else -> Icons.Default.CheckCircle
+                    },
+                    contentDescription = null,
+                    tint = when {
+                        systemHealth.errorRate > 10.0 -> Color(0xFFD32F2F)
+                        systemHealth.errorRate > 5.0 -> Color(0xFFF57C00)
+                        else -> Color(0xFF388E3C)
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "System Health",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
                     Text(
-                        "Health Metrics",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2E7D32) // Dark green
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    HealthMetricRow(
                         "Error Rate",
-                        "${String.format("%.2f", health.errorRate)}%",
-                        health.errorRate > 5.0
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    HealthMetricRow(
-                        "Average Response Time",
-                        "${health.averageResponseTime.toInt()}ms",
-                        health.averageResponseTime > 3000
+                    Text(
+                        "${String.format("%.1f", systemHealth.errorRate)}%",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
                     )
-                    HealthMetricRow(
-                        "Slow Operations",
-                        health.slowOperationsCount.toString(),
-                        health.slowOperationsCount > 10
+                }
+                Column {
+                    Text(
+                        "Avg Response",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "${systemHealth.averageResponseTime}ms",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Column {
+                    Text(
+                        "Memory Usage",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "${systemHealth.memoryUsagePercent}%",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
-        
-        // Critical Issues
-        if (health.criticalIssues.isNotEmpty()) {
-            item {
-                CriticalIssuesCard(health.criticalIssues)
-            }
-        }
-        
-        // System Recommendations
-        item {
-            SystemRecommendationsCard(health, uiState)
-        }
     }
 }
 
 @Composable
-private fun HealthStatusCard(systemHealth: PerformanceMetricsCollector.SystemHealth) {
-    Card(
+private fun QuickStatsRow(
+    metrics: MonitoringViewModel.RealtimeData
+) {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = when (systemHealth.status) {
-                PerformanceMetricsCollector.HealthStatus.HEALTHY -> Color(0xFFE8F5E8)
-                PerformanceMetricsCollector.HealthStatus.WARNING -> Color(0xFFFFF3E0)
-                PerformanceMetricsCollector.HealthStatus.CRITICAL -> Color(0xFFFFEBEE)
-            }
-        )
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = when (systemHealth.status) {
-                    PerformanceMetricsCollector.HealthStatus.HEALTHY -> Icons.Default.CheckCircle
-                    PerformanceMetricsCollector.HealthStatus.WARNING -> Icons.Default.Warning
-                    PerformanceMetricsCollector.HealthStatus.CRITICAL -> Icons.Default.Error
-                },
-                contentDescription = null,
-                tint = when (systemHealth.status) {
-                    PerformanceMetricsCollector.HealthStatus.HEALTHY -> Color(0xFF4CAF50)
-                    PerformanceMetricsCollector.HealthStatus.WARNING -> Color(0xFFFF9800)
-                    PerformanceMetricsCollector.HealthStatus.CRITICAL -> Color(0xFFF44336)
-                },
-                modifier = Modifier.size(32.dp)
-            )
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column {
-                Text(
-                    "System Health: ${systemHealth.status.name}",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    "Last updated: ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        StatCard(
+            title = "Active Users",
+            value = metrics.metrics.activeUsers.toString(),
+            icon = Icons.Default.People,
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            title = "Requests/min",
+            value = metrics.metrics.requestsPerMinute.toString(),
+            icon = Icons.Default.TrendingUp,
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            title = "Errors",
+            value = metrics.metrics.networkErrors.toString(),
+            icon = Icons.Default.Error,
+            modifier = Modifier.weight(1f),
+            isWarning = metrics.metrics.networkErrors > 10
+        )
     }
 }
 
 @Composable
-private fun QuickStatCard(
+private fun StatCard(
     title: String,
     value: String,
-    icon: ImageVector,
-    color: Color = Color(0xFF008080),
-    modifier: Modifier = Modifier
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier,
+    isWarning: Boolean = false
 ) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE0F2F1)
+            containerColor = if (isWarning) Color(0xFFFFEBEE) else Color(0xFFF5F5F5)
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = icon,
+                icon,
                 contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
+                tint = if (isWarning) Color(0xFFD32F2F) else Color(0xFF1976D2),
+                modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 value,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = color
+                color = if (isWarning) Color(0xFFD32F2F) else Color.Black
             )
             Text(
                 title,
@@ -606,12 +398,11 @@ private fun QuickStatCard(
 }
 
 @Composable
-private fun CriticalIssuesCard(issues: List<String>) {
+private fun RecentLogsCard(
+    logs: List<Logger.LogEntry>
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFEBEE)
-        )
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -620,35 +411,25 @@ private fun CriticalIssuesCard(issues: List<String>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Default.Warning,
+                    Icons.Default.List,
                     contentDescription = null,
-                    tint = Color(0xFFF44336),
+                    tint = Color(0xFF1976D2),
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "Critical Issues",
+                    "Recent Logs",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFF44336)
+                    fontWeight = FontWeight.Bold
                 )
             }
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            issues.forEach { issue ->
-                Row(
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Text(
-                        "• ",
-                        color = Color(0xFFF44336),
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        issue,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+            logs.forEach { log ->
+                LogEntryItem(log)
+                if (log != logs.last()) {
+                    Divider(modifier = Modifier.padding(vertical = 4.dp))
                 }
             }
         }
@@ -656,156 +437,95 @@ private fun CriticalIssuesCard(issues: List<String>) {
 }
 
 @Composable
-private fun PerformanceChartCard(hourlyMetrics: Map<String, Long>) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE0F2F1)
+private fun LogEntryItem(
+    log: Logger.LogEntry
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Icon(
+            when (log.level) {
+                Logger.Level.ERROR -> Icons.Default.Error
+                Logger.Level.WARNING -> Icons.Default.Warning
+                Logger.Level.INFO -> Icons.Default.Info
+                Logger.Level.DEBUG -> Icons.Default.Circle
+            },
+            contentDescription = null,
+            tint = when (log.level) {
+                Logger.Level.ERROR -> Color(0xFFD32F2F)
+                Logger.Level.WARNING -> Color(0xFFF57C00)
+                Logger.Level.INFO -> Color(0xFF1976D2)
+                Logger.Level.DEBUG -> Color.Gray
+            },
+            modifier = Modifier.size(16.dp)
         )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                log.message,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(log.timestamp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun PerformanceMetricsCard(
+    metrics: PerformanceMetricsCollector.AggregatedMetrics
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                "24-Hour Activity",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF004D40)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Simple bar chart representation
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(hourlyMetrics.entries.toList()) { (hour, count) ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val maxCount = hourlyMetrics.values.maxOrNull() ?: 1
-                        val height = ((count.toFloat() / maxCount.toFloat()) * 60).coerceAtLeast(4f)
-                        
-                        Box(
-                            modifier = Modifier
-                                .width(16.dp)
-                                .height(height.dp)
-                                .background(
-                                    Color(0xFF008080),
-                                    RoundedCornerShape(2.dp)
-                                )
-                        )
-                        
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        Text(
-                            hour,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 8.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LogEntryCard(logEntry: Logger.LogEntry) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = when (logEntry.level) {
-                Logger.Level.ERROR -> Color(0xFFFFEBEE)
-                Logger.Level.WARNING -> Color(0xFFFFF3E0)
-                Logger.Level.INFO -> Color(0xFFE3F2FD)
-                Logger.Level.DEBUG -> Color(0xFFF3E5F5)
-            }
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
-        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = when (logEntry.level) {
-                            Logger.Level.ERROR -> Icons.Default.Error
-                            Logger.Level.WARNING -> Icons.Default.Warning
-                            Logger.Level.INFO -> Icons.Default.Info
-                            Logger.Level.DEBUG -> Icons.Default.BugReport
-                        },
-                        contentDescription = null,
-                        tint = when (logEntry.level) {
-                            Logger.Level.ERROR -> Color(0xFFF44336)
-                            Logger.Level.WARNING -> Color(0xFFFF9800)
-                            Logger.Level.INFO -> Color(0xFF2196F3)
-                            Logger.Level.DEBUG -> Color(0xFF9C27B0)
-                        },
-                        modifier = Modifier.size(16.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        logEntry.tag,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
+                Icon(
+                    Icons.Default.Speed,
+                    contentDescription = null,
+                    tint = Color(0xFF1976D2),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date(logEntry.timestamp)),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    "Performance Metrics",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
             
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            Text(
-                logEntry.message,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
-            
-            if (logEntry.exception != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    "Exception: ${logEntry.exception}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFFF44336),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            
-            if (logEntry.metadata.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    "Metadata: ${logEntry.metadata.entries.joinToString(", ") { "${it.key}=${it.value}" }}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MetricRow("Total Logs", "${metrics.totalLogs}")
+                MetricRow("Error Count", "${metrics.errorCount}")
+                MetricRow("Network Requests", "${metrics.networkRequests}")
+                MetricRow("Avg Response Time", "${metrics.averageResponseTime.toInt()}ms")
             }
         }
     }
 }
 
 @Composable
-private fun PerformanceMetricRow(label: String, value: String) {
+private fun MetricRow(
+    label: String,
+    value: String
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -821,44 +541,86 @@ private fun PerformanceMetricRow(label: String, value: String) {
 }
 
 @Composable
-private fun SlowOperationItem(metric: Logger.PerformanceMetric) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+private fun SlowOperationsCard(
+    operations: List<MonitoringViewModel.SlowOperation>
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                metric.operation,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                metric.tag,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.HourglassEmpty,
+                    contentDescription = null,
+                    tint = Color(0xFFF57C00),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Slow Operations",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            operations.forEach { operation ->
+                SlowOperationItem(operation)
+                if (operation != operations.last()) {
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                }
+            }
         }
-        
-        Text(
-            "${metric.duration.toInt()}ms",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFFE65100)
-        )
     }
 }
 
 @Composable
-private fun HealthMetricRow(label: String, value: String, isWarning: Boolean) {
+fun SlowOperationItem(
+    operation: MonitoringViewModel.SlowOperation
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                operation.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                "${operation.duration}ms",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFF57C00)
+            )
+        }
+        if (operation.details.isNotEmpty()) {
+            Text(
+                operation.details,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun HealthMetricRow(
+    label: String,
+    value: String,
+    isWarning: Boolean = false
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -866,7 +628,6 @@ private fun HealthMetricRow(label: String, value: String, isWarning: Boolean) {
             label,
             style = MaterialTheme.typography.bodyMedium
         )
-        
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -874,24 +635,23 @@ private fun HealthMetricRow(label: String, value: String, isWarning: Boolean) {
                 Icon(
                     Icons.Default.Warning,
                     contentDescription = null,
-                    tint = Color(0xFFFF9800),
+                    tint = Color(0xFFF57C00),
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
             }
-            
             Text(
                 value,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (isWarning) Color(0xFFFF9800) else MaterialTheme.colorScheme.onSurface
+                color = if (isWarning) Color(0xFFF57C00) else Color.Black
             )
         }
     }
 }
 
 @Composable
-private fun SystemRecommendationsCard(
+fun SystemRecommendationsCard(
     systemHealth: PerformanceMetricsCollector.SystemHealth,
     uiState: MonitoringViewModel.MonitoringUiState
 ) {
@@ -903,7 +663,7 @@ private fun SystemRecommendationsCard(
     if (systemHealth.averageResponseTime > 3000) {
         recommendations.add("Optimize slow network operations")
     }
-    if (uiState.aggregatedMetrics.networkErrors > 10) {
+    if (uiState.realtimeMetrics?.networkErrors ?: 0 > 10) {
         recommendations.add("Check network connectivity and API endpoints")
     }
     if (systemHealth.slowOperationsCount > 10) {
@@ -955,6 +715,438 @@ private fun SystemRecommendationsCard(
                     Text(
                         recommendation,
                         style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}@Composable
+fun HealthAlertsCard(alerts: List<String>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFEBEE)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color(0xFFD32F2F),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Health Alerts",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD32F2F)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            alerts.forEach { alert ->
+                Row(
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        "• ",
+                        color = Color(0xFFD32F2F),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        alert,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}@Composable
+fun HealthMetricsCard(
+    metrics: PerformanceMetricsCollector.AggregatedMetrics,
+    systemHealth: PerformanceMetricsCollector.SystemHealth? = null
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFE8F5E8)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.MonitorHeart,
+                    contentDescription = null,
+                    tint = Color(0xFF2E7D32),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Health Metrics",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2E7D32)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        "Total Logs",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Text(
+                        "${metrics.totalLogs}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Column {
+                    Text(
+                        "Errors",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Text(
+                        "${metrics.errorCount}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (metrics.errorCount > 0) Color.Red else Color.Green
+                    )
+                }
+                Column {
+                    Text(
+                        "Warnings",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Text(
+                        "${metrics.warningCount}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (metrics.warningCount > 0) Color(0xFFFF9800) else Color.Green
+                    )
+                }
+            }
+        }
+    }
+}@Composable
+fun LogEntryCard(log: Logger.LogEntry) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = when (log.level) {
+                Logger.Level.ERROR -> MaterialTheme.colorScheme.errorContainer
+                Logger.Level.WARNING -> MaterialTheme.colorScheme.tertiaryContainer
+                Logger.Level.INFO -> MaterialTheme.colorScheme.primaryContainer
+                Logger.Level.DEBUG -> MaterialTheme.colorScheme.secondaryContainer
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = log.level.name,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = when (log.level) {
+                        Logger.Level.ERROR -> MaterialTheme.colorScheme.onErrorContainer
+                        Logger.Level.WARNING -> MaterialTheme.colorScheme.onTertiaryContainer
+                        Logger.Level.INFO -> MaterialTheme.colorScheme.onPrimaryContainer
+                        Logger.Level.DEBUG -> MaterialTheme.colorScheme.onSecondaryContainer
+                    },
+                    modifier = Modifier
+                        .background(
+                            color = when (log.level) {
+                                Logger.Level.ERROR -> MaterialTheme.colorScheme.error
+                                Logger.Level.WARNING -> MaterialTheme.colorScheme.tertiary
+                                Logger.Level.INFO -> MaterialTheme.colorScheme.primary
+                                Logger.Level.DEBUG -> MaterialTheme.colorScheme.secondary
+                            },
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+                
+                Text(
+                    text = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(log.timestamp)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = log.message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            if (log.tag.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Tag: ${log.tag}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}@Composable
+fun SystemHealthOverviewCard(systemHealth: PerformanceMetricsCollector.SystemHealth) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = when (systemHealth.status) {
+                PerformanceMetricsCollector.HealthStatus.HEALTHY -> MaterialTheme.colorScheme.primaryContainer
+                PerformanceMetricsCollector.HealthStatus.WARNING -> MaterialTheme.colorScheme.tertiaryContainer
+                PerformanceMetricsCollector.HealthStatus.CRITICAL -> MaterialTheme.colorScheme.errorContainer
+            }
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "System Health",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Text(
+                    text = systemHealth.status.name,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = when (systemHealth.status) {
+                        PerformanceMetricsCollector.HealthStatus.HEALTHY -> MaterialTheme.colorScheme.onPrimaryContainer
+                        PerformanceMetricsCollector.HealthStatus.WARNING -> MaterialTheme.colorScheme.onTertiaryContainer
+                        PerformanceMetricsCollector.HealthStatus.CRITICAL -> MaterialTheme.colorScheme.onErrorContainer
+                    },
+                    modifier = Modifier
+                        .background(
+                            color = when (systemHealth.status) {
+                                PerformanceMetricsCollector.HealthStatus.HEALTHY -> MaterialTheme.colorScheme.primary
+                                PerformanceMetricsCollector.HealthStatus.WARNING -> MaterialTheme.colorScheme.tertiary
+                                PerformanceMetricsCollector.HealthStatus.CRITICAL -> MaterialTheme.colorScheme.error
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Memory Usage
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Memory Usage",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "${systemHealth.memoryUsagePercent.toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
+            LinearProgressIndicator(
+                progress = (systemHealth.memoryUsagePercent / 100).toFloat(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                color = when {
+                    systemHealth.memoryUsagePercent > 80 -> MaterialTheme.colorScheme.error
+                    systemHealth.memoryUsagePercent > 60 -> MaterialTheme.colorScheme.tertiary
+                    else -> MaterialTheme.colorScheme.primary
+                }
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // CPU Usage
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "CPU Usage",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "${systemHealth.cpuUsage.toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
+            LinearProgressIndicator(
+                progress = (systemHealth.cpuUsage / 100).toFloat(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                color = when {
+                    systemHealth.cpuUsage > 80 -> MaterialTheme.colorScheme.error
+                    systemHealth.cpuUsage > 60 -> MaterialTheme.colorScheme.tertiary
+                    else -> MaterialTheme.colorScheme.primary
+                }
+            )
+        }
+    }
+}
+@Composable
+fun MemoryUsageCard(systemHealth: PerformanceMetricsCollector.SystemHealth) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Memory Usage",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Used Memory",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "${systemHealth.memoryUsagePercent.toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
+            LinearProgressIndicator(
+                progress = (systemHealth.memoryUsagePercent / 100).toFloat(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                color = when {
+                    systemHealth.memoryUsagePercent > 80 -> MaterialTheme.colorScheme.error
+                    systemHealth.memoryUsagePercent > 60 -> MaterialTheme.colorScheme.tertiary
+                    else -> MaterialTheme.colorScheme.primary
+                }
+            )
+            
+            Text(
+                text = "Memory: ${String.format("%.1f", systemHealth.memoryUsage)} MB",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun LogLevelFilter(
+    selectedLevel: Logger.Level?,
+    onLevelSelected: (Logger.Level?) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Filter by Log Level",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    FilterChip(
+                        onClick = { onLevelSelected(null) },
+                        label = { Text("All") },
+                        selected = selectedLevel == null,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
+                }
+                
+                items(Logger.Level.values()) { level ->
+                    FilterChip(
+                        onClick = { onLevelSelected(level) },
+                        label = { Text(level.name) },
+                        selected = selectedLevel == level,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = when (level) {
+                                Logger.Level.ERROR -> MaterialTheme.colorScheme.error
+                                Logger.Level.WARNING -> MaterialTheme.colorScheme.tertiary
+                                Logger.Level.INFO -> MaterialTheme.colorScheme.primary
+                                Logger.Level.DEBUG -> MaterialTheme.colorScheme.secondary
+                            },
+                            selectedLabelColor = when (level) {
+                                Logger.Level.ERROR -> MaterialTheme.colorScheme.onError
+                                Logger.Level.WARNING -> MaterialTheme.colorScheme.onTertiary
+                                Logger.Level.INFO -> MaterialTheme.colorScheme.onPrimary
+                                Logger.Level.DEBUG -> MaterialTheme.colorScheme.onSecondary
+                            }
+                        )
                     )
                 }
             }

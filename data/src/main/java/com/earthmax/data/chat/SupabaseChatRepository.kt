@@ -49,13 +49,13 @@ class SupabaseChatRepository @Inject constructor() {
         messageType: MessageType = MessageType.TEXT,
         replyToMessageId: String? = null
     ): Result<Message> {
-        Logger.enter(TAG, "sendMessage", mapOf(
+        Logger.enter(TAG, "sendMessage", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "senderId" to Logger.maskSensitiveData(senderId),
             "senderName" to senderName,
             "messageType" to messageType.name,
             "contentLength" to content.length.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -130,7 +130,7 @@ class SupabaseChatRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to send message", e, mapOf(
+            Logger.logError(TAG, "Failed to send message", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "senderId" to Logger.maskSensitiveData(senderId),
                 "messageType" to messageType.name,
@@ -144,9 +144,9 @@ class SupabaseChatRepository @Inject constructor() {
     }
     
     suspend fun getMessages(eventId: String, limit: Int = 50): Result<List<Message>> {
-        Logger.enter(TAG, "getMessages", mapOf(
+        Logger.enter(TAG, "getMessages", 
             "eventId" to Logger.maskSensitiveData(eventId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -195,7 +195,7 @@ class SupabaseChatRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to get messages", e, mapOf(
+            Logger.logError(TAG, "Failed to get messages", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -212,9 +212,9 @@ class SupabaseChatRepository @Inject constructor() {
     }
     
     suspend fun markMessageAsRead(messageId: String): Result<Unit> {
-        Logger.enter(TAG, "markMessageAsRead", mapOf(
+        Logger.enter(TAG, "markMessageAsRead", 
             "messageId" to Logger.maskSensitiveData(messageId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -258,7 +258,7 @@ class SupabaseChatRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to mark message as read", e, mapOf(
+            Logger.logError(TAG, "Failed to mark message as read", e, mapOf(
                 "messageId" to Logger.maskSensitiveData(messageId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -270,9 +270,9 @@ class SupabaseChatRepository @Inject constructor() {
     }
     
     suspend fun deleteMessage(messageId: String): Result<Unit> {
-        Logger.enter(TAG, "deleteMessage", mapOf(
+        Logger.enter(TAG, "deleteMessage", 
             "messageId" to Logger.maskSensitiveData(messageId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -316,7 +316,7 @@ class SupabaseChatRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to delete message", e, mapOf(
+            Logger.logError(TAG, "Failed to delete message", e, mapOf(
                 "messageId" to Logger.maskSensitiveData(messageId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()

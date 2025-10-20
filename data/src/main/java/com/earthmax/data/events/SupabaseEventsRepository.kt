@@ -86,7 +86,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to get events", e, mapOf(
+            Logger.logError(TAG, "Failed to get events", e, mapOf(
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
             ))
@@ -98,7 +98,7 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun getEventById(eventId: String): Result<Event> {
-        Logger.enter(TAG, "getEventById", mapOf("eventId" to Logger.maskSensitiveData(eventId)))
+        Logger.enter(TAG, "getEventById", "eventId" to Logger.maskSensitiveData(eventId))
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -142,7 +142,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to get event by ID", e, mapOf(
+            Logger.logError(TAG, "Failed to get event by ID", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -154,11 +154,11 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun createEvent(event: Event): Result<Event> {
-        Logger.enter(TAG, "createEvent", mapOf(
+        Logger.enter(TAG, "createEvent", 
             "eventTitle" to event.title,
             "eventCategory" to event.category.name,
             "organizerId" to Logger.maskSensitiveData(event.organizerId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -204,7 +204,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to create event", e, mapOf(
+            Logger.logError(TAG, "Failed to create event", e, mapOf(
                 "eventTitle" to event.title,
                 "eventCategory" to event.category.name,
                 "organizerId" to Logger.maskSensitiveData(event.organizerId),
@@ -218,11 +218,10 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun updateEvent(event: Event): Result<Event> {
-        Logger.enter(TAG, "updateEvent", mapOf(
+        Logger.enter(TAG, "updateEvent", 
             "eventId" to Logger.maskSensitiveData(event.id),
-            "eventTitle" to event.title,
-            "eventCategory" to event.category.name
-        ))
+            "eventTitle" to event.title
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -272,7 +271,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to update event", e, mapOf(
+            Logger.logError(TAG, "Failed to update event", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(event.id),
                 "eventTitle" to event.title,
                 "eventCategory" to event.category.name,
@@ -286,7 +285,7 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun deleteEvent(eventId: String): Result<Unit> {
-        Logger.enter(TAG, "deleteEvent", mapOf("eventId" to Logger.maskSensitiveData(eventId)))
+        Logger.enter(TAG, "deleteEvent", "eventId" to Logger.maskSensitiveData(eventId))
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -329,7 +328,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to delete event", e, mapOf(
+            Logger.logError(TAG, "Failed to delete event", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -341,7 +340,7 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     fun getEventsByCategory(category: String): Flow<List<Event>> = flow {
-        Logger.enter(TAG, "getEventsByCategory", mapOf("category" to category))
+        Logger.enter(TAG, "getEventsByCategory", "category" to category)
         val startTime = System.currentTimeMillis()
         
         try {
@@ -386,7 +385,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to get events by category", e, mapOf(
+            Logger.logError(TAG, "Failed to get events by category", e, mapOf(
                 "category" to category,
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -399,10 +398,10 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun joinEvent(eventId: String, userId: String): Result<Unit> {
-        Logger.enter(TAG, "joinEvent", mapOf(
+        Logger.enter(TAG, "joinEvent", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "userId" to Logger.maskSensitiveData(userId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -454,7 +453,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to join event", e, mapOf(
+            Logger.logError(TAG, "Failed to join event", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "userId" to Logger.maskSensitiveData(userId),
                 "errorType" to e::class.simpleName.toString(),
@@ -467,10 +466,10 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun leaveEvent(eventId: String, userId: String): Result<Unit> {
-        Logger.enter(TAG, "leaveEvent", mapOf(
+        Logger.enter(TAG, "leaveEvent", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "userId" to Logger.maskSensitiveData(userId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -526,7 +525,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to leave event", e, mapOf(
+            Logger.logError(TAG, "Failed to leave event", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "userId" to Logger.maskSensitiveData(userId),
                 "errorType" to e::class.simpleName.toString(),
@@ -539,10 +538,10 @@ class SupabaseEventsRepository @Inject constructor() {
     }
     
     suspend fun uploadEventImage(eventId: String, imageData: ByteArray): Result<String> {
-        Logger.enter(TAG, "uploadEventImage", mapOf(
+        Logger.enter(TAG, "uploadEventImage", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "imageSize" to imageData.size.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -601,7 +600,7 @@ class SupabaseEventsRepository @Inject constructor() {
                 )
             )
             
-            Logger.e(TAG, "Failed to upload event image", e, mapOf(
+            Logger.logError(TAG, "Failed to upload event image", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "imageSize" to imageData.size.toString(),
                 "errorType" to e::class.simpleName.toString(),

@@ -247,7 +247,6 @@ class EventRepository @Inject constructor(
     }
     
     @OptIn(ExperimentalPagingApi::class)
-    @OptIn(ExperimentalPagingApi::class)
     fun searchEvents(query: String): Flow<PagingData<Event>> {
         Logger.enter(TAG, "searchEvents", "query" to Logger.maskSensitiveData(query))
         val startTime = System.currentTimeMillis()
@@ -353,7 +352,7 @@ class EventRepository @Inject constructor(
                     "cached" to "true"
                 ))
                 Logger.logPerformance(TAG, "createEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "createEvent", Result.success(createdEvent.id))
+                Logger.exit(TAG, "createEvent", Result.success<String>(createdEvent.id))
                 Result.success(createdEvent.id)
             } else {
                 val error = result.exceptionOrNull() ?: Exception("Failed to create event")
@@ -366,7 +365,7 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "createEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "createEvent", Result.failure(error))
+                Logger.exit(TAG, "createEvent", Result.failure<String>(error))
                 Result.failure(error)
             }
         } catch (e: Exception) {
@@ -379,7 +378,7 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "createEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "createEvent", Result.failure(e))
+            Logger.exit(TAG, "createEvent", Result.failure<String>(e))
             Result.failure(e)
         }
     }
@@ -407,7 +406,7 @@ class EventRepository @Inject constructor(
                     "cached" to "true"
                 ))
                 Logger.logPerformance(TAG, "updateEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateEvent", Result.success(Unit))
+                Logger.exit(TAG, "updateEvent", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 val error = Exception("Failed to update event")
@@ -420,7 +419,7 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "updateEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateEvent", Result.failure(error))
+                Logger.exit(TAG, "updateEvent", Result.failure<Unit>(error))
                 Result.failure(error)
             }
         } catch (e: Exception) {
@@ -433,7 +432,7 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateEvent", Result.failure(e))
+            Logger.exit(TAG, "updateEvent", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -454,7 +453,7 @@ class EventRepository @Inject constructor(
                     "removedFromCache" to "true"
                 ))
                 Logger.logPerformance(TAG, "deleteEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "deleteEvent", Result.success(Unit))
+                Logger.exit(TAG, "deleteEvent", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 val error = Exception("Failed to delete event")
@@ -465,7 +464,7 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "deleteEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "deleteEvent", Result.failure(error))
+                Logger.exit(TAG, "deleteEvent", Result.failure<Unit>(error))
                 Result.failure(error)
             }
         } catch (e: Exception) {
@@ -476,7 +475,7 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "deleteEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "deleteEvent", Result.failure(e))
+            Logger.exit(TAG, "deleteEvent", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -508,7 +507,7 @@ class EventRepository @Inject constructor(
                     "participantCountUpdated" to (event != null).toString()
                 ))
                 Logger.logPerformance(TAG, "joinEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "joinEvent", Result.success(Unit))
+                Logger.exit(TAG, "joinEvent", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 val error = Exception("Failed to join event")
@@ -520,7 +519,7 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "joinEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "joinEvent", Result.failure(error))
+                Logger.exit(TAG, "joinEvent", Result.failure<Unit>(error))
                 Result.failure(error)
             }
         } catch (e: Exception) {
@@ -532,7 +531,7 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "joinEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "joinEvent", Result.failure(e))
+            Logger.exit(TAG, "joinEvent", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -564,7 +563,7 @@ class EventRepository @Inject constructor(
                     "participantCountUpdated" to (event != null).toString()
                 ))
                 Logger.logPerformance(TAG, "leaveEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "leaveEvent", Result.success(Unit))
+                Logger.exit(TAG, "leaveEvent", Result.success<Unit>(Unit))
                 Result.success(Unit)
             } else {
                 val error = Exception("Failed to leave event")
@@ -576,7 +575,7 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "leaveEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "leaveEvent", Result.failure(error))
+                Logger.exit(TAG, "leaveEvent", Result.failure<Unit>(error))
                 Result.failure(error)
             }
         } catch (e: Exception) {
@@ -588,7 +587,7 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "leaveEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "leaveEvent", Result.failure(e))
+            Logger.exit(TAG, "leaveEvent", Result.failure<Unit>(e))
             Result.failure(e)
         }
     }
@@ -624,7 +623,7 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "uploadEventPhoto_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "uploadEventPhoto", Result.failure(error))
+                Logger.exit(TAG, "uploadEventPhoto", Result.failure<String>(error))
                 Result.failure(error)
             }
         } catch (e: Exception) {
@@ -636,7 +635,7 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "uploadEventPhoto_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "uploadEventPhoto", Result.failure(e))
+            Logger.exit(TAG, "uploadEventPhoto", Result.failure<String>(e))
             Result.failure(e)
         }
     }

@@ -37,6 +37,11 @@ class LogFilterManager @Inject constructor() {
         NEWEST_FIRST, OLDEST_FIRST, LEVEL_PRIORITY
     }
     
+    data class FilterPreset(
+        val name: String,
+        val criteria: FilterCriteria
+    )
+    
     data class FilterStats(
         val totalLogs: Int,
         val filteredLogs: Int,
@@ -53,33 +58,51 @@ class LogFilterManager @Inject constructor() {
     
     // Predefined filter presets
     private val filterPresets = mapOf(
-        "errors_only" to FilterCriteria(
-            levels = setOf(Logger.Level.ERROR),
-            sortOrder = SortOrder.NEWEST_FIRST
+        "errors_only" to FilterPreset(
+            name = "errors_only",
+            criteria = FilterCriteria(
+                levels = setOf(Logger.Level.ERROR),
+                sortOrder = SortOrder.NEWEST_FIRST
+            )
         ),
-        "warnings_and_errors" to FilterCriteria(
-            levels = setOf(Logger.Level.WARNING, Logger.Level.ERROR),
-            sortOrder = SortOrder.LEVEL_PRIORITY
+        "warnings_and_errors" to FilterPreset(
+            name = "warnings_and_errors",
+            criteria = FilterCriteria(
+                levels = setOf(Logger.Level.WARNING, Logger.Level.ERROR),
+                sortOrder = SortOrder.LEVEL_PRIORITY
+            )
         ),
-        "network_logs" to FilterCriteria(
-            tags = setOf("NETWORK", "API", "HTTP"),
-            sortOrder = SortOrder.NEWEST_FIRST
+        "network_logs" to FilterPreset(
+            name = "network_logs",
+            criteria = FilterCriteria(
+                tags = setOf("NETWORK", "API", "HTTP"),
+                sortOrder = SortOrder.NEWEST_FIRST
+            )
         ),
-        "user_actions" to FilterCriteria(
-            tags = setOf("USER_ACTION", "AUTH", "PROFILE"),
-            sortOrder = SortOrder.NEWEST_FIRST
+        "user_actions" to FilterPreset(
+            name = "user_actions",
+            criteria = FilterCriteria(
+                tags = setOf("USER_ACTION", "AUTH", "PROFILE"),
+                sortOrder = SortOrder.NEWEST_FIRST
+            )
         ),
-        "performance_issues" to FilterCriteria(
-            includePatterns = setOf("slow", "timeout", "performance", "latency"),
-            levels = setOf(Logger.Level.WARNING, Logger.Level.ERROR),
-            sortOrder = SortOrder.NEWEST_FIRST
+        "performance_issues" to FilterPreset(
+            name = "performance_issues",
+            criteria = FilterCriteria(
+                includePatterns = setOf("slow", "timeout", "performance", "latency"),
+                levels = setOf(Logger.Level.WARNING, Logger.Level.ERROR),
+                sortOrder = SortOrder.NEWEST_FIRST
+            )
         ),
-        "last_hour" to FilterCriteria(
-            timeRange = TimeRange(
-                startTime = System.currentTimeMillis() - (60 * 60 * 1000),
-                endTime = System.currentTimeMillis()
-            ),
-            sortOrder = SortOrder.NEWEST_FIRST
+        "last_hour" to FilterPreset(
+            name = "last_hour",
+            criteria = FilterCriteria(
+                timeRange = TimeRange(
+                    startTime = System.currentTimeMillis() - (60 * 60 * 1000),
+                    endTime = System.currentTimeMillis()
+                ),
+                sortOrder = SortOrder.NEWEST_FIRST
+            )
         )
     )
     
@@ -173,20 +196,27 @@ class LogFilterManager @Inject constructor() {
      */
     fun applyPreset(presetName: String) {
         filterPresets[presetName]?.let { preset ->
-            _currentFilter.value = preset
+            _currentFilter.value = preset.criteria
         }
     }
     
     /**
      * Get available filter presets
      */
-    fun getAvailablePresets(): Map<String, FilterCriteria> = filterPresets
+    fun getAvailablePresets(): Map<String, FilterPreset> = filterPresets
     
     /**
      * Clear all filters
      */
     fun clearAllFilters() {
         _currentFilter.value = FilterCriteria()
+    }
+    
+    /**
+     * Clear filters (alias for clearAllFilters)
+     */
+    fun clearFilters() {
+        clearAllFilters()
     }
     
     /**

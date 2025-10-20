@@ -23,7 +23,7 @@ class EcoTipsRepository @Inject constructor(
     suspend fun getEcoTips(
         category: String? = null,
         limit: Int? = null
-    ): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> {
+    ): Flow<Result<List<GetEcoTipsQuery.Node>>> {
         Logger.enter(TAG, "getEcoTips", 
             "category" to (category ?: "all"),
             "limit" to (limit?.toString() ?: "unlimited")
@@ -73,7 +73,7 @@ class EcoTipsRepository @Inject constructor(
             }
     }
     
-    suspend fun getEcoTipsByCategory(category: String): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> {
+    suspend fun getEcoTipsByCategory(category: String): Flow<Result<List<GetEcoTipsQuery.Node>>> {
         Logger.enter(TAG, "getEcoTipsByCategory", "category" to category)
         val startTime = System.currentTimeMillis()
         
@@ -117,7 +117,7 @@ class EcoTipsRepository @Inject constructor(
             }
     }
     
-    suspend fun getRandomEcoTips(limit: Int = 10): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> {
+    suspend fun getRandomEcoTips(limit: Int = 10): Flow<Result<List<GetEcoTipsQuery.Node>>> {
         Logger.enter(TAG, "getRandomEcoTips", "limit" to limit.toString())
         val startTime = System.currentTimeMillis()
         
@@ -161,7 +161,7 @@ class EcoTipsRepository @Inject constructor(
             }
     }
     
-    suspend fun getDailyEcoTip(): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> {
+    suspend fun getDailyEcoTip(): Flow<Result<List<GetEcoTipsQuery.Node>>> {
         Logger.enter(TAG, "getDailyEcoTip")
         val startTime = System.currentTimeMillis()
         

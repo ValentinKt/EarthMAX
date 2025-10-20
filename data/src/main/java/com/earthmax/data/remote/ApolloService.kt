@@ -17,7 +17,7 @@ class ApolloService @Inject constructor(
     suspend fun getEcoTips(
         category: String? = null,
         limit: Int? = null
-    ): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> = flow {
+    ): Flow<Result<List<GetEcoTipsQuery.Node>>> = flow {
         try {
             val response: ApolloResponse<GetEcoTipsQuery.Data> = apolloClient
                 .query(GetEcoTipsQuery(
@@ -29,7 +29,7 @@ class ApolloService @Inject constructor(
             if (response.hasErrors()) {
                 emit(Result.failure(Exception(response.errors?.firstOrNull()?.message ?: "Unknown GraphQL error")))
             } else {
-                val ecoTips = response.data?.getEcoTips ?: emptyList()
+                val ecoTips = response.data?.eco_tipsCollection?.edges?.map { it.node } ?: emptyList()
                 emit(Result.success(ecoTips))
             }
         } catch (e: Exception) {
@@ -37,11 +37,11 @@ class ApolloService @Inject constructor(
         }
     }
     
-    suspend fun getEcoTipsByCategory(category: String): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> {
+    suspend fun getEcoTipsByCategory(category: String): Flow<Result<List<GetEcoTipsQuery.Node>>> {
         return getEcoTips(category = category)
     }
     
-    suspend fun getRandomEcoTips(limit: Int = 10): Flow<Result<List<GetEcoTipsQuery.GetEcoTip>>> {
+    suspend fun getRandomEcoTips(limit: Int = 10): Flow<Result<List<GetEcoTipsQuery.Node>>> {
         return getEcoTips(limit = limit)
     }
 }

@@ -26,20 +26,18 @@ class EventApiRepository @Inject constructor(
     }
     
     suspend fun createEvent(request: CreateEventRequest): Flow<Result<EventResponse>> = flow {
-        Logger.enter(TAG, "createEvent", mapOf(
-            "title" to request.title,
-            "category" to request.category,
-            "organizerId" to Logger.maskSensitiveData(request.organizerId)
-        ))
+        Logger.enter(TAG, "createEvent", 
+            "title" to request.title
+        )
         val startTime = System.currentTimeMillis()
-        
+
         try {
             // Validate request
             val validation = apiValidator.validateCreateEventRequest(request)
             if (!validation.isValid) {
-                Logger.e(TAG, "Event creation validation failed", null, mapOf(
-                    "validationError" to validation.getErrorMessage(),
-                    "title" to request.title
+                Logger.logError(TAG, "Event creation validation failed", null, mapOf(
+                    "validationError" to validation.getErrorMessage() as Any,
+                    "title" to request.title as Any
                 ))
                 emit(Result.failure(IllegalArgumentException(validation.getErrorMessage())))
                 return@flow
@@ -66,7 +64,7 @@ class EventApiRepository @Inject constructor(
                             "eventId" to Logger.maskSensitiveData(eventResponse.id),
                             "title" to request.title,
                             "category" to request.category,
-                            "organizerId" to Logger.maskSensitiveData(request.organizerId),
+                            "title" to request.title,
                             "source" to "api"
                         )
                     )
@@ -74,17 +72,17 @@ class EventApiRepository @Inject constructor(
                     Logger.exit(TAG, "createEvent")
                     emit(Result.success(eventResponse))
                 } ?: run {
-                    Logger.e(TAG, "Empty response body from API", null, mapOf(
-                        "title" to request.title,
-                        "httpCode" to response.code().toString()
+                    Logger.logError(TAG, "Empty response body from API", null, mapOf(
+                        "title" to request.title as Any,
+                        "httpCode" to response.code().toString() as Any
                     ))
                     emit(Result.failure(Exception("Empty response body")))
                 }
             } else {
-                Logger.e(TAG, "API request failed", null, mapOf(
-                    "title" to request.title,
-                    "httpCode" to response.code().toString(),
-                    "httpMessage" to response.message()
+                Logger.logError(TAG, "API request failed", null, mapOf(
+                    "title" to request.title as Any,
+                    "httpCode" to response.code().toString() as Any,
+                    "httpMessage" to response.message() as Any
                 ))
                 emit(Result.failure(Exception("HTTP ${response.code()}: ${response.message()}")))
             }
@@ -94,17 +92,17 @@ class EventApiRepository @Inject constructor(
                 "createEvent",
                 System.currentTimeMillis() - startTime,
                 mapOf(
-                    "title" to request.title,
-                    "success" to "false",
-                    "errorType" to e::class.simpleName.toString()
+                    "title" to request.title as Any,
+                    "success" to "false" as Any,
+                    "errorType" to e::class.simpleName.toString() as Any
                 )
             )
             
-            Logger.e(TAG, "Failed to create event via API", e, mapOf(
-                "title" to request.title,
-                "category" to request.category,
-                "errorType" to e::class.simpleName.toString(),
-                "errorMessage" to e.message.toString()
+            Logger.logError(TAG, "Failed to create event via API", e, mapOf(
+                "title" to request.title as Any,
+                "category" to request.category as Any,
+                "errorType" to e::class.simpleName.toString() as Any,
+                "errorMessage" to e.message.toString() as Any
             ))
             
             Logger.exit(TAG, "createEvent")
@@ -113,9 +111,7 @@ class EventApiRepository @Inject constructor(
     }
     
     suspend fun getEventById(eventId: String): Flow<Result<EventResponse>> = flow {
-        Logger.enter(TAG, "getEventById", mapOf(
-            "eventId" to Logger.maskSensitiveData(eventId)
-        ))
+        Logger.enter(TAG, "getEventById", "eventId" to Logger.maskSensitiveData(eventId))
         val startTime = System.currentTimeMillis()
         
         try {
@@ -145,14 +141,14 @@ class EventApiRepository @Inject constructor(
                     Logger.exit(TAG, "getEventById")
                     emit(Result.success(eventResponse))
                 } ?: run {
-                    Logger.e(TAG, "Event not found in API response", null, mapOf(
+                    Logger.logError(TAG, "Event not found in API response", null, mapOf(
                         "eventId" to Logger.maskSensitiveData(eventId),
                         "httpCode" to response.code().toString()
                     ))
                     emit(Result.failure(Exception("Event not found")))
                 }
             } else {
-                Logger.e(TAG, "Failed to retrieve event from API", null, mapOf(
+                Logger.logError(TAG, "Failed to retrieve event from API", null, mapOf(
                     "eventId" to Logger.maskSensitiveData(eventId),
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message()
@@ -171,7 +167,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to get event by ID via API", e, mapOf(
+            Logger.logError(TAG, "Failed to get event by ID via API", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -183,20 +179,20 @@ class EventApiRepository @Inject constructor(
     }
     
     suspend fun updateEvent(eventId: String, request: UpdateEventRequest): Flow<Result<EventResponse>> = flow {
-        Logger.enter(TAG, "updateEvent", mapOf(
+        Logger.enter(TAG, "updateEvent", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "title" to request.title
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
             // Validate request
             val validation = apiValidator.validateUpdateEventRequest(request)
             if (!validation.isValid) {
-                Logger.e(TAG, "Event update validation failed", null, mapOf(
-                    "eventId" to Logger.maskSensitiveData(eventId),
-                    "validationError" to validation.getErrorMessage(),
-                    "title" to request.title
+                Logger.logError(TAG, "Event update validation failed", null, mapOf(
+                    "eventId" to Logger.maskSensitiveData(eventId) as Any,
+                    "validationError" to validation.getErrorMessage() as Any,
+                    "title" to request.title as Any
                 ))
                 emit(Result.failure(IllegalArgumentException(validation.getErrorMessage())))
                 return@flow
@@ -209,9 +205,9 @@ class EventApiRepository @Inject constructor(
                         TAG,
                         "updateEvent",
                         System.currentTimeMillis() - startTime,
-                        mapOf(
+                        mapOf<String, Any>(
                             "eventId" to Logger.maskSensitiveData(eventId),
-                            "title" to request.title,
+                            "title" to (request.title ?: ""),
                             "success" to "true"
                         )
                     )
@@ -219,9 +215,9 @@ class EventApiRepository @Inject constructor(
                     Logger.logBusinessEvent(
                         TAG,
                         "event_updated_api",
-                        mapOf(
+                        mapOf<String, Any>(
                             "eventId" to Logger.maskSensitiveData(eventId),
-                            "title" to request.title,
+                            "title" to (request.title ?: ""),
                             "source" to "api"
                         )
                     )
@@ -229,14 +225,14 @@ class EventApiRepository @Inject constructor(
                     Logger.exit(TAG, "updateEvent")
                     emit(Result.success(eventResponse))
                 } ?: run {
-                    Logger.e(TAG, "Empty response body from API", null, mapOf(
+                    Logger.logError(TAG, "Empty response body from API", null, mapOf(
                         "eventId" to Logger.maskSensitiveData(eventId),
                         "httpCode" to response.code().toString()
                     ))
                     emit(Result.failure(Exception("Empty response body")))
                 }
             } else {
-                Logger.e(TAG, "Failed to update event via API", null, mapOf(
+                Logger.logError(TAG, "Failed to update event via API", null, mapOf(
                     "eventId" to Logger.maskSensitiveData(eventId),
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message()
@@ -248,19 +244,19 @@ class EventApiRepository @Inject constructor(
                 TAG,
                 "updateEvent",
                 System.currentTimeMillis() - startTime,
-                mapOf(
+                mapOf<String, Any>(
                     "eventId" to Logger.maskSensitiveData(eventId),
-                    "title" to request.title,
+                    "title" to (request.title ?: ""),
                     "success" to "false",
                     "errorType" to e::class.simpleName.toString()
                 )
             )
             
-            Logger.e(TAG, "Failed to update event via API", e, mapOf(
+            Logger.logError(TAG, "Failed to update event via API", e, mapOf<String, Any>(
                 "eventId" to Logger.maskSensitiveData(eventId),
-                "title" to request.title,
+                "title" to (request.title ?: ""),
                 "errorType" to e::class.simpleName.toString(),
-                "errorMessage" to e.message.toString()
+                "errorMessage" to (e.message ?: "")
             ))
             
             Logger.exit(TAG, "updateEvent")
@@ -269,9 +265,9 @@ class EventApiRepository @Inject constructor(
     }
     
     suspend fun deleteEvent(eventId: String): Flow<Result<Unit>> = flow {
-        Logger.enter(TAG, "deleteEvent", mapOf(
+        Logger.enter(TAG, "deleteEvent", 
             "eventId" to Logger.maskSensitiveData(eventId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -299,7 +295,7 @@ class EventApiRepository @Inject constructor(
                 Logger.exit(TAG, "deleteEvent")
                 emit(Result.success(Unit))
             } else {
-                Logger.e(TAG, "Failed to delete event via API", null, mapOf(
+                Logger.logError(TAG, "Failed to delete event via API", null, mapOf(
                     "eventId" to Logger.maskSensitiveData(eventId),
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message()
@@ -318,7 +314,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to delete event via API", e, mapOf(
+            Logger.logError(TAG, "Failed to delete event via API", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -335,12 +331,12 @@ class EventApiRepository @Inject constructor(
         category: String? = null,
         featured: Boolean? = null
     ): Flow<Result<List<EventResponse>>> = flow {
-        Logger.enter(TAG, "getAllEvents", mapOf(
+        Logger.enter(TAG, "getAllEvents", 
             "page" to page.toString(),
             "limit" to limit.toString(),
             "category" to (category ?: "all"),
             "featured" to (featured?.toString() ?: "null")
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         if (featured != null) {
@@ -386,7 +382,7 @@ class EventApiRepository @Inject constructor(
                         emit(Result.success(emptyList()))
                     }
                 } else {
-                    Logger.e(TAG, "Failed to get featured events via API", null, mapOf(
+                    Logger.logError(TAG, "Failed to get featured events via API", null, mapOf(
                         "httpCode" to response.code().toString(),
                         "httpMessage" to response.message(),
                         "featured" to "true"
@@ -405,7 +401,7 @@ class EventApiRepository @Inject constructor(
                     )
                 )
                 
-                Logger.e(TAG, "Failed to get featured events via API", e, mapOf(
+                Logger.logError(TAG, "Failed to get featured events via API", e, mapOf(
                     "featured" to "true",
                     "errorType" to e::class.simpleName.toString(),
                     "errorMessage" to e.message.toString()
@@ -457,7 +453,7 @@ class EventApiRepository @Inject constructor(
                         emit(Result.success(emptyList()))
                     }
                 } else {
-                    Logger.e(TAG, "Failed to get events via API", null, mapOf(
+                    Logger.logError(TAG, "Failed to get events via API", null, mapOf(
                         "httpCode" to response.code().toString(),
                         "httpMessage" to response.message(),
                         "category" to (category ?: "all")
@@ -476,7 +472,7 @@ class EventApiRepository @Inject constructor(
                     )
                 )
                 
-                Logger.e(TAG, "Failed to get events via API", e, mapOf(
+                Logger.logError(TAG, "Failed to get events via API", e, mapOf(
                     "category" to (category ?: "all"),
                     "errorType" to e::class.simpleName.toString(),
                     "errorMessage" to e.message.toString()
@@ -495,13 +491,13 @@ class EventApiRepository @Inject constructor(
         page: Int = 1,
         limit: Int = 20
     ): Flow<Result<List<EventResponse>>> = flow {
-        Logger.enter(TAG, "getEventsByLocation", mapOf(
+        Logger.enter(TAG, "getEventsByLocation", 
             "latitude" to latitude.toString(),
             "longitude" to longitude.toString(),
             "radius" to radius.toString(),
             "page" to page.toString(),
             "limit" to limit.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -546,7 +542,7 @@ class EventApiRepository @Inject constructor(
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.e(TAG, "Failed to get events by location via API", null, mapOf(
+                Logger.logError(TAG, "Failed to get events by location via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "radius" to radius.toString()
@@ -565,7 +561,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to get events by location via API", e, mapOf(
+            Logger.logError(TAG, "Failed to get events by location via API", e, mapOf(
                 "radius" to radius.toString(),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -581,11 +577,11 @@ class EventApiRepository @Inject constructor(
         page: Int = 1,
         limit: Int = 20
     ): Flow<Result<List<EventResponse>>> = flow {
-        Logger.enter(TAG, "searchEvents", mapOf(
+        Logger.enter(TAG, "searchEvents", 
             "query" to query,
             "page" to page.toString(),
             "limit" to limit.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -630,7 +626,7 @@ class EventApiRepository @Inject constructor(
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.e(TAG, "Failed to search events via API", null, mapOf(
+                Logger.logError(TAG, "Failed to search events via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "query" to query
@@ -649,7 +645,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to search events via API", e, mapOf(
+            Logger.logError(TAG, "Failed to search events via API", e, mapOf(
                 "query" to query,
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -666,12 +662,12 @@ class EventApiRepository @Inject constructor(
         page: Int = 1,
         limit: Int = 20
     ): Flow<Result<List<EventResponse>>> = flow {
-        Logger.enter(TAG, "getEventsByDateRange", mapOf(
+        Logger.enter(TAG, "getEventsByDateRange", 
             "startDate" to startDate,
             "endDate" to endDate,
             "page" to page.toString(),
             "limit" to limit.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -719,7 +715,7 @@ class EventApiRepository @Inject constructor(
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.e(TAG, "Failed to get events by date range via API", null, mapOf(
+                Logger.logError(TAG, "Failed to get events by date range via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "startDate" to startDate,
@@ -740,7 +736,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to get events by date range via API", e, mapOf(
+            Logger.logError(TAG, "Failed to get events by date range via API", e, mapOf(
                 "startDate" to startDate,
                 "endDate" to endDate,
                 "errorType" to e::class.simpleName.toString(),
@@ -753,10 +749,7 @@ class EventApiRepository @Inject constructor(
     }
     
     suspend fun joinEvent(eventId: String, userId: String): Flow<Result<Unit>> = flow {
-        Logger.enter(TAG, "joinEvent", mapOf(
-            "eventId" to eventId,
-            "userId" to userId
-        ))
+        Logger.enter(TAG, "joinEvent", "eventId" to eventId, "userId" to userId)
         val startTime = System.currentTimeMillis()
         
         try {
@@ -786,7 +779,7 @@ class EventApiRepository @Inject constructor(
                 Logger.exit(TAG, "joinEvent")
                 emit(Result.success(Unit))
             } else {
-                Logger.e(TAG, "Failed to join event via API", null, mapOf(
+                Logger.logError(TAG, "Failed to join event via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "eventId" to eventId,
@@ -807,7 +800,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to join event via API", e, mapOf(
+            Logger.logError(TAG, "Failed to join event via API", e, mapOf(
                 "eventId" to eventId,
                 "userId" to userId,
                 "errorType" to e::class.simpleName.toString(),
@@ -820,10 +813,10 @@ class EventApiRepository @Inject constructor(
     }
     
     suspend fun leaveEvent(eventId: String, userId: String): Flow<Result<Unit>> = flow {
-        Logger.enter(TAG, "leaveEvent", mapOf(
+        Logger.enter(TAG, "leaveEvent", 
             "eventId" to eventId,
             "userId" to userId
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -853,7 +846,7 @@ class EventApiRepository @Inject constructor(
                 Logger.exit(TAG, "leaveEvent")
                 emit(Result.success(Unit))
             } else {
-                Logger.e(TAG, "Failed to leave event via API", null, mapOf(
+                Logger.logError(TAG, "Failed to leave event via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "eventId" to eventId,
@@ -874,7 +867,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to leave event via API", e, mapOf(
+            Logger.logError(TAG, "Failed to leave event via API", e, mapOf(
                 "eventId" to eventId,
                 "userId" to userId,
                 "errorType" to e::class.simpleName.toString(),
@@ -891,11 +884,11 @@ class EventApiRepository @Inject constructor(
         page: Int = 1,
         limit: Int = 20
     ): Flow<Result<List<String>>> = flow {
-        Logger.enter(TAG, "getEventParticipants", mapOf(
+        Logger.enter(TAG, "getEventParticipants", 
             "eventId" to eventId,
             "page" to page.toString(),
             "limit" to limit.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -940,7 +933,7 @@ class EventApiRepository @Inject constructor(
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.e(TAG, "Failed to get event participants via API", null, mapOf(
+                Logger.logError(TAG, "Failed to get event participants via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "eventId" to eventId
@@ -959,7 +952,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to get event participants via API", e, mapOf(
+            Logger.logError(TAG, "Failed to get event participants via API", e, mapOf(
                 "eventId" to eventId,
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -975,11 +968,11 @@ class EventApiRepository @Inject constructor(
         page: Int = 1,
         limit: Int = 20
     ): Flow<Result<List<EventResponse>>> = flow {
-        Logger.enter(TAG, "getUserEvents", mapOf(
+        Logger.enter(TAG, "getUserEvents", 
             "userId" to userId,
             "page" to page.toString(),
             "limit" to limit.toString()
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         try {
@@ -1024,7 +1017,7 @@ class EventApiRepository @Inject constructor(
                     emit(Result.success(emptyList()))
                 }
             } else {
-                Logger.e(TAG, "Failed to get user events via API", null, mapOf(
+                Logger.logError(TAG, "Failed to get user events via API", null, mapOf(
                     "httpCode" to response.code().toString(),
                     "httpMessage" to response.message(),
                     "userId" to userId
@@ -1043,7 +1036,7 @@ class EventApiRepository @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Failed to get user events via API", e, mapOf(
+            Logger.logError(TAG, "Failed to get user events via API", e, mapOf(
                 "userId" to userId,
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()

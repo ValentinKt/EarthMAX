@@ -50,13 +50,11 @@ class ChatRepositoryImpl @Inject constructor(
         messageType: MessageType,
         replyToMessageId: String?
     ): Result<Message> {
-        Logger.enter(TAG, "sendMessage", mapOf(
+        Logger.enter(TAG, "sendMessage", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "senderId" to Logger.maskSensitiveData(senderId),
-            "senderName" to senderName,
-            "messageType" to messageType.name,
-            "contentLength" to content.length.toString()
-        ))
+            "messageType" to messageType.name
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -101,7 +99,7 @@ class ChatRepositoryImpl @Inject constructor(
                     )
                 )
             } else {
-                Logger.e(TAG, "Failed to send message", null, mapOf(
+                Logger.logError(TAG, "Failed to send message", null, mapOf(
                     "eventId" to Logger.maskSensitiveData(eventId),
                     "senderId" to Logger.maskSensitiveData(senderId),
                     "messageType" to messageType.name,
@@ -125,7 +123,7 @@ class ChatRepositoryImpl @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Exception in sendMessage", e, mapOf(
+            Logger.logError(TAG, "Exception in sendMessage", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "senderId" to Logger.maskSensitiveData(senderId),
                 "messageType" to messageType.name,
@@ -139,55 +137,73 @@ class ChatRepositoryImpl @Inject constructor(
     }
     
     override suspend fun getMessages(eventId: String): Flow<List<Message>> {
-        Logger.enter(TAG, "getMessages", mapOf(
+        Logger.enter(TAG, "getMessages", 
             "eventId" to Logger.maskSensitiveData(eventId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
-            // Combine remote and local messages
-            val remoteMessages = supabaseChatRepository.getMessages(eventId)
+            // Get local messages as Flow
             val localMessages = messageDao.getMessagesByEventId(eventId)
             
-            val combinedFlow = combine(remoteMessages, localMessages) { remote, local ->
-                val remoteList = remote.getOrElse { emptyList() }
-                val localList = local.map { it.toMessage() }
-                
-                // Merge and deduplicate messages
-                val allMessages = (remoteList + localList)
-                    .distinctBy { it.id }
-                    .sortedBy { it.timestamp }
-                
-                Logger.logPerformance(
-                    TAG,
-                    "getMessages",
-                    System.currentTimeMillis() - startTime,
-                    mapOf(
+            // Create a flow that combines remote and local messages
+            flow {
+                try {
+                    // Get remote messages once
+                    val remoteResult = supabaseChatRepository.getMessages(eventId)
+                    val remoteList = remoteResult.getOrElse { emptyList() }
+                    
+                    // Collect local messages and combine
+                    localMessages.collect { localEntities ->
+                        val localList = localEntities.map { it.toMessage() }
+                        
+                        // Merge and deduplicate messages
+                        val allMessages = (remoteList + localList)
+                            .distinctBy { it.id }
+                            .sortedBy { it.timestamp }
+                        
+                        Logger.logPerformance(
+                            TAG,
+                            "getMessages",
+                            System.currentTimeMillis() - startTime,
+                            mapOf(
+                                "eventId" to Logger.maskSensitiveData(eventId),
+                                "remoteCount" to remoteList.size.toString(),
+                                "localCount" to localList.size.toString(),
+                                "totalCount" to allMessages.size.toString(),
+                                "success" to "true"
+                            )
+                        )
+                        
+                        Logger.logBusinessEvent(
+                            TAG,
+                            "messages_retrieved_hybrid",
+                            mapOf(
+                                "eventId" to Logger.maskSensitiveData(eventId),
+                                "remoteCount" to remoteList.size.toString(),
+                                "localCount" to localList.size.toString(),
+                                "totalCount" to allMessages.size.toString(),
+                                "source" to "hybrid"
+                            )
+                        )
+                        
+                        emit(allMessages)
+                    }
+                } catch (remoteException: Exception) {
+                    // If remote fails, just use local messages
+                    Logger.logError(TAG, "Remote messages failed, using local only", remoteException, mapOf(
                         "eventId" to Logger.maskSensitiveData(eventId),
-                        "remoteCount" to remoteList.size.toString(),
-                        "localCount" to localList.size.toString(),
-                        "totalCount" to allMessages.size.toString(),
-                        "success" to "true"
-                    )
-                )
-                
-                Logger.logBusinessEvent(
-                    TAG,
-                    "messages_retrieved_hybrid",
-                    mapOf(
-                        "eventId" to Logger.maskSensitiveData(eventId),
-                        "remoteCount" to remoteList.size.toString(),
-                        "localCount" to localList.size.toString(),
-                        "totalCount" to allMessages.size.toString(),
-                        "source" to "hybrid"
-                    )
-                )
-                
-                allMessages
+                        "errorType" to remoteException::class.simpleName.toString()
+                    ))
+                    
+                    localMessages.collect { localEntities ->
+                        val localList = localEntities.map { it.toMessage() }
+                        emit(localList)
+                    }
+                }
+            }.also {
+                Logger.exit(TAG, "getMessages")
             }
-            
-            Logger.exit(TAG, "getMessages")
-            combinedFlow
         } catch (e: Exception) {
             Logger.logPerformance(
                 TAG,
@@ -200,7 +216,7 @@ class ChatRepositoryImpl @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Exception in getMessages", e, mapOf(
+            Logger.logError(TAG, "Exception in getMessages", e, mapOf(
                 "eventId" to Logger.maskSensitiveData(eventId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -216,9 +232,9 @@ class ChatRepositoryImpl @Inject constructor(
     }
     
     override suspend fun markMessageAsRead(messageId: String): Result<Unit> {
-        Logger.enter(TAG, "markMessageAsRead", mapOf(
+        Logger.enter(TAG, "markMessageAsRead", 
             "messageId" to Logger.maskSensitiveData(messageId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -244,7 +260,7 @@ class ChatRepositoryImpl @Inject constructor(
                     )
                 )
             } else {
-                Logger.e(TAG, "Failed to mark message as read", null, mapOf(
+                Logger.logError(TAG, "Failed to mark message as read", null, mapOf(
                     "messageId" to Logger.maskSensitiveData(messageId),
                     "errorType" to "MarkAsReadFailure"
                 ))
@@ -264,7 +280,7 @@ class ChatRepositoryImpl @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Exception in markMessageAsRead", e, mapOf(
+            Logger.logError(TAG, "Exception in markMessageAsRead", e, mapOf(
                 "messageId" to Logger.maskSensitiveData(messageId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
@@ -276,9 +292,9 @@ class ChatRepositoryImpl @Inject constructor(
     }
     
     override suspend fun deleteMessage(messageId: String): Result<Unit> {
-        Logger.enter(TAG, "deleteMessage", mapOf(
+        Logger.enter(TAG, "deleteMessage", 
             "messageId" to Logger.maskSensitiveData(messageId)
-        ))
+        )
         val startTime = System.currentTimeMillis()
         
         return try {
@@ -310,7 +326,7 @@ class ChatRepositoryImpl @Inject constructor(
                     )
                 )
             } else {
-                Logger.e(TAG, "Failed to delete message", null, mapOf(
+                Logger.logError(TAG, "Failed to delete message", null, mapOf(
                     "messageId" to Logger.maskSensitiveData(messageId),
                     "errorType" to "DeleteMessageFailure"
                 ))
@@ -330,7 +346,7 @@ class ChatRepositoryImpl @Inject constructor(
                 )
             )
             
-            Logger.e(TAG, "Exception in deleteMessage", e, mapOf(
+            Logger.logError(TAG, "Exception in deleteMessage", e, mapOf(
                 "messageId" to Logger.maskSensitiveData(messageId),
                 "errorType" to e::class.simpleName.toString(),
                 "errorMessage" to e.message.toString()
