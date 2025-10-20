@@ -1,0 +1,268 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.parallel=true
+
+jobs:
+  build-performance:
+    name: Build Performance Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          .gradle
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Build with performance profiling
+      run: |
+        echo "Starting build performance analysis..."
+        START_TIME=$(date +%s)
+        ./gradlew assembleDebug --profile --scan
+        END_TIME=$(date +%s)
+        BUILD_TIME=$((END_TIME - START_TIME))
+        echo "Build completed in ${BUILD_TIME} seconds"
+        echo "BUILD_TIME=${BUILD_TIME}" >> $GITHUB_ENV
+
+    - name: Analyze APK size
+      run: |
+        APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+        if [ -f "$APK_PATH" ]; then
+          APK_SIZE=$(stat -c%s "$APK_PATH")
+          APK_SIZE_MB=$((APK_SIZE / 1024 / 1024))
+          echo "APK size: ${APK_SIZE_MB} MB"
+          echo "APK_SIZE_MB=${APK_SIZE_MB}" >> $GITHUB_ENV
+          
+          # Check if APK size exceeds threshold (50MB)
+          if [ $APK_SIZE_MB -gt 50 ]; then
+            echo "::warning::APK size (${APK_SIZE_MB}MB) exceeds recommended threshold of 50MB"
+          fi
+        fi
+
+    - name: Upload build scan
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-scan
+        path: build/reports/profile/
+
+    - name: Performance regression check
+      run: |
+        # Create performance metrics file
+        cat > performance-metrics.json << EOF
+        {
+          "build_time_seconds": $BUILD_TIME,
+          "apk_size_mb": $APK_SIZE_MB,
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "commit": "${{ github.sha }}",
+          "branch": "${{ github.ref_name }}"
+        }
+        EOF
+
+    - name: Upload performance metrics
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-metrics
+        path: performance-metrics.json
+
+  memory-analysis:
+    name: Memory Usage Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          .gradle
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Run memory leak detection
+      run: |
+        ./gradlew testDebugUnitTest -Dorg.gradle.jvmargs="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=./heap-dump.hprof"
+
+    - name: Analyze method count
+      run: |
+        ./gradlew assembleDebug
+        
+        # Count methods in APK
+        if command -v aapt &> /dev/null; then
+          METHOD_COUNT=$(aapt dump badging app/build/outputs/apk/debug/app-debug.apk | grep -o "method-count='[0-9]*'" | grep -o "[0-9]*" || echo "0")
+          echo "Method count: $METHOD_COUNT"
+          echo "METHOD_COUNT=$METHOD_COUNT" >> $GITHUB_ENV
+          
+          # Check if method count approaches 64K limit
+          if [ $METHOD_COUNT -gt 50000 ]; then
+            echo "::warning::Method count ($METHOD_COUNT) is approaching the 64K limit"
+          fi
+        fi
+
+    - name: Upload heap dump if exists
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: heap-dump
+        path: heap-dump.hprof
+
+  dependency-analysis:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          .gradle
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Generate dependency report
+      run: ./gradlew dependencies > dependency-report.txt
+
+    - name: Analyze unused dependencies
+      run: |
+        ./gradlew buildHealth
+        
+        # Check for outdated dependencies
+        ./gradlew dependencyUpdates
+
+    - name: Upload dependency reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-analysis
+        path: |
+          dependency-report.txt
+          build/reports/dependencyUpdates/
+          build/reports/buildHealth/
+
+  performance-report:
+    name: Generate Performance Report
+    runs-on: ubuntu-latest
+    needs: [build-performance, memory-analysis, dependency-analysis]
+    if: always()
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Generate performance report
+      run: |
+        cat > performance-report.md << 'EOF'
+        # 📊 Performance Analysis Report
+        
+        **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Commit:** ${{ github.sha }}
+        **Branch:** ${{ github.ref_name }}
+        
+        ## Build Performance
+        - **Build Time:** ${BUILD_TIME:-"N/A"} seconds
+        - **APK Size:** ${APK_SIZE_MB:-"N/A"} MB
+        - **Method Count:** ${METHOD_COUNT:-"N/A"}
+        
+        ## Recommendations
+        
+        ### APK Size Optimization
+        - Consider using ProGuard/R8 for code shrinking
+        - Optimize image assets and use WebP format
+        - Remove unused resources with `shrinkResources true`
+        
+        ### Build Time Optimization
+        - Enable Gradle build cache
+        - Use parallel builds
+        - Consider modularization for large projects
+        
+        ### Memory Optimization
+        - Monitor method count to avoid 64K limit
+        - Use memory profiling tools
+        - Implement proper lifecycle management
+        
+        ## Artifacts
+        - Build scan reports available in artifacts
+        - Dependency analysis reports included
+        - Performance metrics tracked over time
+        EOF
+
+    - name: Upload performance report
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report
+        path: performance-report.md
+
+    - name: Comment on commit with performance summary
+      uses: actions/github-script@v7
+      if: github.event_name == 'push'
+      with:
+        script: |
+          const report = `## 📊 Performance Summary
+          
+          **Build Time:** ${process.env.BUILD_TIME || 'N/A'} seconds
+          **APK Size:** ${process.env.APK_SIZE_MB || 'N/A'} MB
+          **Method Count:** ${process.env.METHOD_COUNT || 'N/A'}
+          
+          [View detailed performance report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+          
+          github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: context.sha,
+            body: report
+          });
