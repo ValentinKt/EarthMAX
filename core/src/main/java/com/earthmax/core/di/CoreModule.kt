@@ -9,6 +9,14 @@ import com.earthmax.core.monitoring.MetricsCollector
 import com.earthmax.core.monitoring.NetworkMonitor
 import com.earthmax.core.monitoring.PerformanceMonitor
 import com.earthmax.core.sync.*
+import com.earthmax.performance.PerformanceMonitor as NewPerformanceMonitor
+import com.earthmax.performance.FrameTimeTracker
+import com.earthmax.performance.MemoryTracker
+import com.earthmax.performance.NetworkTracker
+import com.earthmax.performance.BatteryTracker
+import com.earthmax.performance.UIPerformanceOptimizer
+import com.earthmax.performance.MemoryLeakDetector
+import com.earthmax.performance.DatabaseOptimizer
 import com.earthmax.core.utils.Logger
 import com.earthmax.core.database.EarthMaxDatabase
 import androidx.room.Room
@@ -190,5 +198,79 @@ object CoreModule {
     @Provides
     fun provideOfflineChangeDao(database: EarthMaxDatabase): OfflineChangeDao {
         return database.offlineChangeDao()
+    }
+
+    // Performance Monitoring Modules
+
+    /**
+     * Provides NewPerformanceMonitor singleton
+     */
+    @Provides
+    @Singleton
+    fun provideNewPerformanceMonitor(@ApplicationContext context: Context): NewPerformanceMonitor {
+        return NewPerformanceMonitor(context)
+    }
+
+    /**
+     * Provides FrameTimeTracker singleton
+     */
+    @Provides
+    @Singleton
+    fun provideFrameTimeTracker(): FrameTimeTracker {
+        return FrameTimeTracker()
+    }
+
+    /**
+     * Provides MemoryTracker singleton
+     */
+    @Provides
+    @Singleton
+    fun provideMemoryTracker(@ApplicationContext context: Context): MemoryTracker {
+        return MemoryTracker(context)
+    }
+
+    /**
+     * Provides NetworkTracker singleton
+     */
+    @Provides
+    @Singleton
+    fun provideNetworkTracker(): NetworkTracker {
+        return NetworkTracker()
+    }
+
+    /**
+     * Provides BatteryTracker singleton
+     */
+    @Provides
+    @Singleton
+    fun provideBatteryTracker(@ApplicationContext context: Context): BatteryTracker {
+        return BatteryTracker(context)
+    }
+
+    /**
+     * Provides UIPerformanceOptimizer singleton
+     */
+    @Provides
+    @Singleton
+    fun provideUIPerformanceOptimizer(@ApplicationContext context: Context): UIPerformanceOptimizer {
+        return UIPerformanceOptimizer(context)
+    }
+
+    /**
+     * Provides MemoryLeakDetector singleton
+     */
+    @Provides
+    @Singleton
+    fun provideMemoryLeakDetector(@ApplicationContext context: Context): MemoryLeakDetector {
+        return MemoryLeakDetector(context)
+    }
+
+    /**
+     * Provides DatabaseOptimizer singleton
+     */
+    @Provides
+    @Singleton
+    fun provideDatabaseOptimizer(database: EarthMaxDatabase): DatabaseOptimizer {
+        return DatabaseOptimizer(database)
     }
 }
