@@ -2,16 +2,11 @@
 
 ## In Progress Tasks 🚧
 
-### Debug-Only Performance Metrics Implementation
-- [x] Create debug configuration utility for performance metrics visibility
-- [x] Implement secure visibility toggle with authorization checks
-- [x] Update UI components to conditionally show performance metrics in debug mode
-- [x] Add performance guards to prevent monitoring overhead in release builds
-- [x] Create tests for debug mode functionality and security
-- [x] Commit all debug-only performance metrics implementation to repository
-
-### Performance Monitoring and Testing
-- [x] Add performance benchmarking and regression testing
+### Todo List Integration and Real-time Features
+- [x] Create TodoListScreen with comprehensive UI for todo management
+- [x] Integrate todo list into EventDetailScreen with navigation
+- [x] Implement real-time todo item subscriptions using Supabase Realtime
+- [ ] Commit all todo list integration changes with proper Git commit messages
 
 ## Pending Tasks 📋
 

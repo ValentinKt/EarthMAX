@@ -43,10 +43,25 @@ CREATE TABLE IF NOT EXISTS public.event_participants (
     UNIQUE(event_id, user_id)
 );
 
+-- Create todo_items table
+CREATE TABLE IF NOT EXISTS public.todo_items (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    event_id UUID REFERENCES public.events(id) ON DELETE CASCADE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    is_completed BOOLEAN DEFAULT FALSE,
+    assigned_to UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Enable Row Level Security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.event_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.todo_items ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles
@@ -81,6 +96,56 @@ CREATE POLICY "Authenticated users can join events" ON public.event_participants
 CREATE POLICY "Users can leave events they joined" ON public.event_participants
     FOR DELETE USING (auth.uid() = user_id);
 
+-- Todo items policies
+CREATE POLICY "Todo items are viewable by event participants" ON public.todo_items
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.event_participants 
+            WHERE event_id = todo_items.event_id 
+            AND user_id = auth.uid()
+        ) OR 
+        EXISTS (
+            SELECT 1 FROM public.events 
+            WHERE id = todo_items.event_id 
+            AND organizer_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Event participants can create todo items" ON public.todo_items
+    FOR INSERT WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.event_participants 
+            WHERE event_id = todo_items.event_id 
+            AND user_id = auth.uid()
+        ) OR 
+        EXISTS (
+            SELECT 1 FROM public.events 
+            WHERE id = todo_items.event_id 
+            AND organizer_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can update todo items they created or are assigned to" ON public.todo_items
+    FOR UPDATE USING (
+        auth.uid() = created_by OR 
+        auth.uid() = assigned_to OR
+        EXISTS (
+            SELECT 1 FROM public.events 
+            WHERE id = todo_items.event_id 
+            AND organizer_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can delete todo items they created or event organizers can delete" ON public.todo_items
+    FOR DELETE USING (
+        auth.uid() = created_by OR
+        EXISTS (
+            SELECT 1 FROM public.events 
+            WHERE id = todo_items.event_id 
+            AND organizer_id = auth.uid()
+        )
+    );
+
 -- Create function to handle user profile creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -111,6 +176,9 @@ CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.events
+    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.todo_items
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Insert sample data (optional)

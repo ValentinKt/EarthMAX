@@ -14,12 +14,14 @@ import androidx.navigation.navigation
 import com.earthmax.feature.events.create.CreateEventScreen
 import com.earthmax.feature.events.detail.EventDetailScreen
 import com.earthmax.feature.events.home.EventsHomeScreen
+import com.earthmax.feature.events.todo.TodoListScreen
 import com.earthmax.presentation.chat.ChatScreen
 
 const val EVENTS_GRAPH_ROUTE = "events_graph"
 const val EVENTS_HOME_ROUTE = "events_home"
 const val CREATE_EVENT_ROUTE = "create_event"
 const val EVENT_DETAIL_ROUTE = "event_detail"
+const val TODO_LIST_ROUTE = "todo_list"
 const val CHAT_ROUTE = "chat"
 
 fun NavGraphBuilder.eventsGraph(
@@ -42,6 +44,34 @@ fun NavGraphBuilder.eventsGraph(
                 },
                 onNavigateToMap = onNavigateToMap,
                 onNavigateToProfile = onNavigateToProfile
+            )
+        }
+        
+        composable(
+            route = "$TODO_LIST_ROUTE/{eventId}",
+            arguments = listOf(
+                navArgument("eventId") { type = NavType.StringType }
+            ),
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(400)
+                ) + fadeIn(animationSpec = tween(400))
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(400)
+                ) + fadeOut(animationSpec = tween(400))
+            }
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: ""
+            
+            TodoListScreen(
+                eventId = eventId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
         
@@ -89,6 +119,9 @@ fun NavGraphBuilder.eventsGraph(
                 onNavigateToMap = onNavigateToMap,
                 onNavigateToChat = { eventId, eventTitle ->
                     navController.navigate("$CHAT_ROUTE/$eventId/$eventTitle")
+                },
+                onNavigateToTodoList = { eventId ->
+                    navController.navigate("$TODO_LIST_ROUTE/$eventId")
                 }
             )
         }

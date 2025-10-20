@@ -23,7 +23,7 @@ import com.earthmax.data.api.repository.EventApiRepository
 import com.earthmax.data.api.interceptor.AuthInterceptor
 import com.earthmax.data.api.interceptor.ErrorInterceptor
 import com.earthmax.data.api.interceptor.RateLimitInterceptor
-import com.earthmax.data.repository.PerformanceRepository
+import com.earthmax.data.todo.SupabaseTodoRepository
 import com.earthmax.core.network.SupabaseClient
 import com.earthmax.core.network.BuildConfig
 import com.google.gson.Gson
@@ -208,5 +208,11 @@ object DataModule {
         performanceDao: PerformanceDao
     ): PerformanceRepository {
         return PerformanceRepository(performanceDao)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideSupabaseTodoRepository(): SupabaseTodoRepository {
+        return SupabaseTodoRepository()
     }
 }

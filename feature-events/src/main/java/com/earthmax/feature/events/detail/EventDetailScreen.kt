@@ -25,6 +25,7 @@ fun EventDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToMap: () -> Unit,
     onNavigateToChat: (String, String) -> Unit,
+    onNavigateToTodoList: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EventDetailViewModel = hiltViewModel()
 ) {
@@ -75,6 +76,18 @@ fun EventDetailScreen(
                             Icon(
                                 imageVector = Icons.Default.Chat,
                                 contentDescription = "Chat with participants"
+                            )
+                        }
+                        
+                        // Todo List button - only show if user is joined or is organizer
+                        IconButton(
+                            onClick = { 
+                                onNavigateToTodoList(event.id)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "View todo list"
                             )
                         }
                     }

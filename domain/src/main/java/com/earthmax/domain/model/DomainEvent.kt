@@ -23,6 +23,7 @@ data class DomainEvent(
     val maxParticipants: Int? = null,
     val tags: List<String> = emptyList(),
     val imageUrl: String? = null,
+    val todoItems: List<DomainTodoItem> = emptyList(),
     val createdAt: Instant,
     val updatedAt: Instant
 )

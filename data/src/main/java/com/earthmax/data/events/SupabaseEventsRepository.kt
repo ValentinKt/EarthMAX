@@ -3,8 +3,10 @@ package com.earthmax.data.events
 import android.net.Uri
 import com.earthmax.core.models.Event
 import com.earthmax.core.models.EventCategory
+import com.earthmax.core.models.TodoItem
 import com.earthmax.core.network.SupabaseClient
 import com.earthmax.core.utils.Logger
+import com.earthmax.data.todo.TodoItemDto
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.filter.FilterOperation
@@ -12,6 +14,7 @@ import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,6 +38,7 @@ data class EventDto(
     val max_participants: Int? = null,
     val current_participants: Int = 0,
     val category: String,
+    val todo_items: List<TodoItemDto>? = null,
     val created_at: String
 )
 
@@ -634,7 +638,8 @@ private fun EventDto.toEvent(): Event {
         maxParticipants = max_participants ?: 0,
         currentParticipants = current_participants,
         category = EventCategory.valueOf(category),
-        imageUrl = image_url ?: ""
+        imageUrl = image_url ?: "",
+        todoItems = todo_items?.map { it.toTodoItem() } ?: emptyList()
     )
 }
 
@@ -653,6 +658,51 @@ private fun Event.toEventDto(): EventDto {
         max_participants = maxParticipants,
         current_participants = currentParticipants,
         category = category.name,
+        todo_items = todoItems.map { it.toTodoItemDto() },
         created_at = "" // This will be handled by Supabase
+    )
+}
+
+// Extension function to convert TodoItemDto to TodoItem
+private fun TodoItemDto.toTodoItem(): TodoItem {
+    val createdAtDate = try {
+        Date(Instant.parse(created_at).toEpochMilliseconds())
+    } catch (e: Exception) {
+        Date()
+    }
+    
+    val completedAtDate = completed_at?.let { 
+        try {
+            Date(Instant.parse(it).toEpochMilliseconds())
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    return TodoItem(
+        id = id,
+        eventId = event_id,
+        title = title,
+        description = description ?: "",
+        isCompleted = is_completed,
+        assignedTo = assigned_to ?: "",
+        createdAt = createdAtDate,
+        completedAt = completedAtDate
+    )
+}
+
+// Extension function to convert TodoItem to TodoItemDto
+private fun TodoItem.toTodoItemDto(): TodoItemDto {
+    return TodoItemDto(
+        id = id,
+        event_id = eventId,
+        title = title,
+        description = description.takeIf { it.isNotEmpty() },
+        is_completed = isCompleted,
+        assigned_to = assignedTo.takeIf { it.isNotEmpty() },
+        created_by = "", // This will need to be set from context
+        created_at = Instant.fromEpochMilliseconds(createdAt.time).toString(),
+        completed_at = completedAt?.let { Instant.fromEpochMilliseconds(it.time).toString() },
+        updated_at = Instant.fromEpochMilliseconds(createdAt.time).toString() // Default to createdAt
     )
 }
