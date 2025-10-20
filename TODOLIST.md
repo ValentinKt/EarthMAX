@@ -7,7 +7,7 @@
 - [x] Integrate todo list into EventDetailScreen with navigation
 - [x] Implement real-time todo item subscriptions using Supabase Realtime
 - [x] Commit all todo list integration changes with proper Git commit messages
-- [ ] Add comprehensive unit tests for TodoRepository and related components
+- [x] Add comprehensive unit tests for TodoRepository and related components
 
 ## Pending Tasks 📋
 
