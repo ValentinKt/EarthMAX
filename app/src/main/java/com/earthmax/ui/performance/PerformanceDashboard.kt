@@ -18,22 +18,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.earthmax.performance.*
+import com.earthmax.core.debug.DebugVisibilityManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerformanceDashboard(
-    viewModel: PerformanceDashboardViewModel = hiltViewModel()
+    viewModel: PerformanceDashboardViewModel = hiltViewModel(),
+    debugVisibilityManager: DebugVisibilityManager = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
+    val visibilityState by debugVisibilityManager.getVisibilityState().let { 
+        remember { mutableStateOf(it) }
+    }
+    
+    // Check if performance dashboard should be visible
+    val isDashboardVisible by debugVisibilityManager.isPerformanceDashboardVisible.collectAsState()
+    
     LaunchedEffect(Unit) {
-        viewModel.startMonitoring()
+        // Attempt to authorize debug session
+        debugVisibilityManager.authorizeDebugSession()
+        if (isDashboardVisible) {
+            viewModel.startMonitoring()
+        }
     }
 
     DisposableEffect(Unit) {
         onDispose {
             viewModel.stopMonitoring()
         }
+    }
+    
+    // Show debug authorization screen if not visible
+    if (!isDashboardVisible) {
+        DebugAuthorizationScreen(
+            onAuthorize = { debugVisibilityManager.authorizeDebugSession() }
+        )
+        return
     }
 
     Column(
@@ -67,99 +89,111 @@ fun PerformanceDashboard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Memory Performance
-            item {
-                PerformanceMetricCard(
-                    title = "Memory Usage",
-                    icon = Icons.Default.Memory,
-                    value = "${uiState.memoryUsage}%",
-                    status = getPerformanceStatus(uiState.memoryUsage),
-                    details = listOf(
-                        "Used: ${uiState.memoryUsed} MB",
-                        "Available: ${uiState.memoryAvailable} MB",
-                        "Max: ${uiState.memoryMax} MB"
-                    ),
-                    recommendations = uiState.memoryRecommendations
-                )
+            if (debugVisibilityManager.isMemoryMonitoringVisible.collectAsState().value) {
+                item {
+                    PerformanceMetricCard(
+                        title = "Memory Usage",
+                        icon = Icons.Default.Memory,
+                        value = "${uiState.memoryUsage}%",
+                        status = getPerformanceStatus(uiState.memoryUsage),
+                        details = listOf(
+                            "Used: ${uiState.memoryUsed} MB",
+                            "Available: ${uiState.memoryAvailable} MB",
+                            "Max: ${uiState.memoryMax} MB"
+                        ),
+                        recommendations = uiState.memoryRecommendations
+                    )
+                }
             }
 
             // Frame Rate Performance
-            item {
-                PerformanceMetricCard(
-                    title = "Frame Rate",
-                    icon = Icons.Default.Speed,
-                    value = "${uiState.averageFps} FPS",
-                    status = getFrameRateStatus(uiState.averageFps),
-                    details = listOf(
-                        "Dropped frames: ${uiState.droppedFrames}",
-                        "Jank frames: ${uiState.jankFrames}",
-                        "Frame consistency: ${uiState.frameConsistency}%"
-                    ),
-                    recommendations = uiState.frameRateRecommendations
-                )
+            if (debugVisibilityManager.isFrameRateMonitoringVisible.collectAsState().value) {
+                item {
+                    PerformanceMetricCard(
+                        title = "Frame Rate",
+                        icon = Icons.Default.Speed,
+                        value = "${uiState.averageFps} FPS",
+                        status = getFrameRateStatus(uiState.averageFps),
+                        details = listOf(
+                            "Dropped frames: ${uiState.droppedFrames}",
+                            "Jank frames: ${uiState.jankFrames}",
+                            "Frame consistency: ${uiState.frameConsistency}%"
+                        ),
+                        recommendations = uiState.frameRateRecommendations
+                    )
+                }
             }
 
             // Network Performance
-            item {
-                PerformanceMetricCard(
-                    title = "Network",
-                    icon = Icons.Default.NetworkCheck,
-                    value = "${uiState.averageResponseTime}ms",
-                    status = getNetworkStatus(uiState.averageResponseTime),
-                    details = listOf(
-                        "Success rate: ${uiState.networkSuccessRate}%",
-                        "Data usage: ${uiState.dataUsage} MB",
-                        "Active requests: ${uiState.activeRequests}"
-                    ),
-                    recommendations = uiState.networkRecommendations
-                )
+            if (debugVisibilityManager.isNetworkMonitoringVisible.collectAsState().value) {
+                item {
+                    PerformanceMetricCard(
+                        title = "Network",
+                        icon = Icons.Default.NetworkCheck,
+                        value = "${uiState.averageResponseTime}ms",
+                        status = getNetworkStatus(uiState.averageResponseTime),
+                        details = listOf(
+                            "Success rate: ${uiState.networkSuccessRate}%",
+                            "Data usage: ${uiState.dataUsage} MB",
+                            "Active requests: ${uiState.activeRequests}"
+                        ),
+                        recommendations = uiState.networkRecommendations
+                    )
+                }
             }
 
             // Battery Performance
-            item {
-                PerformanceMetricCard(
-                    title = "Battery",
-                    icon = Icons.Default.Battery6Bar,
-                    value = "${uiState.batteryLevel}%",
-                    status = getBatteryStatus(uiState.batteryLevel),
-                    details = listOf(
-                        "Temperature: ${uiState.batteryTemperature}°C",
-                        "Power usage: ${uiState.powerUsage}mW",
-                        "Time remaining: ${uiState.timeRemaining}"
-                    ),
-                    recommendations = uiState.batteryRecommendations
-                )
+            if (debugVisibilityManager.isBatteryMonitoringVisible.collectAsState().value) {
+                item {
+                    PerformanceMetricCard(
+                        title = "Battery",
+                        icon = Icons.Default.Battery6Bar,
+                        value = "${uiState.batteryLevel}%",
+                        status = getBatteryStatus(uiState.batteryLevel),
+                        details = listOf(
+                            "Temperature: ${uiState.batteryTemperature}°C",
+                            "Power usage: ${uiState.powerUsage}mW",
+                            "Time remaining: ${uiState.timeRemaining}"
+                        ),
+                        recommendations = uiState.batteryRecommendations
+                    )
+                }
             }
 
             // Database Performance
-            item {
-                PerformanceMetricCard(
-                    title = "Database",
-                    icon = Icons.Default.Storage,
-                    value = "${uiState.dbPerformanceScore}%",
-                    status = getPerformanceStatus(uiState.dbPerformanceScore),
-                    details = listOf(
-                        "Avg query time: ${uiState.avgQueryTime}ms",
-                        "Slow queries: ${uiState.slowQueries}",
-                        "Cache hit rate: ${uiState.cacheHitRate}%"
-                    ),
-                    recommendations = uiState.databaseRecommendations
-                )
+            if (debugVisibilityManager.isDatabaseMonitoringVisible.collectAsState().value) {
+                item {
+                    PerformanceMetricCard(
+                        title = "Database",
+                        icon = Icons.Default.Storage,
+                        value = "${uiState.dbPerformanceScore}%",
+                        status = getPerformanceStatus(uiState.dbPerformanceScore),
+                        details = listOf(
+                            "Avg query time: ${uiState.avgQueryTime}ms",
+                            "Slow queries: ${uiState.slowQueries}",
+                            "Cache hit rate: ${uiState.cacheHitRate}%"
+                        ),
+                        recommendations = uiState.databaseRecommendations
+                    )
+                }
             }
 
             // UI Performance
-            item {
-                PerformanceMetricCard(
-                    title = "UI Performance",
-                    icon = Icons.Default.Visibility,
-                    value = "${uiState.uiPerformanceScore}%",
-                    status = getPerformanceStatus(uiState.uiPerformanceScore),
-                    details = listOf(
-                        "Overdraw level: ${uiState.overdrawLevel}",
-                        "Layout depth: ${uiState.layoutDepth}",
-                        "View count: ${uiState.viewCount}"
-                    ),
-                    recommendations = uiState.uiRecommendations
-                )
+            if (debugVisibilityManager.isUiMonitoringVisible.collectAsState().value) {
+                item {
+                    PerformanceMetricCard(
+                        title = "UI Performance",
+                        icon = Icons.Default.Visibility,
+                        value = "${uiState.uiPerformanceScore}%",
+                        status = getPerformanceStatus(uiState.uiPerformanceScore),
+                        details = listOf(
+                            "Overdraw level: ${uiState.overdrawLevel}",
+                            "Layout depth: ${uiState.layoutDepth}",
+                            "View count: ${uiState.viewCount}"
+                        ),
+                        recommendations = uiState.uiRecommendations
+                    )
+                }
             }
 
             // Memory Leaks
@@ -428,6 +462,52 @@ private fun getBatteryStatus(level: Int): PerformanceStatus {
         level >= 50 -> PerformanceStatus.GOOD
         level >= 20 -> PerformanceStatus.FAIR
         else -> PerformanceStatus.POOR
+    }
+}
+
+@Composable
+private fun DebugAuthorizationScreen(
+    onAuthorize: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Security,
+            contentDescription = "Debug Authorization",
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "Debug Mode Required",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = "Performance metrics are only available in debug mode for authorized debugging sessions.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Button(
+            onClick = onAuthorize,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Authorize Debug Session")
+        }
     }
 }
 
