@@ -2,6 +2,14 @@
 
 ## In Progress Tasks 🚧
 
+### Debug-Only Performance Metrics Implementation
+- [x] Create debug configuration utility for performance metrics visibility
+- [x] Implement secure visibility toggle with authorization checks
+- [x] Update UI components to conditionally show performance metrics in debug mode
+- [x] Add performance guards to prevent monitoring overhead in release builds
+- [x] Create tests for debug mode functionality and security
+- [x] Commit all debug-only performance metrics implementation to repository
+
 ### Performance Monitoring and Testing
 - [x] Add performance benchmarking and regression testing
 
@@ -62,6 +70,14 @@
 - [x] Create integration tests for performance dashboard components
 - [x] Add performance benchmarking tests to measure monitoring overhead
 - [x] Implement regression tests to ensure performance consistency
+
+### Debug-Only Performance Metrics Implementation (Current Phase)
+- [x] Create debug configuration utility for performance metrics visibility
+- [x] Implement secure visibility toggle with authorization checks
+- [x] Update UI components to conditionally show performance metrics in debug mode
+- [x] Add performance guards to prevent monitoring overhead in release builds
+- [x] Create tests for debug mode functionality and security
+- [x] Commit all debug-only performance metrics implementation to repository
 
 ### Build System and GraphQL Operations (Previous Phase)
 - [x] Fix all compilation errors in the Android project build system
