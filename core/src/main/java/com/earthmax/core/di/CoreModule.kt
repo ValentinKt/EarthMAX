@@ -1,5 +1,6 @@
 package com.earthmax.core.di
 
+import androidx.work.WorkManager
 import com.earthmax.core.cache.AdvancedCacheManager
 import com.earthmax.core.cache.CacheManager
 import com.earthmax.core.error.AdvancedErrorHandler
@@ -7,7 +8,10 @@ import com.earthmax.core.error.ErrorHandler
 import com.earthmax.core.monitoring.MetricsCollector
 import com.earthmax.core.monitoring.NetworkMonitor
 import com.earthmax.core.monitoring.PerformanceMonitor
+import com.earthmax.core.sync.*
 import com.earthmax.core.utils.Logger
+import com.earthmax.core.database.EarthMaxDatabase
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -93,5 +97,98 @@ object CoreModule {
     @Singleton
     fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor {
         return NetworkMonitor(context)
+    }
+
+    /**
+     * Provides SyncManager singleton
+     */
+    @Provides
+    @Singleton
+    fun provideSyncManager(
+        offlineChangeTracker: OfflineChangeTracker,
+        conflictResolver: ConflictResolver,
+        networkMonitor: com.earthmax.core.sync.NetworkMonitor,
+        cacheManager: AdvancedCacheManager,
+        errorHandler: AdvancedErrorHandler,
+        logger: Logger,
+        metricsCollector: MetricsCollector
+    ): SyncManager = SyncManager(
+        offlineChangeTracker,
+        conflictResolver,
+        networkMonitor,
+        cacheManager,
+        errorHandler,
+        logger,
+        metricsCollector
+    )
+
+    /**
+     * Provides ConflictResolver singleton
+     */
+    @Provides
+    @Singleton
+    fun provideConflictResolver(
+        logger: Logger
+    ): ConflictResolver = ConflictResolver(logger)
+
+    /**
+     * Provides sync NetworkMonitor singleton
+     */
+    @Provides
+    @Singleton
+    fun provideSyncNetworkMonitor(
+        @ApplicationContext context: Context,
+        logger: Logger
+    ): com.earthmax.core.sync.NetworkMonitor = com.earthmax.core.sync.NetworkMonitor(context, logger)
+
+    /**
+     * Provides OfflineChangeTracker singleton
+     */
+    @Provides
+    @Singleton
+    fun provideOfflineChangeTracker(
+        offlineChangeDao: OfflineChangeDao,
+        logger: Logger
+    ): OfflineChangeTracker = OfflineChangeTracker(offlineChangeDao, logger)
+
+    /**
+     * Provides SyncScheduler singleton
+     */
+    @Provides
+    @Singleton
+    fun provideSyncScheduler(
+        workManager: WorkManager,
+        networkMonitor: com.earthmax.core.sync.NetworkMonitor,
+        logger: Logger
+    ): SyncScheduler = SyncScheduler(workManager, networkMonitor, logger)
+
+    /**
+     * Provides WorkManager singleton
+     */
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+
+    /**
+     * Provides EarthMaxDatabase singleton
+     */
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): EarthMaxDatabase {
+        return Room.databaseBuilder(
+            context,
+            EarthMaxDatabase::class.java,
+            "earthmax_database"
+        ).fallbackToDestructiveMigration().build()
+    }
+
+    /**
+     * Provides OfflineChangeDao
+     */
+    @Provides
+    fun provideOfflineChangeDao(database: EarthMaxDatabase): OfflineChangeDao {
+        return database.offlineChangeDao()
     }
 }
