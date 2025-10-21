@@ -28,7 +28,7 @@ dependencyResolutionManagement {
 rootProject.name = "EarthMAX"
 include(":app")
 include(":core")
-include(":core:performance")
+// removed: include(":core:performance")
 include(":core:core-network")
 include(":core-ui")
 include(":data")

@@ -45,7 +45,7 @@ dependencies {
     implementation(libs.play.services.location)
     
     // WorkManager
-    implementation(libs.androidx.work.runtime)
+    api(libs.androidx.work.runtime)
     
     // Room
     implementation(libs.androidx.room.runtime)
@@ -57,7 +57,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     
     // Gson for JSON serialization
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson)
     
     // Kotlinx DateTime
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")

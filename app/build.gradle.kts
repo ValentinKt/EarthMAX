@@ -153,7 +153,7 @@ dependencies {
     // Core modules
     implementation(project(":core"))
     implementation(project(":core:core-network"))
-    implementation(project(":core:performance"))
+    // removed: implementation(project(":core:performance"))
     implementation(project(":core-ui"))
     implementation(project(":data"))
     
@@ -177,6 +177,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    // Compose Material icons
+    implementation("androidx.compose.material:material-icons-extended")
     
     // Navigation
     implementation(libs.androidx.navigation.compose)
