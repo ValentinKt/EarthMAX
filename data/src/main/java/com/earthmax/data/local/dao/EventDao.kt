@@ -12,8 +12,14 @@ interface EventDao {
     @Query("SELECT * FROM events ORDER BY dateTime ASC")
     fun getAllEvents(): PagingSource<Int, EventEntity>
     
+    @Query("SELECT * FROM events ORDER BY dateTime ASC")
+    suspend fun getAllEventsSync(): List<EventEntity>
+    
     @Query("SELECT * FROM events WHERE category = :category ORDER BY dateTime ASC")
     fun getEventsByCategory(category: EventCategory): PagingSource<Int, EventEntity>
+    
+    @Query("SELECT * FROM events WHERE category = :category ORDER BY dateTime ASC")
+    suspend fun getEventsByCategorySync(category: EventCategory): List<EventEntity>
     
     @Query("SELECT * FROM events WHERE isJoined = 1 ORDER BY dateTime ASC")
     fun getJoinedEvents(): Flow<List<EventEntity>>
@@ -35,6 +41,15 @@ interface EventDao {
         ORDER BY dateTime ASC
     """)
     fun searchEvents(query: String): PagingSource<Int, EventEntity>
+    
+    @Query("""
+        SELECT * FROM events 
+        WHERE title LIKE '%' || :query || '%' 
+        OR description LIKE '%' || :query || '%' 
+        OR location LIKE '%' || :query || '%'
+        ORDER BY dateTime ASC
+    """)
+    suspend fun searchEventsSync(query: String): List<EventEntity>
     
     @Query("""
         SELECT * FROM events 

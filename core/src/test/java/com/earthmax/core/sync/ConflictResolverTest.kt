@@ -1,6 +1,6 @@
 package com.earthmax.core.sync
 
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import org.junit.After

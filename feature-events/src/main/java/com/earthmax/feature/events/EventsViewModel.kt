@@ -8,7 +8,7 @@ import com.earthmax.core.models.Event
 import com.earthmax.core.models.EventCategory
 import com.earthmax.core.models.User
 import com.earthmax.core.utils.Logger
-import com.earthmax.data.repository.EventRepository
+import com.earthmax.data.repository.EventDataRepository
 import com.earthmax.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -26,7 +26,7 @@ data class EventsUiState(
 
 @HiltViewModel
 class EventsViewModel @Inject constructor(
-    private val eventRepository: EventRepository,
+    private val eventRepository: EventDataRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
 
@@ -41,7 +41,7 @@ class EventsViewModel @Inject constructor(
         _searchQuery
     ) { category, query ->
         when {
-            query.isNotBlank() -> eventRepository.searchEvents(query)
+            query.isNotBlank() -> eventRepository.searchEventsPaged(query)
             category != null -> eventRepository.getEventsByCategory(category)
             else -> eventRepository.getAllEvents()
         }

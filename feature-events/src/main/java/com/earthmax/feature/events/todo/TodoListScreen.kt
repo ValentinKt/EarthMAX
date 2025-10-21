@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.earthmax.domain.model.DomainTodoItem
+import com.earthmax.domain.model.canBeDeletedBy
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,60 +64,43 @@ fun TodoListScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = tealSurface
+                    containerColor = tealSurface,
+                    titleContentColor = tealPrimary
                 )
             )
-        },
-        floatingActionButton = {
-            if (!uiState.isCreatingTodo) {
-                FloatingActionButton(
-                    onClick = { viewModel.startCreatingTodo() },
-                    containerColor = tealPrimary,
-                    contentColor = Color.White
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Todo"
-                    )
-                }
-            }
-        },
-        containerColor = tealSurface.copy(alpha = 0.3f)
-    ) { paddingValues ->
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
                 .padding(16.dp)
         ) {
-            // Error message
-            uiState.error?.let { error ->
-                Card(
+            // Error banner
+            AnimatedVisibility(visible = uiState.error != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
+                        .clip(RoundedCornerShape(8.dp))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Warning,
+                            imageVector = Icons.Default.Error,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(end = 8.dp)
+                            tint = MaterialTheme.colorScheme.error
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.weight(1f)
+                            text = uiState.error ?: "",
+                            color = MaterialTheme.colorScheme.onErrorContainer
                         )
+                        Spacer(modifier = Modifier.weight(1f))
                         IconButton(onClick = { viewModel.clearError() }) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -137,14 +121,13 @@ fun TodoListScreen(
                 CreateTodoForm(
                     title = uiState.newTodoTitle,
                     description = uiState.newTodoDescription,
-                    isLoading = uiState.isCreatingTodo,
+                    isCreating = uiState.isCreatingTodo,
                     onTitleChanged = viewModel::onNewTodoTitleChanged,
                     onDescriptionChanged = viewModel::onNewTodoDescriptionChanged,
                     onCreateClick = { viewModel.createTodoItem(eventId) },
                     onCancelClick = viewModel::cancelCreatingTodo,
                     tealPrimary = tealPrimary,
-                    tealSecondary = tealSecondary,
-                    tealSurface = tealSurface
+                    tealSecondary = tealSecondary
                 )
             }
 
@@ -182,35 +165,26 @@ fun TodoListScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                imageVector = Icons.Default.CheckCircle,
+                                imageVector = Icons.Default.Inbox,
                                 contentDescription = null,
                                 tint = tealSecondary,
                                 modifier = Modifier.size(64.dp)
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "No todo items yet",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = tealPrimary,
-                                fontWeight = FontWeight.Medium
-                            )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Tap the + button to create your first todo item",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = tealPrimary.copy(alpha = 0.7f)
+                                text = "No todo items yet",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = tealPrimary
                             )
                         }
                     }
                 }
                 else -> {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(
-                            items = uiState.todoItems,
-                            key = { it.id }
-                        ) { todoItem ->
+                        items(uiState.todoItems) { todoItem ->
                             TodoItemCard(
                                 todoItem = todoItem,
                                 currentUserId = uiState.currentUser?.id,
@@ -241,87 +215,74 @@ private fun CreateTodoForm(
     tealSecondary: Color,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+        Text(
+            text = "Create New Todo",
+            style = MaterialTheme.typography.titleMedium,
+            color = tealPrimary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = title,
+            onValueChange = onTitleChanged,
+            label = { Text("Title") },
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = tealPrimary,
+                unfocusedBorderColor = tealSecondary,
+                focusedLabelColor = tealPrimary,
+                unfocusedLabelColor = tealSecondary
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = description,
+            onValueChange = onDescriptionChanged,
+            label = { Text("Description") },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = tealPrimary,
+                unfocusedBorderColor = tealSecondary,
+                focusedLabelColor = tealPrimary,
+                unfocusedLabelColor = tealSecondary
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Create New Todo",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = tealPrimary,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            OutlinedTextField(
-                value = title,
-                onValueChange = onTitleChanged,
-                label = { Text("Title", color = tealPrimary) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = tealPrimary,
-                    focusedLabelColor = tealPrimary,
-                    cursorColor = tealPrimary
-                ),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = description,
-                onValueChange = onDescriptionChanged,
-                label = { Text("Description (optional)", color = tealPrimary) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = tealPrimary,
-                    focusedLabelColor = tealPrimary,
-                    cursorColor = tealPrimary
-                ),
-                maxLines = 3
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+            Button(
+                onClick = onCreateClick,
+                enabled = !isCreating && title.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = tealPrimary,
+                    contentColor = Color.White
+                )
             ) {
-                TextButton(
-                    onClick = onCancelClick,
-                    enabled = !isLoading
-                ) {
-                    Text("Cancel", color = tealPrimary)
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Button(
-                    onClick = onCreateClick,
-                    enabled = !isLoading && title.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = tealPrimary,
-                        contentColor = Color.White
+                if (isCreating) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(18.dp)
                     )
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Create")
-                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
+                Text("Create")
+            }
+            OutlinedButton(
+                onClick = onCancelClick,
+                enabled = !isCreating,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = tealPrimary
+                )
+            ) {
+                Text("Cancel")
             }
         }
     }
@@ -340,86 +301,47 @@ private fun TodoItemCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (todoItem.isCompleted) tealLight.copy(alpha = 0.3f) else Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            containerColor = tealLight.copy(alpha = 0.5f)
+        )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.Top
+        Column(
+            modifier = Modifier.padding(12.dp)
         ) {
-            // Completion checkbox
-            IconButton(
-                onClick = onToggleCompletion,
-                modifier = Modifier.size(24.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = if (todoItem.isCompleted) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                    contentDescription = if (todoItem.isCompleted) "Mark as incomplete" else "Mark as complete",
-                    tint = if (todoItem.isCompleted) tealSecondary else tealPrimary.copy(alpha = 0.6f)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Todo content
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = todoItem.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = if (todoItem.isCompleted) tealPrimary.copy(alpha = 0.6f) else tealPrimary,
-                    textDecoration = if (todoItem.isCompleted) TextDecoration.LineThrough else null
-                )
-
-                todoItem.description?.let { description ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (todoItem.isCompleted) tealPrimary.copy(alpha = 0.4f) else tealPrimary.copy(alpha = 0.7f),
-                        textDecoration = if (todoItem.isCompleted) TextDecoration.LineThrough else null
+                IconButton(onClick = onToggleCompletion) {
+                    Icon(
+                        imageVector = if (todoItem.isCompleted) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                        contentDescription = null,
+                        tint = if (todoItem.isCompleted) tealPrimary else tealSecondary
                     )
                 }
-
-                // Show completion status
-                if (todoItem.isCompleted) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Done,
-                            contentDescription = null,
-                            tint = tealSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = todoItem.title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            textDecoration = if (todoItem.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                        ),
+                        color = tealPrimary
+                    )
+                    todoItem.description?.let { description ->
                         Text(
-                            text = "Completed",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = tealSecondary,
-                            fontWeight = FontWeight.Medium
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = tealSecondary
                         )
                     }
                 }
-            }
-
-            // Delete button (only show for items created by current user)
-            if (currentUserId != null && todoItem.canBeDeletedBy(currentUserId)) {
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete todo",
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                    )
+                if (currentUserId?.let { todoItem.canBeDeletedBy(it) } == true) {
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }

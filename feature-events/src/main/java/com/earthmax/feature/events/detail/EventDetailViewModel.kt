@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.earthmax.core.models.Event
 import com.earthmax.core.models.User
 import com.earthmax.core.utils.Logger
-import com.earthmax.data.repository.EventRepository
-import com.earthmax.data.repository.UserRepository
+import com.earthmax.domain.repository.EventRepository
+import com.earthmax.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+import com.earthmax.data.mappers.toEvent
+import com.earthmax.data.mappers.toUser
 
 data class EventDetailUiState(
     val isLoading: Boolean = true,
@@ -36,6 +39,16 @@ class EventDetailViewModel @Inject constructor(
     val uiState: StateFlow<EventDetailUiState> = _uiState.asStateFlow()
 
     val currentUser: StateFlow<User?> = userRepository.getCurrentUser()
+        .map { result ->
+            when (result) {
+                is com.earthmax.domain.model.Result.Success -> result.data?.toUser()
+                is com.earthmax.domain.model.Result.Error -> {
+                    Logger.w("EventDetailViewModel", "Error observing current user", result.exception)
+                    null
+                }
+                is com.earthmax.domain.model.Result.Loading -> null
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -77,23 +90,30 @@ class EventDetailViewModel @Inject constructor(
             
             try {
                 Logger.d("EventDetailViewModel", "Calling repository to get event by ID")
-                val event = eventRepository.getEventById(eventId)
-                if (event != null) {
-                    Logger.logBusinessEvent("EventDetailViewModel", "event_loaded_successfully", mapOf(
-                        "eventId" to eventId,
-                        "eventTitle" to event.title,
-                        "organizerId" to event.organizerId
-                    ))
-                    _uiState.update { it.copy(event = event, isLoading = false) }
-                    Logger.i("EventDetailViewModel", "Event loaded successfully: ${event.title}")
-                    loadOrganizer(event.organizerId)
-                } else {
-                    Logger.w("EventDetailViewModel", "Event not found for eventId: $eventId")
-                    _uiState.update { 
-                        it.copy(
-                            isLoading = false, 
-                            error = "Event not found"
-                        ) 
+                when (val result = eventRepository.getEventById(eventId)) {
+                    is com.earthmax.domain.model.Result.Success -> {
+                        val event = result.data.toEvent()
+                        Logger.logBusinessEvent("EventDetailViewModel", "event_loaded_successfully", mapOf(
+                            "eventId" to eventId,
+                            "eventTitle" to event.title,
+                            "organizerId" to event.organizerId
+                        ))
+                        _uiState.update { it.copy(event = event, isLoading = false) }
+                        Logger.i("EventDetailViewModel", "Event loaded successfully: ${event.title}")
+                        loadOrganizer(event.organizerId)
+                    }
+                    is com.earthmax.domain.model.Result.Error -> {
+                        Logger.e("EventDetailViewModel", "Failed to load event details", result.exception)
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false, 
+                                error = result.exception.message ?: "Failed to load event"
+                            ) 
+                        }
+                    }
+                    is com.earthmax.domain.model.Result.Loading -> {
+                        // Keep loading state
+                        _uiState.update { it.copy(isLoading = true) }
                     }
                 }
             } catch (e: Exception) {
@@ -118,14 +138,26 @@ class EventDetailViewModel @Inject constructor(
         viewModelScope.launch {
             Logger.d("EventDetailViewModel", "Loading organizer details for organizerId: $organizerId")
             try {
-                val organizer = userRepository.getUserById(organizerId)
-                Logger.logBusinessEvent("EventDetailViewModel", "organizer_loaded_successfully", mapOf(
-                    "organizerId" to organizerId,
-                    "organizerName" to (organizer?.displayName ?: "unknown"),
-                    "eventId" to eventId
-                ))
-                _uiState.update { it.copy(organizer = organizer) }
-                Logger.i("EventDetailViewModel", "Organizer loaded successfully: ${organizer?.displayName ?: "unknown"}")
+                when (val organizerResult = userRepository.getUserById(organizerId)) {
+                    is com.earthmax.domain.model.Result.Success -> {
+                        val organizer = organizerResult.data.toUser()
+                        Logger.logBusinessEvent("EventDetailViewModel", "organizer_loaded_successfully", mapOf(
+                            "organizerId" to organizerId,
+                            "organizerName" to (organizer?.displayName ?: "unknown"),
+                            "eventId" to eventId
+                        ))
+                        _uiState.update { it.copy(organizer = organizer) }
+                        Logger.i("EventDetailViewModel", "Organizer loaded successfully: ${organizer?.displayName ?: "unknown"}")
+                    }
+                    is com.earthmax.domain.model.Result.Error -> {
+                        Logger.w("EventDetailViewModel", "Failed to load organizer details", organizerResult.exception)
+                        // Organizer loading failed, but don't show error to user
+                        // Event details can still be shown without organizer info
+                    }
+                    is com.earthmax.domain.model.Result.Loading -> {
+                        // no-op
+                    }
+                }
             } catch (e: Exception) {
                 Logger.w("EventDetailViewModel", "Failed to load organizer details", e)
                 // Organizer loading failed, but don't show error to user
@@ -163,14 +195,29 @@ class EventDetailViewModel @Inject constructor(
             
             try {
                 Logger.d("EventDetailViewModel", "Calling repository to join event")
-                eventRepository.joinEvent(currentEvent.id, currentUser.id)
-                Logger.logBusinessEvent("EventDetailViewModel", "event_joined_successfully", mapOf(
-                    "eventId" to currentEvent.id,
-                    "userId" to currentUser.id,
-                    "eventTitle" to currentEvent.title
-                ))
-                _uiState.update { it.copy(isJoining = false) }
-                Logger.i("EventDetailViewModel", "Successfully joined event: ${currentEvent.title}")
+                when (val res = eventRepository.joinEvent(currentEvent.id, currentUser.id)) {
+                    is com.earthmax.domain.model.Result.Success -> {
+                        Logger.logBusinessEvent("EventDetailViewModel", "event_joined_successfully", mapOf(
+                            "eventId" to currentEvent.id,
+                            "userId" to currentUser.id,
+                            "eventTitle" to currentEvent.title
+                        ))
+                        _uiState.update { it.copy(isJoining = false) }
+                        Logger.i("EventDetailViewModel", "Successfully joined event: ${currentEvent.title}")
+                    }
+                    is com.earthmax.domain.model.Result.Error -> {
+                        Logger.e("EventDetailViewModel", "Failed to join event", res.exception)
+                        _uiState.update { 
+                            it.copy(
+                                isJoining = false, 
+                                error = res.exception.message ?: "Failed to join event"
+                            ) 
+                        }
+                    }
+                    is com.earthmax.domain.model.Result.Loading -> {
+                        // no-op
+                    }
+                }
             } catch (e: Exception) {
                 Logger.e("EventDetailViewModel", "Failed to join event", e)
                 _uiState.update { 
@@ -212,14 +259,29 @@ class EventDetailViewModel @Inject constructor(
             
             try {
                 Logger.d("EventDetailViewModel", "Calling repository to leave event")
-                eventRepository.leaveEvent(currentEvent.id, currentUser.id)
-                Logger.logBusinessEvent("EventDetailViewModel", "event_left_successfully", mapOf(
-                    "eventId" to currentEvent.id,
-                    "userId" to currentUser.id,
-                    "eventTitle" to currentEvent.title
-                ))
-                _uiState.update { it.copy(isLeaving = false) }
-                Logger.i("EventDetailViewModel", "Successfully left event: ${currentEvent.title}")
+                when (val res = eventRepository.leaveEvent(currentEvent.id, currentUser.id)) {
+                    is com.earthmax.domain.model.Result.Success -> {
+                        Logger.logBusinessEvent("EventDetailViewModel", "event_left_successfully", mapOf(
+                            "eventId" to currentEvent.id,
+                            "userId" to currentUser.id,
+                            "eventTitle" to currentEvent.title
+                        ))
+                        _uiState.update { it.copy(isLeaving = false) }
+                        Logger.i("EventDetailViewModel", "Successfully left event: ${currentEvent.title}")
+                    }
+                    is com.earthmax.domain.model.Result.Error -> {
+                        Logger.e("EventDetailViewModel", "Failed to leave event", res.exception)
+                        _uiState.update { 
+                            it.copy(
+                                isLeaving = false, 
+                                error = res.exception.message ?: "Failed to leave event"
+                            ) 
+                        }
+                    }
+                    is com.earthmax.domain.model.Result.Loading -> {
+                        // no-op
+                    }
+                }
             } catch (e: Exception) {
                 Logger.e("EventDetailViewModel", "Failed to leave event", e)
                 _uiState.update { 

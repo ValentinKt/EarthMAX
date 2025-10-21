@@ -32,6 +32,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs += listOf("-Xopt-in=kotlin.time.ExperimentalTime")
     }
     buildFeatures {
         compose = true
@@ -43,6 +44,7 @@ dependencies {
     implementation(project(":core-ui"))
     implementation(project(":data"))
     implementation(project(":feature:monitoring"))
+    implementation(project(":domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

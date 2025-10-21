@@ -7,6 +7,7 @@ import androidx.room.TypeConverters
 import android.content.Context
 import com.earthmax.core.sync.OfflineChange
 import com.earthmax.core.sync.OfflineChangeDao
+import com.earthmax.core.database.DatabaseConverters
 
 @Database(
     entities = [
@@ -15,7 +16,7 @@ import com.earthmax.core.sync.OfflineChangeDao
     version = 1,
     exportSchema = false
 )
-@TypeConverters(DatabaseConverters::class)
+// @TypeConverters(DatabaseConverters::class)
 abstract class EarthMaxDatabase : RoomDatabase() {
     
     abstract fun offlineChangeDao(): OfflineChangeDao

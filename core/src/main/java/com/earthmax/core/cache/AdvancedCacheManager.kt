@@ -74,7 +74,7 @@ class AdvancedCacheManager @Inject constructor(
                     evictLeastRecentlyUsed(policy.maxSize - 1)
                 }
                 
-                cache[key] = entry
+                cache[key] = entry as CacheEntry<Any>
                 policies[key] = policy
                 currentSize.addAndGet(size)
                 
@@ -83,12 +83,16 @@ class AdvancedCacheManager @Inject constructor(
                     tagIndex.computeIfAbsent(tag) { mutableSetOf() }.add(key)
                 }
                 
-                metricsCollector.incrementCounter("cache_puts")
-                logger.debug("Cache put: key=$key, size=$size, tags=$tags")
+                kotlinx.coroutines.GlobalScope.launch {
+                    metricsCollector.incrementCounter("cache_puts")
+                }
+                logger.d("AdvancedCacheManager", "Cache put: key=$key, size=$size, tags=$tags")
                 
             } catch (e: Exception) {
-                logger.error("Failed to put cache entry", e)
-                metricsCollector.incrementCounter("cache_put_errors")
+                logger.e("AdvancedCacheManager", "Failed to put cache entry: ${e.message}")
+                kotlinx.coroutines.GlobalScope.launch {
+                    metricsCollector.incrementCounter("cache_put_errors")
+                }
             }
         }
     }
@@ -100,26 +104,34 @@ class AdvancedCacheManager @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val entry = cache[key] ?: run {
-                    metricsCollector.incrementCounter("cache_misses")
+                    kotlinx.coroutines.GlobalScope.launch {
+                        metricsCollector.incrementCounter("cache_misses")
+                    }
                     return@withContext null
                 }
                 
                 if (entry.isExpired()) {
                     remove(key)
-                    metricsCollector.incrementCounter("cache_expired")
+                    kotlinx.coroutines.GlobalScope.launch {
+                        metricsCollector.incrementCounter("cache_expired")
+                    }
                     return@withContext null
                 }
                 
                 // Update access information
                 cache[key] = entry.accessed()
-                metricsCollector.incrementCounter("cache_hits")
+                kotlinx.coroutines.GlobalScope.launch {
+                    metricsCollector.incrementCounter("cache_hits")
+                }
                 
                 @Suppress("UNCHECKED_CAST")
                 entry.data as T
                 
             } catch (e: Exception) {
-                logger.error("Failed to get cache entry", e)
-                metricsCollector.incrementCounter("cache_get_errors")
+                logger.e("AdvancedCacheManager", "Failed to get cache entry: ${e.message}")
+                kotlinx.coroutines.GlobalScope.launch {
+                    metricsCollector.incrementCounter("cache_get_errors")
+                }
                 null
             }
         }
@@ -161,13 +173,15 @@ class AdvancedCacheManager @Inject constructor(
                         }
                     }
                     
-                    metricsCollector.incrementCounter("cache_removals")
-                    logger.debug("Cache remove: key=$key")
+                    kotlinx.coroutines.GlobalScope.launch {
+                        metricsCollector.incrementCounter("cache_removals")
+                    }
+                    logger.d("AdvancedCacheManager", "Cache remove: key=$key")
                     true
                 } ?: false
                 
             } catch (e: Exception) {
-                logger.error("Failed to remove cache entry", e)
+                logger.e("AdvancedCacheManager", "Failed to remove cache entry: ${e.message}")
                 false
             }
         }
@@ -194,11 +208,13 @@ class AdvancedCacheManager @Inject constructor(
                 val event = InvalidationEvent(strategy, keysToRemove.size)
                 _invalidationEvents.emit(event)
                 
-                metricsCollector.incrementCounter("cache_invalidations")
-                logger.info("Cache invalidated: strategy=$strategy, count=${keysToRemove.size}")
+                kotlinx.coroutines.GlobalScope.launch {
+                    metricsCollector.incrementCounter("cache_invalidations")
+                }
+                logger.i("AdvancedCacheManager", "Cache invalidated: strategy=$strategy, count=${keysToRemove.size}")
                 
             } catch (e: Exception) {
-                logger.error("Failed to invalidate cache", e)
+                logger.e("AdvancedCacheManager", "Failed to invalidate cache: ${e.message}")
             }
         }
     }
@@ -243,8 +259,10 @@ class AdvancedCacheManager @Inject constructor(
             tagIndex.clear()
             currentSize.set(0)
             
-            metricsCollector.incrementCounter("cache_clears")
-            logger.info("Cache cleared")
+            kotlinx.coroutines.GlobalScope.launch {
+                metricsCollector.incrementCounter("cache_clears")
+            }
+            logger.i("AdvancedCacheManager", "Cache cleared")
         }
     }
     
@@ -255,7 +273,7 @@ class AdvancedCacheManager @Inject constructor(
                     delay(AppConfig.Cache.CLEANUP_INTERVAL_MS)
                     invalidate(InvalidationStrategy.Expired)
                 } catch (e: Exception) {
-                    logger.error("Error during cache cleanup", e)
+                    logger.e("AdvancedCacheManager", "Error during cache cleanup: ${e.message}")
                 }
             }
         }
@@ -297,8 +315,10 @@ class AdvancedCacheManager @Inject constructor(
             }
         }
         
-        metricsCollector.incrementCounter("cache_size_evictions")
-        logger.debug("Evicted by size: freed=$freedSize bytes")
+        kotlinx.coroutines.GlobalScope.launch {
+            metricsCollector.incrementCounter("cache_size_evictions")
+        }
+        logger.d("AdvancedCacheManager", "Evicted by size: freed=$freedSize bytes")
     }
     
     private fun evictLeastRecentlyUsed(maxEntries: Int) {
@@ -320,11 +340,13 @@ class AdvancedCacheManager @Inject constructor(
             }
         }
         
-        metricsCollector.incrementCounter("cache_lru_evictions")
-        logger.debug("Evicted LRU: count=${entries.size}")
+        kotlinx.coroutines.GlobalScope.launch {
+            metricsCollector.incrementCounter("cache_lru_evictions")
+        }
+        logger.d("AdvancedCacheManager", "Evicted LRU: count=${entries.size}")
     }
     
-    private fun estimateSize(data: Any): Long {
+    private fun <T> estimateSize(data: T): Long {
         return when (data) {
             is String -> data.length * 2L // Rough estimate for UTF-16
             is ByteArray -> data.size.toLong()

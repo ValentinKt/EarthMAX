@@ -206,8 +206,8 @@ object DataModule {
     @Singleton
     fun providePerformanceRepository(
         performanceDao: PerformanceDao
-    ): PerformanceRepository {
-        return PerformanceRepository(performanceDao)
+    ): com.earthmax.data.repository.PerformanceRepository {
+        return com.earthmax.data.repository.PerformanceRepository(performanceDao)
     }
     
     @Provides

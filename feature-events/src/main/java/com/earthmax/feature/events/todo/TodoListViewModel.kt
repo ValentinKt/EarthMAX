@@ -18,6 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 data class TodoListUiState(
@@ -67,7 +68,7 @@ class TodoListViewModel @Inject constructor(
         viewModelScope.launch {
             Logger.d("TodoListViewModel", "Starting to observe current user changes")
             currentUser.collect { user ->
-                Logger.logBusinessEvent("TodoListViewModel", "user_state_changed", mapOf(
+                Logger.logBusinessEvent("TodoListViewModel", "user_state_changed", mapOf<String, Any>(
                     "hasUser" to (user != null),
                     "userId" to (user?.id ?: "null"),
                     "eventId" to eventId
@@ -128,7 +129,7 @@ class TodoListViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                getTodoItemsByEventUseCase(eventId).collect { result ->
+                getTodoItemsByEventUseCase(GetTodoItemsByEventUseCase.Params(eventId)).collect { result ->
                     when (result) {
                         is Result.Loading -> {
                             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -153,7 +154,7 @@ class TodoListViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading todo items", e)
+                Logger.e("TodoListViewModel", "Error loading todo items", e)
                 _uiState.update { 
                     it.copy(
                         isLoading = false, 
@@ -203,15 +204,15 @@ class TodoListViewModel @Inject constructor(
                 isCompleted = false,
                 assignedTo = null,
                 createdBy = user.id,
-                createdAt = Clock.System.now(),
+                createdAt = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
                 completedAt = null,
-                updatedAt = Clock.System.now()
+                updatedAt = Instant.fromEpochMilliseconds(System.currentTimeMillis())
             )
 
             when (val result = createTodoItemUseCase(CreateTodoItemUseCase.Params(newTodoItem))) {
                 is Result.Success -> {
                     Logger.d("TodoListViewModel", "Todo item created successfully: ${result.data.id}")
-                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_created", mapOf(
+                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_created", mapOf<String, Any>(
                         "eventId" to eventId,
                         "todoId" to result.data.id,
                         "title" to result.data.title
@@ -228,9 +229,9 @@ class TodoListViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     Logger.e("TodoListViewModel", "Failed to create todo item", result.exception)
-                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_create_error", mapOf(
+                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_create_error", mapOf<String, Any>(
                         "eventId" to eventId,
-                        "error" to result.exception.message
+                        "error" to (result.exception.message ?: "unknown_error")
                     ))
                     _uiState.update { 
                         it.copy(
@@ -256,7 +257,7 @@ class TodoListViewModel @Inject constructor(
             when (val result = toggleTodoCompletionUseCase(ToggleTodoCompletionUseCase.Params(todoId))) {
                 is Result.Success -> {
                     Logger.d("TodoListViewModel", "Todo completion toggled successfully: ${result.data.id}")
-                    Logger.logBusinessEvent("TodoListViewModel", "todo_completion_toggled", mapOf(
+                    Logger.logBusinessEvent("TodoListViewModel", "todo_completion_toggled", mapOf<String, Any>(
                         "eventId" to eventId,
                         "todoId" to result.data.id,
                         "isCompleted" to result.data.isCompleted
@@ -265,10 +266,10 @@ class TodoListViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     Logger.e("TodoListViewModel", "Failed to toggle todo completion", result.exception)
-                    Logger.logBusinessEvent("TodoListViewModel", "todo_completion_toggle_error", mapOf(
+                    Logger.logBusinessEvent("TodoListViewModel", "todo_completion_toggle_error", mapOf<String, Any>(
                         "eventId" to eventId,
                         "todoId" to todoId,
-                        "error" to result.exception.message
+                        "error" to (result.exception.message ?: "unknown_error")
                     ))
                     _uiState.update { 
                         it.copy(error = result.exception.message ?: "Failed to update todo item") 
@@ -291,7 +292,7 @@ class TodoListViewModel @Inject constructor(
             when (val result = deleteTodoItemUseCase(DeleteTodoItemUseCase.Params(todoId))) {
                 is Result.Success -> {
                     Logger.d("TodoListViewModel", "Todo item deleted successfully: $todoId")
-                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_deleted", mapOf(
+                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_deleted", mapOf<String, Any>(
                         "eventId" to eventId,
                         "todoId" to todoId
                     ))
@@ -299,10 +300,10 @@ class TodoListViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     Logger.e("TodoListViewModel", "Failed to delete todo item", result.exception)
-                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_delete_error", mapOf(
+                    Logger.logBusinessEvent("TodoListViewModel", "todo_item_delete_error", mapOf<String, Any>(
                         "eventId" to eventId,
                         "todoId" to todoId,
-                        "error" to result.exception.message
+                        "error" to (result.exception.message ?: "unknown_error")
                     ))
                     _uiState.update { 
                         it.copy(error = result.exception.message ?: "Failed to delete todo item") 

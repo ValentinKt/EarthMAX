@@ -1,7 +1,16 @@
 package com.earthmax.core.sync
 
-import androidx.room.*
-import com.earthmax.core.monitoring.Logger
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.Index
+import com.earthmax.core.utils.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
@@ -24,21 +33,21 @@ class OfflineChangeTracker @Inject constructor(
     suspend fun trackChange(
         entityType: String,
         entityId: String,
-        operationType: SyncOperationType,
-        data: Map<String, Any?>,
-        priority: SyncPriority = SyncPriority.NORMAL
+        operationType: String,
+        data: String,
+        priority: String = "NORMAL"
     ) {
         try {
             val change = OfflineChange(
                 id = UUID.randomUUID().toString(),
-                entityType = entityType,
-                entityId = entityId,
-                operationType = operationType,
+                entity_type = entityType,
+                entity_id = entityId,
+                operation_type = operationType,
                 data = data,
                 priority = priority,
-                timestamp = LocalDateTime.now(),
-                retryCount = 0,
-                status = OfflineChangeStatus.PENDING
+                timestamp = java.time.LocalDateTime.now().toString(),
+                retry_count = 0,
+                status = "PENDING"
             )
             
             // Check if there's already a pending change for this entity
@@ -68,7 +77,7 @@ class OfflineChangeTracker @Inject constructor(
     /**
      * Get pending changes by priority
      */
-    fun getPendingChangesByPriority(priority: SyncPriority): Flow<List<OfflineChange>> {
+    fun getPendingChangesByPriority(priority: String): Flow<List<OfflineChange>> {
         return offlineChangeDao.getPendingChangesByPriority(priority)
     }
 
@@ -84,7 +93,7 @@ class OfflineChangeTracker @Inject constructor(
      */
     suspend fun markAsSynced(changeId: String) {
         try {
-            offlineChangeDao.updateStatus(changeId, OfflineChangeStatus.SYNCED)
+            offlineChangeDao.updateStatus(changeId, "SYNCED")
             logger.d("OfflineChangeTracker", "Marked change $changeId as synced")
         } catch (e: Exception) {
             logger.e("OfflineChangeTracker", "Failed to mark change $changeId as synced", e)
@@ -99,10 +108,8 @@ class OfflineChangeTracker @Inject constructor(
             val change = offlineChangeDao.getById(changeId)
             if (change != null) {
                 val updatedChange = change.copy(
-                    status = OfflineChangeStatus.FAILED,
-                    retryCount = change.retryCount + 1,
-                    lastError = error,
-                    lastAttempt = LocalDateTime.now()
+                    status = "FAILED",
+                    retry_count = change.retry_count + 1
                 )
                 offlineChangeDao.updateChange(updatedChange)
                 logger.d("OfflineChangeTracker", "Marked change $changeId as failed: $error")
@@ -117,7 +124,7 @@ class OfflineChangeTracker @Inject constructor(
      */
     suspend fun retryChange(changeId: String) {
         try {
-            offlineChangeDao.updateStatus(changeId, OfflineChangeStatus.PENDING)
+            offlineChangeDao.updateStatus(changeId, "PENDING")
             logger.d("OfflineChangeTracker", "Retrying change $changeId")
         } catch (e: Exception) {
             logger.e("OfflineChangeTracker", "Failed to retry change $changeId", e)
@@ -140,7 +147,7 @@ class OfflineChangeTracker @Inject constructor(
      */
     suspend fun cleanupOldChanges(olderThan: LocalDateTime) {
         try {
-            val deletedCount = offlineChangeDao.deleteOldSyncedChanges(olderThan)
+            val deletedCount = offlineChangeDao.deleteOldSyncedChanges(olderThan.toString())
             logger.d("OfflineChangeTracker", "Cleaned up $deletedCount old changes")
         } catch (e: Exception) {
             logger.e("OfflineChangeTracker", "Failed to cleanup old changes", e)
@@ -152,9 +159,9 @@ class OfflineChangeTracker @Inject constructor(
      */
     suspend fun getSyncStats(): OfflineChangeStats {
         return try {
-            val pending = offlineChangeDao.countByStatus(OfflineChangeStatus.PENDING)
-            val synced = offlineChangeDao.countByStatus(OfflineChangeStatus.SYNCED)
-            val failed = offlineChangeDao.countByStatus(OfflineChangeStatus.FAILED)
+            val pending = offlineChangeDao.countByStatus("PENDING")
+            val synced = offlineChangeDao.countByStatus("SYNCED")
+            val failed = offlineChangeDao.countByStatus("FAILED")
             
             OfflineChangeStats(
                 pendingCount = pending,
@@ -174,19 +181,19 @@ class OfflineChangeTracker @Inject constructor(
     private fun mergeChanges(existing: OfflineChange, new: OfflineChange): OfflineChange {
         return when {
             // If new operation is DELETE, it overrides everything
-            new.operationType == SyncOperationType.DELETE -> new.copy(id = existing.id)
+            new.operation_type == "DELETE" -> new.copy(id = existing.id)
             
             // If existing is DELETE, keep it unless new is also DELETE
-            existing.operationType == SyncOperationType.DELETE -> existing
+            existing.operation_type == "DELETE" -> existing
             
             // If both are CREATE or UPDATE, use the newer one
-            existing.operationType == new.operationType -> new.copy(id = existing.id)
+            existing.operation_type == new.operation_type -> new.copy(id = existing.id)
             
             // If existing is CREATE and new is UPDATE, merge them as CREATE
-            existing.operationType == SyncOperationType.CREATE && new.operationType == SyncOperationType.UPDATE -> {
+            existing.operation_type == "CREATE" && new.operation_type == "UPDATE" -> {
                 new.copy(
                     id = existing.id,
-                    operationType = SyncOperationType.CREATE,
+                    operation_type = "CREATE",
                     data = new.data // Use newer data
                 )
             }
@@ -197,61 +204,11 @@ class OfflineChangeTracker @Inject constructor(
     }
 }
 
-/**
- * Room entity for offline changes
- */
-@Entity(
-    tableName = "offline_changes",
-    indices = [
-        Index(value = ["entityType", "entityId"], unique = true),
-        Index(value = ["status"]),
-        Index(value = ["priority"]),
-        Index(value = ["timestamp"])
-    ]
-)
-data class OfflineChange(
-    @PrimaryKey
-    val id: String,
-    
-    @ColumnInfo(name = "entity_type")
-    val entityType: String,
-    
-    @ColumnInfo(name = "entity_id")
-    val entityId: String,
-    
-    @ColumnInfo(name = "operation_type")
-    val operationType: SyncOperationType,
-    
-    @ColumnInfo(name = "data")
-    val data: Map<String, Any?>,
-    
-    @ColumnInfo(name = "priority")
-    val priority: SyncPriority,
-    
-    @ColumnInfo(name = "timestamp")
-    val timestamp: LocalDateTime,
-    
-    @ColumnInfo(name = "retry_count")
-    val retryCount: Int = 0,
-    
-    @ColumnInfo(name = "status")
-    val status: OfflineChangeStatus,
-    
-    @ColumnInfo(name = "last_error")
-    val lastError: String? = null,
-    
-    @ColumnInfo(name = "last_attempt")
-    val lastAttempt: LocalDateTime? = null
-)
 
-/**
- * Status of offline changes
- */
-enum class OfflineChangeStatus {
-    PENDING,
-    SYNCED,
-    FAILED
-}
+    
+
+
+
 
 /**
  * Statistics for offline changes
@@ -273,7 +230,7 @@ interface OfflineChangeDao {
     suspend fun getPendingChanges(): List<OfflineChange>
     
     @Query("SELECT * FROM offline_changes WHERE status = 'PENDING' AND priority = :priority ORDER BY timestamp ASC")
-    fun getPendingChangesByPriority(priority: SyncPriority): Flow<List<OfflineChange>>
+    fun getPendingChangesByPriority(priority: String): Flow<List<OfflineChange>>
     
     @Query("SELECT * FROM offline_changes WHERE status = 'FAILED' ORDER BY timestamp ASC")
     suspend fun getFailedChanges(): List<OfflineChange>
@@ -284,27 +241,27 @@ interface OfflineChangeDao {
     @Query("SELECT * FROM offline_changes WHERE entity_type = :entityType AND entity_id = :entityId AND status = 'PENDING' LIMIT 1")
     suspend fun getChangeByEntity(entityType: String, entityId: String): OfflineChange?
     
-    @Query("SELECT * FROM offline_changes WHERE entity_type = :entityType ORDER BY timestamp ASC")
+    @androidx.room.Query("SELECT * FROM offline_changes WHERE entity_type = :entityType ORDER BY timestamp ASC")
     suspend fun getChangesByEntityType(entityType: String): List<OfflineChange>
     
-    @Query("SELECT * FROM offline_changes WHERE id = :id")
+    @androidx.room.Query("SELECT * FROM offline_changes WHERE id = :id")
     suspend fun getById(id: String): OfflineChange?
     
-    @Query("SELECT COUNT(*) FROM offline_changes WHERE status = :status")
-    suspend fun countByStatus(status: OfflineChangeStatus): Int
+    @androidx.room.Query("SELECT COUNT(*) FROM offline_changes WHERE status = :status")
+    suspend fun countByStatus(status: String): Int
     
-    @Query("UPDATE offline_changes SET status = :status WHERE id = :id")
-    suspend fun updateStatus(id: String, status: OfflineChangeStatus)
+    @androidx.room.Query("UPDATE offline_changes SET status = :status WHERE id = :id")
+    suspend fun updateStatus(id: String, status: String)
     
-    @Query("DELETE FROM offline_changes WHERE status = 'SYNCED' AND timestamp < :olderThan")
-    suspend fun deleteOldSyncedChanges(olderThan: LocalDateTime): Int
+    @androidx.room.Query("DELETE FROM offline_changes WHERE status = 'SYNCED' AND timestamp < :olderThan")
+    suspend fun deleteOldSyncedChanges(olderThan: String): Int
     
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @androidx.room.Insert(onConflict = androidx.room.OnConflictStrategy.REPLACE)
     suspend fun insertChange(change: OfflineChange)
     
-    @Update
+    @androidx.room.Update
     suspend fun updateChange(change: OfflineChange)
     
-    @Delete
+    @androidx.room.Delete
     suspend fun delete(change: OfflineChange)
 }

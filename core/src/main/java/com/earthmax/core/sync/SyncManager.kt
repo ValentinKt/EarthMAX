@@ -2,9 +2,9 @@ package com.earthmax.core.sync
 
 import com.earthmax.core.cache.AdvancedCacheManager
 import com.earthmax.core.error.AdvancedErrorHandler
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import com.earthmax.core.monitoring.MetricsCollector
-import com.earthmax.core.network.NetworkMonitor
+import com.earthmax.core.sync.NetworkMonitor
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
@@ -25,7 +25,7 @@ class SyncManager @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val syncQueue = ConcurrentHashMap<String, SyncOperation>()
-    private val conflictResolver = ConflictResolver()
+    private val conflictResolver = ConflictResolver(logger)
     
     private val _syncStatus = MutableStateFlow(SyncStatus.IDLE)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
@@ -55,17 +55,21 @@ class SyncManager @Inject constructor(
         updatePendingOperations()
         
         // Store in cache for persistence
-        cacheManager.put(
+        cacheManager.put<SyncOperation>(
             key = "sync_operation_${operation.id}",
-            value = operation,
-            policy = com.earthmax.core.cache.CachePolicy.Persistent
+            data = operation
         )
         
         metricsCollector.incrementCounter("sync_operations_queued")
         
         // Try immediate sync if online
-        if (networkMonitor.isConnected.value) {
-            startSync()
+        scope.launch {
+            networkMonitor.isConnected.first { isConnected ->
+                if (isConnected) {
+                    startSync()
+                }
+                true
+            }
         }
     }
 
@@ -78,11 +82,19 @@ class SyncManager @Inject constructor(
             return
         }
         
-        if (!networkMonitor.isConnected.value) {
-            logger.d("SyncManager", "Cannot sync - offline")
-            return
+        scope.launch {
+            networkMonitor.isConnected.collect { isConnected ->
+                if (!isConnected) {
+                    logger.d("SyncManager", "Cannot sync - offline")
+                    return@collect
+                }
+                // Continue with sync process
+                performActualSync()
+            }
         }
-        
+    }
+    
+    private suspend fun performActualSync() {
         _syncStatus.value = SyncStatus.SYNCING
         logger.i("SyncManager", "Starting sync process")
         
@@ -102,7 +114,8 @@ class SyncManager @Inject constructor(
             logger.e("SyncManager", "Sync failed", e)
             metricsCollector.incrementCounter("sync_completed_error")
             
-            errorHandler.handleError(e, "sync_process")
+            // Handle error using basic error handler
+            errorHandler.handleError("sync_process", e)
         }
     }
 
@@ -137,10 +150,9 @@ class SyncManager @Inject constructor(
             
             if (updatedOperation.retryCount < operation.maxRetries) {
                 syncQueue[operation.id] = updatedOperation
-                cacheManager.put(
+                cacheManager.put<SyncOperation>(
                     key = "sync_operation_${operation.id}",
-                    value = updatedOperation,
-                    policy = com.earthmax.core.cache.CachePolicy.Persistent
+                    data = updatedOperation
                 )
             } else {
                 // Max retries reached, move to failed operations
@@ -234,7 +246,7 @@ class SyncManager @Inject constructor(
         logger.d("SyncManager", "Creating ${operation.entityType}:${operation.entityId} on server")
         
         // Update local cache with server response
-        // cacheManager.put(...)
+        // TODO: Implement cache update after server response
     }
 
     /**
@@ -244,7 +256,7 @@ class SyncManager @Inject constructor(
         logger.d("SyncManager", "Updating ${operation.entityType}:${operation.entityId} on server")
         
         // Update local cache with server response
-        // cacheManager.put(...)
+        // TODO: Implement cache update after server response
     }
 
     /**
@@ -269,10 +281,9 @@ class SyncManager @Inject constructor(
             ConflictStrategy.USE_SERVER -> {
                 // Use server data, update local cache
                 resolution.serverData?.let { data ->
-                    cacheManager.put(
+                    cacheManager.put<Map<String, Any?>>(
                         key = "${resolution.operation.entityType}_${resolution.operation.entityId}",
-                        value = data,
-                        policy = com.earthmax.core.cache.CachePolicy.Persistent
+                        data = data as? Map<String, Any?> ?: emptyMap()
                     )
                 }
             }
@@ -281,15 +292,16 @@ class SyncManager @Inject constructor(
                 val mergedData = conflictResolver.mergeData(resolution.operation.data, resolution.serverData)
                 
                 // Update server with merged data
-                val mergedOperation = resolution.operation.copy(data = mergedData)
+                val mergedOperation = resolution.operation.copy(data = mergedData as Map<String, Any?>)
                 updateOnServer(mergedOperation)
                 
                 // Update local cache
-                cacheManager.put(
-                    key = "${resolution.operation.entityType}_${resolution.operation.entityId}",
-                    value = mergedData,
-                    policy = com.earthmax.core.cache.CachePolicy.Persistent
-                )
+                mergedData?.let { data ->
+                    cacheManager.put<Map<String, Any?>>(
+                        key = "${resolution.operation.entityType}_${resolution.operation.entityId}",
+                        data = data as Map<String, Any?>
+                    )
+                }
             }
         }
     }
@@ -308,9 +320,8 @@ class SyncManager @Inject constructor(
         syncQueue.clear()
         
         // Clear from cache
-        val keys = cacheManager.getKeys().filter { it.startsWith("sync_operation_") }
-        keys.forEach { key ->
-            cacheManager.remove(key)
+        syncQueue.keys.forEach { operationId ->
+            cacheManager.remove("sync_operation_${operationId}")
         }
         
         updatePendingOperations()

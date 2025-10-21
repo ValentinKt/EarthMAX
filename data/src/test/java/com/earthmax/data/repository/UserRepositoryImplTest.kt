@@ -3,7 +3,7 @@ package com.earthmax.data.repository
 import com.earthmax.core.cache.AdvancedCacheManager
 import com.earthmax.core.cache.CachePolicy
 import com.earthmax.core.error.AdvancedErrorHandler
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import com.earthmax.core.monitoring.MetricsCollector
 import com.earthmax.data.local.dao.UserDao
 import com.earthmax.data.local.entity.UserEntity

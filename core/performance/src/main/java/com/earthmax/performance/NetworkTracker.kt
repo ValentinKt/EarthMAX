@@ -32,6 +32,9 @@ class NetworkTracker @Inject constructor() {
     // Configuration
     private val maxStoredRequests = 1000
     private val slowRequestThreshold = 2000L // 2 seconds
+
+    // Tracking state
+    private var tracking = false
     
     /**
      * Record a network request
@@ -82,6 +85,21 @@ class NetworkTracker @Inject constructor() {
         // Update overall metrics
         updateNetworkMetrics()
     }
+
+    /**
+     * Compatibility overload: record request with simplified signature used in tests
+     */
+    fun recordRequest(
+        url: String,
+        responseTime: Long,
+        requestSize: Long,
+        responseSize: Long,
+        success: Boolean
+    ) {
+        val responseCode = if (success) 200 else 500
+        val error = if (success) null else "RequestFailed"
+        recordRequest(url = url, method = "GET", responseTime = responseTime, responseCode = responseCode, requestSize = requestSize, responseSize = responseSize, error = error)
+    }
     
     /**
      * Update endpoint-specific metrics
@@ -122,21 +140,22 @@ class NetworkTracker @Inject constructor() {
     }
     
     /**
-     * Extract endpoint from URL for grouping
+     * Extract endpoint from URL for grouping (compatibility format)
      */
     private fun extractEndpoint(url: String): String {
         return try {
-            val path = url.substringAfter("://").substringAfter("/")
-            val pathParts = path.split("/")
-            
-            // Group similar endpoints (replace IDs with placeholders)
-            pathParts.map { part ->
-                when {
-                    part.matches(Regex("\\d+")) -> "{id}"
-                    part.matches(Regex("[a-f0-9-]{36}")) -> "{uuid}"
-                    else -> part
+            val afterProtocol = url.substringAfter("://", missingDelimiterValue = url)
+            val pathPart = afterProtocol.substringAfter("/", missingDelimiterValue = "")
+            val noQuery = pathPart.substringBefore("?")
+            if (noQuery.isBlank()) return "/"
+            val parts = noQuery.split("/")
+                .filter { it.isNotBlank() }
+                .filterNot { part ->
+                    // Drop pure numeric or UUID-like segments
+                    part.matches(Regex("\\d+")) || part.matches(Regex("[a-f0-9-]{36}", RegexOption.IGNORE_CASE))
                 }
-            }.joinToString("/")
+            
+            "/" + parts.joinToString("/")
         } catch (e: Exception) {
             url
         }
@@ -147,7 +166,10 @@ class NetworkTracker @Inject constructor() {
      */
     private fun updateNetworkMetrics() {
         val requests = requestTimes.toList()
-        if (requests.isEmpty()) return
+        if (requests.isEmpty()) {
+            _networkMetrics.value = NetworkMetrics()
+            return
+        }
         
         val recentRequests = requests.takeLast(100) // Last 100 requests
         val averageResponseTime = recentRequests.map { it.responseTime }.average().toLong()
@@ -173,6 +195,14 @@ class NetworkTracker @Inject constructor() {
      */
     fun getNetworkInfo(): NetworkMetrics {
         return _networkMetrics.value
+    }
+
+    /**
+     * Get average response time (compat API)
+     */
+    fun getAverageResponseTime(): Long {
+        val requests = requestTimes.toList()
+        return if (requests.isEmpty()) 0L else requests.map { it.responseTime }.average().toLong()
     }
     
     /**
@@ -274,6 +304,105 @@ class NetworkTracker @Inject constructor() {
         
         return recommendations
     }
+
+    /**
+     * Compatibility alias for recommendations
+     */
+    fun getOptimizationRecommendations(): List<String> = getNetworkRecommendations()
+
+    /**
+     * Compute overall network performance score (0-100)
+     */
+    fun getNetworkPerformanceScore(): Float {
+        val stats = getDetailedStats()
+        if (stats.totalRequests == 0) return 50.0f
+        
+        // Score components
+        val responseScore = when {
+            stats.averageResponseTime <= 300 -> 95.0f
+            stats.averageResponseTime <= 800 -> 80.0f
+            stats.averageResponseTime <= 1500 -> 65.0f
+            stats.averageResponseTime <= 3000 -> 50.0f
+            else -> 30.0f
+        }
+        val errorPenalty = stats.errorRate.toFloat().coerceIn(0f, 100f) // percentage
+        val slowRatio = if (stats.totalRequests > 0) stats.slowRequestsCount.toFloat() / stats.totalRequests.toFloat() else 0f
+        val slowPenalty = (slowRatio * 50f).coerceIn(0f, 50f)
+        
+        val score = (responseScore + (100f - errorPenalty) + (100f - slowPenalty)) / 3f
+        return score.coerceIn(0f, 100f)
+    }
+
+    /**
+     * Get summary stats (compat API expected by tests)
+     */
+    fun getNetworkStats(): NetworkStatsCompat {
+        val requests = requestTimes.toList()
+        val avg = if (requests.isEmpty()) 0.0 else requests.map { it.responseTime }.average()
+        val total = totalRequests.get().toInt()
+        val success = successfulRequests.get().toInt()
+        val failed = failedRequests.get().toInt()
+        val errRate = if (total > 0) ((failed.toDouble() / total.toDouble()) * 100.0).toFloat() else 0.0f
+        return NetworkStatsCompat(
+            totalRequests = total,
+            successfulRequests = success,
+            failedRequests = failed,
+            averageResponseTime = avg,
+            errorRate = errRate,
+            totalDataSent = bytesSent.get(),
+            totalDataReceived = bytesReceived.get()
+        )
+    }
+
+    /**
+     * Endpoint stats (compat API)
+     */
+    fun getEndpointStats(endpointOrUrl: String): EndpointStats? {
+        val key = extractEndpoint(endpointOrUrl)
+        val metrics = endpointMetrics[key] ?: return null
+        return EndpointStats(
+            endpoint = metrics.endpoint,
+            requestCount = metrics.totalRequests,
+            successCount = metrics.successfulRequests,
+            failureCount = metrics.failedRequests,
+            averageResponseTime = metrics.averageResponseTime.toDouble()
+        )
+    }
+
+    /**
+     * Identify slow endpoints by average response time threshold
+     */
+    fun getSlowEndpoints(thresholdMs: Long): List<EndpointStats> {
+        return endpointMetrics.values
+            .filter { it.averageResponseTime > thresholdMs }
+            .map {
+                EndpointStats(
+                    endpoint = it.endpoint,
+                    requestCount = it.totalRequests,
+                    successCount = it.successfulRequests,
+                    failureCount = it.failedRequests,
+                    averageResponseTime = it.averageResponseTime.toDouble()
+                )
+            }
+    }
+
+    /**
+     * Identify failed endpoints by error rate threshold (percentage)
+     */
+    fun getFailedEndpoints(errorRateThresholdPercent: Float): List<EndpointStats> {
+        return endpointMetrics.values
+            .filter { it.totalRequests > 0 }
+            .filter { (it.failedRequests.toFloat() / it.totalRequests.toFloat()) * 100f >= errorRateThresholdPercent }
+            .map {
+                EndpointStats(
+                    endpoint = it.endpoint,
+                    requestCount = it.totalRequests,
+                    successCount = it.successfulRequests,
+                    failureCount = it.failedRequests,
+                    averageResponseTime = it.averageResponseTime.toDouble()
+                )
+            }
+    }
     
     /**
      * Reset all network tracking data
@@ -287,7 +416,15 @@ class NetworkTracker @Inject constructor() {
         bytesReceived.set(0)
         bytesSent.set(0)
         _networkMetrics.value = NetworkMetrics()
+        tracking = false
     }
+
+    /**
+     * Start/Stop tracking (compat APIs)
+     */
+    fun startTracking() { tracking = true }
+    fun stopTracking() { tracking = false }
+    fun isTracking(): Boolean = tracking
 }
 
 /**
@@ -357,4 +494,28 @@ data class EndpointMetrics(
     var totalBytesReceived: Long = 0L,
     var totalBytesSent: Long = 0L,
     val errorTypes: MutableMap<String, Int> = mutableMapOf()
+)
+
+/**
+ * Compatibility summary stats type used by tests
+ */
+data class NetworkStatsCompat(
+    val totalRequests: Int,
+    val successfulRequests: Int,
+    val failedRequests: Int,
+    val averageResponseTime: Double,
+    val errorRate: Float,
+    val totalDataSent: Long,
+    val totalDataReceived: Long
+)
+
+/**
+ * Compatibility endpoint stats type used by tests
+ */
+data class EndpointStats(
+    val endpoint: String,
+    val requestCount: Int,
+    val successCount: Int,
+    val failureCount: Int,
+    val averageResponseTime: Double
 )

@@ -61,7 +61,7 @@ ktlint {
 }
 
 // Dependency updates configuration
-dependencyUpdates {
+tasks.named<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>("dependencyUpdates") {
     checkForGradleUpdate = true
     outputFormatter = "json"
     outputDir = "build/dependencyUpdates"

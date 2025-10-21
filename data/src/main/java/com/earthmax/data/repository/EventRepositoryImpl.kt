@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlin.time.Duration.Companion.minutes
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,36 +32,39 @@ class EventRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "EventRepositoryImpl"
-        private const val CACHE_TTL_MINUTES = 15L
+        private val CACHE_TTL_MINUTES = 15.minutes
         private const val EVENTS_CACHE_KEY = "events_list"
         private const val EVENT_CACHE_PREFIX = "event_"
     }
 
-    override suspend fun getEvents(
+    override fun getEvents(
         category: EventCategory?,
         status: EventStatus?,
         location: String?
-    ): Result<List<DomainEvent>> {
+    ): Flow<Result<List<DomainEvent>>> = flow {
         Logger.enter(TAG, "getEvents", 
             "category" to category?.name,
             "status" to status?.name,
             "location" to location
         )
         
-        return try {
+        try {
+            emit(Result.Loading)
+            
             // Try cache first
             val cacheKey = buildCacheKey(category, status, location)
             val cachedEvents = cacheManager.get<List<DomainEvent>>(cacheKey)
             if (cachedEvents != null) {
                 Logger.d(TAG, "Returning cached events")
-                return Result.Success(cachedEvents)
+                emit(Result.Success(cachedEvents))
+                return@flow
             }
 
             // Fetch from local database
             val localEvents = when {
-                category != null -> eventDao.getEventsByCategory(
+                category != null -> eventDao.getEventsByCategorySync(
                     com.earthmax.core.models.EventCategory.valueOf(category.name)
-                ).map { entities -> entities.map { it.toEvent().toDomainEvent() } }
+                ).map { it.toEvent().toDomainEvent() }
                 else -> eventDao.getAllEventsSync().map { it.toEvent().toDomainEvent() }
             }
 
@@ -76,19 +80,23 @@ class EventRepositoryImpl @Inject constructor(
             Logger.logBusinessEvent(TAG, "Events Retrieved", mapOf(
                 "count" to filteredEvents.size.toString(),
                 "source" to "local_database",
-                "category" to category?.name,
-                "status" to status?.name
+                "category" to (category?.name ?: "all"),
+                "status" to (status?.name ?: "all")
             ))
 
-            Result.Success(filteredEvents)
+            emit(Result.Success(filteredEvents))
         } catch (e: Exception) {
             Logger.e(TAG, "Error getting events", e)
             val handledException = errorHandler.handleError(e)
-            Result.Error(handledException)
+            emit(Result.Error(handledException))
         }
+    }.catch { e ->
+        Logger.e(TAG, "Flow error in getEvents", e)
+        val handledException = errorHandler.handleError(e)
+        emit(Result.Error(handledException))
     }
 
-    override suspend fun getEventById(eventId: String): Result<DomainEvent?> {
+    override suspend fun getEventById(eventId: String): Result<DomainEvent> {
         Logger.enter(TAG, "getEventById", "eventId" to Logger.maskSensitiveData(eventId))
         
         return try {
@@ -125,7 +133,7 @@ class EventRepositoryImpl @Inject constructor(
                 
                 Result.Success(domainEvent)
             } else {
-                Result.Success(null)
+                Result.Error(Exception("Event not found"))
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error getting event by ID", e)
@@ -134,7 +142,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createEvent(event: DomainEvent): Result<String> {
+    override suspend fun createEvent(event: DomainEvent): Result<DomainEvent> {
         Logger.enter(TAG, "createEvent", 
             "title" to Logger.maskSensitiveData(event.title),
             "category" to event.category.name
@@ -159,7 +167,7 @@ class EventRepositoryImpl @Inject constructor(
                     "category" to createdEvent.category.name
                 ))
                 
-                Result.Success(createdEvent.id)
+                Result.Success(createdEvent.toDomainEvent())
             } else {
                 val error = result.exceptionOrNull() ?: Exception("Failed to create event")
                 val handledException = errorHandler.handleError(error)
@@ -172,7 +180,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateEvent(event: DomainEvent): Result<Unit> {
+    override suspend fun updateEvent(event: DomainEvent): Result<DomainEvent> {
         Logger.enter(TAG, "updateEvent", 
             "eventId" to Logger.maskSensitiveData(event.id),
             "title" to Logger.maskSensitiveData(event.title)
@@ -195,7 +203,7 @@ class EventRepositoryImpl @Inject constructor(
                     "title" to Logger.maskSensitiveData(event.title)
                 ))
                 
-                Result.Success(Unit)
+                Result.Success(event)
             } else {
                 val error = result.exceptionOrNull() ?: Exception("Failed to update event")
                 val handledException = errorHandler.handleError(error)
@@ -216,7 +224,7 @@ class EventRepositoryImpl @Inject constructor(
             
             if (result.isSuccess) {
                 // Remove from local cache
-                eventDao.deleteEvent(eventId)
+                eventDao.deleteEventById(eventId)
                 
                 // Invalidate relevant caches
                 invalidateEventsCache()
@@ -303,12 +311,10 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun searchEvents(query: String): Flow<Result<List<DomainEvent>>> = flow {
+    override suspend fun searchEvents(query: String): Result<List<DomainEvent>> {
         Logger.enter(TAG, "searchEvents", "query" to Logger.maskSensitiveData(query))
         
-        try {
-            emit(Result.Loading)
-            
+        return try {
             val events = eventDao.searchEventsSync(query)
                 .map { it.toEvent().toDomainEvent() }
             
@@ -317,16 +323,12 @@ class EventRepositoryImpl @Inject constructor(
                 "resultCount" to events.size.toString()
             ))
             
-            emit(Result.Success(events))
+            Result.Success(events)
         } catch (e: Exception) {
             Logger.e(TAG, "Error searching events", e)
             val handledException = errorHandler.handleError(e)
-            emit(Result.Error(handledException))
+            Result.Error(handledException)
         }
-    }.catch { e ->
-        Logger.e(TAG, "Flow error in searchEvents", e)
-        val handledException = errorHandler.handleError(e)
-        emit(Result.Error(handledException))
     }
 
     override fun getEventsByUser(userId: String): Flow<Result<List<DomainEvent>>> = flow {
@@ -335,24 +337,23 @@ class EventRepositoryImpl @Inject constructor(
         try {
             emit(Result.Loading)
             
-            val events = eventDao.getEventsByOrganizerSync(userId)
-                .map { it.toEvent().toDomainEvent() }
-            
-            Logger.logBusinessEvent(TAG, "Events By User Retrieved", mapOf(
-                "userId" to Logger.maskSensitiveData(userId),
-                "eventCount" to events.size.toString()
-            ))
-            
-            emit(Result.Success(events))
+            eventDao.getEventsByOrganizer(userId).collect { eventEntities ->
+                val events = eventEntities.map { it.toEvent().toDomainEvent() }
+                
+                Logger.logBusinessEvent(TAG, "Events By User Retrieved", mapOf(
+                    "userId" to Logger.maskSensitiveData(userId),
+                    "eventCount" to events.size.toString()
+                ))
+                
+                emit(Result.Success(events))
+            }
         } catch (e: Exception) {
             Logger.e(TAG, "Error getting events by user", e)
-            val handledException = errorHandler.handleError(e)
-            emit(Result.Error(handledException))
+            emit(Result.Error(e))
         }
     }.catch { e ->
         Logger.e(TAG, "Flow error in getEventsByUser", e)
-        val handledException = errorHandler.handleError(e)
-        emit(Result.Error(handledException))
+        emit(Result.Error(e))
     }
 
     override fun getJoinedEvents(userId: String): Flow<Result<List<DomainEvent>>> = flow {
@@ -361,24 +362,23 @@ class EventRepositoryImpl @Inject constructor(
         try {
             emit(Result.Loading)
             
-            val events = eventDao.getJoinedEventsSync()
-                .map { it.toEvent().toDomainEvent() }
-            
-            Logger.logBusinessEvent(TAG, "Joined Events Retrieved", mapOf(
-                "userId" to Logger.maskSensitiveData(userId),
-                "eventCount" to events.size.toString()
-            ))
-            
-            emit(Result.Success(events))
+            eventDao.getJoinedEvents().collect { eventEntities ->
+                val events = eventEntities.map { it.toEvent().toDomainEvent() }
+                
+                Logger.logBusinessEvent(TAG, "Joined Events Retrieved", mapOf(
+                    "userId" to Logger.maskSensitiveData(userId),
+                    "eventCount" to events.size.toString()
+                ))
+                
+                emit(Result.Success(events))
+            }
         } catch (e: Exception) {
             Logger.e(TAG, "Error getting joined events", e)
-            val handledException = errorHandler.handleError(e)
-            emit(Result.Error(handledException))
+            emit(Result.Error(e))
         }
     }.catch { e ->
         Logger.e(TAG, "Flow error in getJoinedEvents", e)
-        val handledException = errorHandler.handleError(e)
-        emit(Result.Error(handledException))
+        emit(Result.Error(e))
     }
 
     private fun buildCacheKey(
@@ -389,7 +389,7 @@ class EventRepositoryImpl @Inject constructor(
         return "${EVENTS_CACHE_KEY}_${category?.name ?: "all"}_${status?.name ?: "all"}_${location?.hashCode() ?: "all"}"
     }
 
-    private fun invalidateEventsCache() {
+    private suspend fun invalidateEventsCache() {
         // Remove all events-related cache entries
         cacheManager.clear() // For simplicity, clear all cache
         // In a more sophisticated implementation, we could track and remove specific keys

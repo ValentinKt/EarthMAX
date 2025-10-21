@@ -20,14 +20,14 @@ class PerformanceGuard @Inject constructor(
      * Checks if performance monitoring should be enabled
      */
     fun shouldEnableMonitoring(): Boolean {
-        return debugConfig.shouldShowPerformanceMetrics()
+        return debugConfig.shouldShowPerformanceMetrics
     }
     
     /**
      * Guards a performance monitoring operation
      * Returns the result only if monitoring is enabled, otherwise returns default value
      */
-    inline fun <T> guardOperation(
+    fun <T> guardOperation(
         defaultValue: T,
         operation: () -> T
     ): T {
@@ -36,7 +36,7 @@ class PerformanceGuard @Inject constructor(
                 operation()
             } catch (e: Exception) {
                 // Log error in debug mode only
-                if (debugConfig.isDebugBuild()) {
+                if (debugConfig.isDebugBuild) {
                     android.util.Log.w("PerformanceGuard", "Performance operation failed", e)
                 }
                 defaultValue
@@ -50,14 +50,14 @@ class PerformanceGuard @Inject constructor(
      * Guards a Flow-based performance monitoring operation
      * Returns the flow only if monitoring is enabled, otherwise returns empty flow
      */
-    inline fun <T> guardFlow(
-        crossinline operation: () -> Flow<T>
+    fun <T> guardFlow(
+        operation: () -> Flow<T>
     ): Flow<T> {
         return if (shouldEnableMonitoring()) {
             try {
                 operation()
             } catch (e: Exception) {
-                if (debugConfig.isDebugBuild()) {
+                if (debugConfig.isDebugBuild) {
                     android.util.Log.w("PerformanceGuard", "Performance flow operation failed", e)
                 }
                 emptyFlow()
@@ -69,15 +69,15 @@ class PerformanceGuard @Inject constructor(
     /**
      * Guards a suspend function performance monitoring operation
      */
-    suspend inline fun <T> guardSuspendOperation(
+    suspend fun <T> guardSuspendOperation(
         defaultValue: T,
-        crossinline operation: suspend () -> T
+        operation: suspend () -> T
     ): T {
         return if (shouldEnableMonitoring()) {
             try {
                 operation()
             } catch (e: Exception) {
-                if (debugConfig.isDebugBuild()) {
+                if (debugConfig.isDebugBuild) {
                     android.util.Log.w("PerformanceGuard", "Suspend performance operation failed", e)
                 }
                 defaultValue
@@ -91,12 +91,12 @@ class PerformanceGuard @Inject constructor(
      * Executes a performance monitoring operation only if enabled
      * Does nothing if monitoring is disabled
      */
-    inline fun executeIfEnabled(operation: () -> Unit) {
+    fun executeIfEnabled(operation: () -> Unit) {
         if (shouldEnableMonitoring()) {
             try {
                 operation()
             } catch (e: Exception) {
-                if (debugConfig.isDebugBuild()) {
+                if (debugConfig.isDebugBuild) {
                     android.util.Log.w("PerformanceGuard", "Performance execution failed", e)
                 }
             }
@@ -152,16 +152,16 @@ class PerformanceGuard @Inject constructor(
     fun getMonitoringState(): MonitoringState {
         return MonitoringState(
             isEnabled = shouldEnableMonitoring(),
-            authorizedSession = debugConfig.isAuthorizedDebugSession(),
-            debugBuild = debugConfig.isDebugBuild(),
+            authorizedSession = debugConfig.isAuthorizedDebugSession,
+            debugBuild = debugConfig.isDebugBuild,
             features = mapOf(
-                DebugConfig.FEATURE_MEMORY_MONITORING to isFeatureEnabled(DebugConfig.FEATURE_MEMORY_MONITORING),
-                DebugConfig.FEATURE_FRAME_RATE_MONITORING to isFeatureEnabled(DebugConfig.FEATURE_FRAME_RATE_MONITORING),
-                DebugConfig.FEATURE_NETWORK_MONITORING to isFeatureEnabled(DebugConfig.FEATURE_NETWORK_MONITORING),
-                DebugConfig.FEATURE_BATTERY_MONITORING to isFeatureEnabled(DebugConfig.FEATURE_BATTERY_MONITORING),
-                DebugConfig.FEATURE_DATABASE_MONITORING to isFeatureEnabled(DebugConfig.FEATURE_DATABASE_MONITORING),
-                DebugConfig.FEATURE_UI_MONITORING to isFeatureEnabled(DebugConfig.FEATURE_UI_MONITORING),
-                DebugConfig.FEATURE_MEMORY_LEAK_DETECTION to isFeatureEnabled(DebugConfig.FEATURE_MEMORY_LEAK_DETECTION)
+                "FEATURE_MEMORY_MONITORING" to false,
+                "FEATURE_FRAME_RATE_MONITORING" to false,
+                "FEATURE_NETWORK_MONITORING" to false,
+                "FEATURE_BATTERY_MONITORING" to false,
+                "FEATURE_DATABASE_MONITORING" to false,
+                "FEATURE_UI_MONITORING" to false,
+                "FEATURE_MEMORY_LEAK_DETECTION" to false
             )
         )
     }

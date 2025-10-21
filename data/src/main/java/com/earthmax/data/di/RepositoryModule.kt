@@ -1,6 +1,6 @@
 package com.earthmax.data.di
 
-import com.earthmax.data.repository.EventRepositoryImpl
+import com.earthmax.data.repository.EventDataRepository
 import com.earthmax.data.repository.TodoRepositoryImpl
 import com.earthmax.data.repository.UserRepositoryImpl
 import com.earthmax.domain.repository.EventRepository
@@ -20,12 +20,12 @@ import javax.inject.Singleton
 abstract class RepositoryModule {
 
     /**
-     * Binds EventRepositoryImpl to EventRepository interface
+     * Binds EventDataRepository to EventRepository interface
      */
     @Binds
     @Singleton
     abstract fun bindEventRepository(
-        eventRepositoryImpl: EventRepositoryImpl
+        eventDataRepository: EventDataRepository
     ): EventRepository
 
     /**

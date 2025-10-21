@@ -1,6 +1,6 @@
 package com.earthmax.core.error
 
-import com.earthmax.core.utils.Logger
+
 import kotlinx.coroutines.CancellationException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -13,9 +13,7 @@ import javax.inject.Singleton
  * Converts generic exceptions to domain-specific exceptions and handles logging.
  */
 @Singleton
-class ErrorHandler @Inject constructor(
-    private val logger: Logger
-) {
+class ErrorHandler @Inject constructor() {
     
     /**
      * Handles and converts exceptions to EarthMaxException
@@ -35,7 +33,7 @@ class ErrorHandler @Inject constructor(
         }
         
         // Log the error
-        logger.error("Error handled: ${earthMaxException.message}", earthMaxException)
+        android.util.Log.e("ErrorHandler", "Error handled: ${earthMaxException.message}", earthMaxException)
         
         return earthMaxException
     }

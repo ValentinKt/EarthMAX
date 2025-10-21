@@ -1,7 +1,10 @@
 package com.earthmax.core.sync
 
 import androidx.work.*
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -36,7 +39,7 @@ class SyncScheduler @Inject constructor(
         
         val constraints = Constraints.Builder().apply {
             if (requiresNetwork) {
-                setRequiredNetworkType(NetworkType.CONNECTED)
+                setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
             }
             setRequiresBatteryNotLow(priority != SyncPriority.HIGH)
         }.build()
@@ -69,7 +72,7 @@ class SyncScheduler @Inject constructor(
         logger.d("SyncScheduler", "Scheduling periodic sync every ${interval.toMinutes()} minutes")
         
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
             .setRequiresBatteryNotLow(true)
             .setRequiresStorageNotLow(true)
             .build()
@@ -107,7 +110,7 @@ class SyncScheduler @Inject constructor(
         logger.d("SyncScheduler", "Scheduling retry sync in ${delay.toMinutes()} minutes")
         
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
             .build()
 
         val retrySyncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
@@ -149,13 +152,18 @@ class SyncScheduler @Inject constructor(
                 // No network, cancel all sync work
                 cancelAllSync()
             }
-            networkType == NetworkType.WIFI && !isMetered -> {
-                // WiFi connection, schedule aggressive sync
+            networkType == NetworkType.WIFI -> {
+                // WiFi connection, aggressive sync
+                scheduleImmediateSync(SyncPriority.HIGH)
+                schedulePeriodicSync(Duration.ofMinutes(30), Duration.ofMinutes(5))
+            }
+            networkType == NetworkType.ETHERNET -> {
+                // Ethernet connection, aggressive sync
                 scheduleImmediateSync(SyncPriority.HIGH)
                 schedulePeriodicSync(Duration.ofMinutes(30), Duration.ofMinutes(5))
             }
             networkType == NetworkType.CELLULAR && !isMetered -> {
-                // Unlimited cellular, moderate sync
+                // Cellular but not metered, moderate sync
                 scheduleImmediateSync(SyncPriority.NORMAL)
                 schedulePeriodicSync(Duration.ofHours(2), Duration.ofMinutes(30))
             }
@@ -201,8 +209,13 @@ class SyncScheduler @Inject constructor(
      * Check if sync is currently running
      */
     suspend fun isSyncRunning(): Boolean {
-        val workInfos = workManager.getWorkInfosForUniqueWork(SYNC_WORK_NAME).await()
-        return workInfos.any { it.state == WorkInfo.State.RUNNING }
+        return try {
+            val workInfos = workManager.getWorkInfosForUniqueWork(SYNC_WORK_NAME).get()
+            workInfos.any { it.state == WorkInfo.State.RUNNING }
+        } catch (e: Exception) {
+            logger.e("SyncScheduler", "Error checking sync status: ${e.message}")
+            false
+        }
     }
 }
 
@@ -235,9 +248,12 @@ class SyncWorker @AssistedInject constructor(
             setProgress(workDataOf("status" to "syncing"))
             
             // Perform sync
-            val success = when (syncType) {
-                "retry" -> syncManager.syncFailedOperations()
-                else -> syncManager.syncPendingOperations()
+            val success = try {
+                syncManager.startSync()
+                true
+            } catch (e: Exception) {
+                logger.e("SyncWorker", "Sync failed", e)
+                false
             }
             
             if (success) {

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Event Preview</title>
+  <style>
+    :root {
+      --primary: #00695C; /* Teal40 */
+      --surface: #F8F9FA;
+      --text: #1b1b1b;
+      --error: #BA1A1A;
+      --chip-bg: #E0F2F1;
+      --chip-text: #004D40;
+    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:0; background: var(--surface); color: var(--text); }
+    .appbar { display:flex; align-items:center; gap:12px; padding:16px; background: var(--primary); color:#fff; position: sticky; top:0; }
+    .container { max-width: 760px; margin: 0 auto; padding: 20px; }
+    .card { background:#fff; border-radius:12px; padding:16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom:16px; }
+    .image-card { display:flex; align-items:center; gap:16px; }
+    .image-placeholder { width: 100%; height: 180px; border:2px dashed #c7c7c7; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#666; }
+    .row { display:flex; gap:12px; }
+    .field { flex:1; display:flex; flex-direction:column; gap:6px; }
+    label { font-size: 12px; opacity: 0.8; }
+    input, textarea, select { padding:12px; border-radius:10px; border:1px solid #ddd; font-size:14px; }
+    textarea { min-height: 100px; }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { padding:8px 12px; border-radius:999px; background: var(--chip-bg); color: var(--chip-text); border:1px solid #B2DFDB; cursor:pointer; }
+    .actions { display:flex; justify-content:flex-end; margin-top:16px; }
+    .btn { padding:12px 16px; border-radius:10px; border:none; background: var(--primary); color:#fff; cursor:pointer; }
+    .helper { font-size:12px; color:#666; }
+    .error { color: var(--error); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="appbar">
+    <span>←</span>
+    <strong>Create Event</strong>
+  </div>
+  <div class="container">
+    <div class="card image-card">
+      <div class="image-placeholder">Tap to select event image</div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" placeholder="e.g., Community Park Cleanup" />
+        <span class="helper">Required, 3–100 characters</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Description</label>
+        <textarea placeholder="Describe the event, goals, and instructions"></textarea>
+        <span class="helper">Required, 10–1000 characters</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Location</label>
+        <input type="text" placeholder="e.g., 123 Greenway Ave, Springfield" />
+        <span class="helper">Required</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" />
+        </div>
+        <div class="field">
+          <label>Time</label>
+          <input type="time" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>Max Participants</label>
+        <input type="number" placeholder="e.g., 50" />
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Category</label>
+      <div class="chips">
+        <span class="chip">Cleanup</span>
+        <span class="chip">Planting</span>
+        <span class="chip">Recycling</span>
+        <span class="chip">Education</span>
+        <span class="chip">Conservation</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label>General Messages</label>
+        <div class="helper">Success and error messages appear here.</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn">Create Event</button>
+    </div>
+  </div>
+</body>
+</html>

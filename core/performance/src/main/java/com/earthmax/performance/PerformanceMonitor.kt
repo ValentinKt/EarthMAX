@@ -37,7 +37,7 @@ class PerformanceMonitor @Inject constructor(
     val performanceMetrics: StateFlow<PerformanceMetrics> = _performanceMetrics.asStateFlow()
     
     private val frameTimeTracker = FrameTimeTracker()
-    private val memoryTracker = MemoryTracker()
+    private val memoryTracker = MemoryTracker(context)
     private val networkTracker = NetworkTracker()
     private val batteryTracker = BatteryTracker(context)
     
@@ -286,13 +286,6 @@ data class PerformanceMetrics(
 /**
  * Memory usage information
  */
-data class MemoryUsage(
-    val usedMemory: Long = 0L,
-    val totalMemory: Long = 0L,
-    val availableMemory: Long = 0L,
-    val heapSize: Long = 0L,
-    val heapUsed: Long = 0L
-)
 
 /**
  * Frame rendering metrics
@@ -307,23 +300,7 @@ data class FrameMetrics(
 /**
  * Network performance metrics
  */
-data class NetworkMetrics(
-    val averageResponseTime: Long = 0L,
-    val successfulRequests: Int = 0,
-    val failedRequests: Int = 0,
-    val bytesReceived: Long = 0L,
-    val bytesSent: Long = 0L
-)
 
-/**
- * Battery usage metrics
- */
-data class BatteryMetrics(
-    val batteryLevel: Int = 100,
-    val isCharging: Boolean = false,
-    val batteryTemperature: Float = 0f,
-    val powerUsage: Double = 0.0
-)
 
 /**
  * Performance summary

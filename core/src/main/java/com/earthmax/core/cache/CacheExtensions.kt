@@ -127,6 +127,6 @@ suspend fun <T> AdvancedCacheManager.warmUp(
  * Check if cache entry should be refreshed based on age
  */
 private fun <T> CacheEntry<T>.shouldRefresh(threshold: Duration): Boolean {
-    val age = System.currentTimeMillis() - createdAt
+    val age = System.currentTimeMillis() - timestamp
     return age > threshold.inWholeMilliseconds
 }

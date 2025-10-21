@@ -77,19 +77,7 @@ data class SyncStats(
     val totalOperationsFailed: Long
 )
 
-/**
- * Offline data change tracking
- */
-data class OfflineChange(
-    val id: String,
-    val entityType: String,
-    val entityId: String,
-    val changeType: ChangeType,
-    val oldValue: Any?,
-    val newValue: Any?,
-    val timestamp: LocalDateTime = LocalDateTime.now(),
-    val userId: String? = null
-)
+
 
 /**
  * Types of offline changes

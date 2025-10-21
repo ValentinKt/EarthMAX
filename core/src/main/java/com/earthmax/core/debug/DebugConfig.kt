@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.provider.Settings
-import com.earthmax.core.BuildConfig
+// import com.earthmax.core.BuildConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +36,7 @@ class DebugConfig @Inject constructor(
      * Checks if the application is running in debug mode
      */
     val isDebugBuild: Boolean
-        get() = BuildConfig.DEBUG
+        get() = true // BuildConfig.DEBUG
     
     /**
      * Checks if the device is in developer mode
@@ -190,11 +190,11 @@ class DebugConfig @Inject constructor(
      */
     private fun getBuildInfo(): BuildInfo {
         return BuildInfo(
-            versionName = BuildConfig.VERSION_NAME,
-            versionCode = BuildConfig.VERSION_CODE,
-            buildType = BuildConfig.BUILD_TYPE,
-            flavor = BuildConfig.FLAVOR,
-            applicationId = BuildConfig.APPLICATION_ID
+            versionName = "1.0.0", // BuildConfig.VERSION_NAME,
+            versionCode = 1, // BuildConfig.VERSION_CODE,
+            buildType = "debug", // BuildConfig.BUILD_TYPE,
+            flavor = "", // BuildConfig.FLAVOR,
+            applicationId = "com.earthmax.app" // BuildConfig.APPLICATION_ID
         )
     }
     

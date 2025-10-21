@@ -1,0 +1,381 @@
+Reusing configuration cache.
+> Task :core:preBuild UP-TO-DATE
+> Task :core:preDebugBuild UP-TO-DATE
+> Task :core:generateDebugResValues
+> Task :core:generateDebugResources
+> Task :core:packageDebugResources
+> Task :core:parseDebugLocalResources
+> Task :core:generateDebugRFile
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+
+> Task :core:kspDebugKotlin
+i: [ksp] loaded provider(s): [androidx.room.RoomKspProcessor$Provider, dagger.hilt.processor.internal.uninstallmodules.KspUninstallModulesProcessor$Provider, dagger.hilt.processor.internal.aliasof.KspAliasOfProcessor$Provider, dagger.hilt.processor.internal.originatingelement.KspOriginatingElementProcessor$Provider, dagger.hilt.processor.internal.root.KspComponentTreeDepsProcessor$Provider, dagger.hilt.android.processor.internal.customtestapplication.KspCustomTestApplicationProcessor$Provider, dagger.hilt.processor.internal.root.KspRootProcessor$Provider, dagger.hilt.android.processor.internal.viewmodel.KspViewModelProcessor$Provider, dagger.hilt.android.processor.internal.bindvalue.KspBindValueProcessor$Provider, dagger.hilt.processor.internal.aggregateddeps.KspAggregatedDepsProcessor$Provider, dagger.hilt.processor.internal.definecomponent.KspDefineComponentProcessor$Provider, dagger.hilt.android.processor.internal.androidentrypoint.KspAndroidEntryPointProcessor$Provider, dagger.hilt.processor.internal.earlyentrypoint.KspEarlyEntryPointProcessor$Provider, dagger.hilt.processor.internal.generatesrootinput.KspGeneratesRootInputProcessor$Provider, dagger.internal.codegen.KspComponentProcessor$Provider]
+
+> Task :core:compileDebugKotlin
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:86:36 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:93:36 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:107:40 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:115:40 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:123:36 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:132:36 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:176:40 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:211:36 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:262:32 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:318:28 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/AdvancedCacheManager.kt:343:28 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/cache/CacheManager.kt:46:36 Unchecked cast of 'CacheManager.CacheEntry<*>?' to 'CacheManager.CacheEntry<T (of fun <T> get)>'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/database/EarthMaxDatabase.kt:35:18 'fun fallbackToDestructiveMigration(): RoomDatabase.Builder<EarthMaxDatabase>' is deprecated. Replace by overloaded version with parameter to indicate if all tables should be dropped or not.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/di/CoreModule.kt:182:11 'fun fallbackToDestructiveMigration(): RoomDatabase.Builder<EarthMaxDatabase>' is deprecated. Replace by overloaded version with parameter to indicate if all tables should be dropped or not.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/error/AdvancedErrorHandler.kt:243:28 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/error/AdvancedErrorHandler.kt:257:32 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/monitoring/NetworkMonitor.kt:22:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/monitoring/PerformanceMonitor.kt:32:100 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/sync/NetworkMonitor.kt:23:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/sync/SyncManager.kt:286:37 Unchecked cast of 'Any' to 'Map<String, Any?>'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/sync/SyncManager.kt:295:83 Unchecked cast of 'Any?' to 'Map<String, Any?>'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/LocationProvider.kt:23:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:424:35 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:425:17 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:425:56 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:427:28 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:449:35 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:450:20 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:450:48 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core/src/main/java/com/earthmax/core/utils/Logger.kt:450:64 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type 'String?'.
+
+> Task :core:javaPreCompileDebug
+> Task :core:compileDebugJavaWithJavac
+> Task :core:transformDebugClassesWithAsm
+> Task :core:bundleLibCompileToJarDebug
+> Task :core-ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core-ui:preBuild UP-TO-DATE
+> Task :core-ui:preDebugBuild UP-TO-DATE
+> Task :core-ui:generateDebugResValues
+> Task :core-ui:generateDebugResources
+> Task :core-ui:packageDebugResources
+> Task :core-ui:parseDebugLocalResources
+> Task :core-ui:generateDebugRFile
+
+> Task :core-ui:compileDebugKotlin
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/core-ui/src/main/java/com/earthmax/core/ui/theme/Theme.kt:162:20 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+
+> Task :core-ui:javaPreCompileDebug
+> Task :core-ui:compileDebugJavaWithJavac NO-SOURCE
+> Task :core-ui:bundleLibCompileToJarDebug
+> Task :data:preBuild UP-TO-DATE
+> Task :data:preDebugBuild UP-TO-DATE
+> Task :data:generateDebugResValues
+> Task :data:generateDebugResources
+> Task :data:packageDebugResources
+> Task :data:parseDebugLocalResources
+> Task :data:generateDebugRFile
+> Task :core:bundleLibRuntimeToJarDebug
+> Task :data:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :data:checkApolloVersions
+
+> Task :data:generateServiceApolloSources
+w: /Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/graphql/com/earthmax/data/GetUserAchievements.graphql: (5, 3): Apollo: Variable `category` is unused
+w: /Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/graphql/com/earthmax/data/GetEcoTips.graphql: (1, 18): Apollo: Variable `category` is unused
+
+> Task :domain:preBuild UP-TO-DATE
+> Task :domain:preDebugBuild UP-TO-DATE
+> Task :domain:generateDebugResValues
+> Task :domain:generateDebugResources
+> Task :domain:packageDebugResources
+> Task :domain:parseDebugLocalResources
+> Task :domain:generateDebugRFile
+> Task :domain:checkKotlinGradlePluginConfigurationErrors SKIPPED
+
+> Task :domain:kspDebugKotlin
+i: [ksp] loaded provider(s): [dagger.hilt.processor.internal.uninstallmodules.KspUninstallModulesProcessor$Provider, dagger.hilt.processor.internal.aliasof.KspAliasOfProcessor$Provider, dagger.hilt.processor.internal.originatingelement.KspOriginatingElementProcessor$Provider, dagger.hilt.processor.internal.root.KspComponentTreeDepsProcessor$Provider, dagger.hilt.android.processor.internal.customtestapplication.KspCustomTestApplicationProcessor$Provider, dagger.hilt.processor.internal.root.KspRootProcessor$Provider, dagger.hilt.android.processor.internal.viewmodel.KspViewModelProcessor$Provider, dagger.hilt.android.processor.internal.bindvalue.KspBindValueProcessor$Provider, dagger.hilt.processor.internal.aggregateddeps.KspAggregatedDepsProcessor$Provider, dagger.hilt.processor.internal.definecomponent.KspDefineComponentProcessor$Provider, dagger.hilt.android.processor.internal.androidentrypoint.KspAndroidEntryPointProcessor$Provider, dagger.hilt.processor.internal.earlyentrypoint.KspEarlyEntryPointProcessor$Provider, dagger.hilt.processor.internal.generatesrootinput.KspGeneratesRootInputProcessor$Provider, dagger.internal.codegen.KspComponentProcessor$Provider]
+
+> Task :domain:compileDebugKotlin
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainEvent.kt:3:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainEvent.kt:16:20 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainEvent.kt:17:18 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainEvent.kt:27:20 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainEvent.kt:28:20 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainTodoItem.kt:3:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainTodoItem.kt:17:20 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainTodoItem.kt:18:22 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainTodoItem.kt:19:20 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainUser.kt:3:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainUser.kt:22:20 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/domain/src/main/java/com/earthmax/domain/model/DomainUser.kt:23:23 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+
+> Task :domain:javaPreCompileDebug
+> Task :domain:compileDebugJavaWithJavac
+> Task :domain:transformDebugClassesWithAsm
+> Task :domain:bundleLibCompileToJarDebug
+> Task :core:core-network:preBuild UP-TO-DATE
+> Task :core:core-network:preDebugBuild UP-TO-DATE
+> Task :core:core-network:generateDebugResValues
+> Task :core:core-network:generateDebugResources
+> Task :core:core-network:packageDebugResources
+> Task :core:core-network:parseDebugLocalResources
+> Task :core:core-network:generateDebugRFile
+> Task :core:core-network:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:core-network:generateDebugBuildConfig
+
+> Task :core:core-network:kspDebugKotlin
+i: [ksp] loaded provider(s): [dagger.hilt.processor.internal.uninstallmodules.KspUninstallModulesProcessor$Provider, dagger.hilt.processor.internal.aliasof.KspAliasOfProcessor$Provider, dagger.hilt.processor.internal.originatingelement.KspOriginatingElementProcessor$Provider, dagger.hilt.processor.internal.root.KspComponentTreeDepsProcessor$Provider, dagger.hilt.android.processor.internal.customtestapplication.KspCustomTestApplicationProcessor$Provider, dagger.hilt.processor.internal.root.KspRootProcessor$Provider, dagger.hilt.android.processor.internal.viewmodel.KspViewModelProcessor$Provider, dagger.hilt.android.processor.internal.bindvalue.KspBindValueProcessor$Provider, dagger.hilt.processor.internal.aggregateddeps.KspAggregatedDepsProcessor$Provider, dagger.hilt.processor.internal.definecomponent.KspDefineComponentProcessor$Provider, dagger.hilt.android.processor.internal.androidentrypoint.KspAndroidEntryPointProcessor$Provider, dagger.hilt.processor.internal.earlyentrypoint.KspEarlyEntryPointProcessor$Provider, dagger.hilt.processor.internal.generatesrootinput.KspGeneratesRootInputProcessor$Provider, dagger.internal.codegen.KspComponentProcessor$Provider]
+
+> Task :core:core-network:compileDebugKotlin
+> Task :core:core-network:javaPreCompileDebug
+> Task :core:core-network:compileDebugJavaWithJavac
+> Task :core:core-network:transformDebugClassesWithAsm
+> Task :core:core-network:bundleLibCompileToJarDebug
+
+> Task :data:kspDebugKotlin
+i: [ksp] loaded provider(s): [dagger.hilt.processor.internal.uninstallmodules.KspUninstallModulesProcessor$Provider, dagger.hilt.processor.internal.aliasof.KspAliasOfProcessor$Provider, dagger.hilt.processor.internal.originatingelement.KspOriginatingElementProcessor$Provider, dagger.hilt.processor.internal.root.KspComponentTreeDepsProcessor$Provider, dagger.hilt.android.processor.internal.customtestapplication.KspCustomTestApplicationProcessor$Provider, dagger.hilt.processor.internal.root.KspRootProcessor$Provider, dagger.hilt.android.processor.internal.viewmodel.KspViewModelProcessor$Provider, dagger.hilt.android.processor.internal.bindvalue.KspBindValueProcessor$Provider, dagger.hilt.processor.internal.aggregateddeps.KspAggregatedDepsProcessor$Provider, dagger.hilt.processor.internal.definecomponent.KspDefineComponentProcessor$Provider, dagger.hilt.android.processor.internal.androidentrypoint.KspAndroidEntryPointProcessor$Provider, dagger.hilt.processor.internal.earlyentrypoint.KspEarlyEntryPointProcessor$Provider, dagger.hilt.processor.internal.generatesrootinput.KspGeneratesRootInputProcessor$Provider, androidx.room.RoomKspProcessor$Provider, dagger.internal.codegen.KspComponentProcessor$Provider]
+
+> Task :data:compileDebugKotlin
+w: Argument -Xopt-in is deprecated. Please use -opt-in instead
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/CompleteEcoTipMutation.kt:23:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/CompleteEcoTipMutation.kt:68:30 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/CreateEcoTipMutation.kt:26:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/CreateEcoTipMutation.kt:81:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/CreateEcoTipMutation.kt:82:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetEcoTipByIdQuery.kt:25:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetEcoTipByIdQuery.kt:81:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetEcoTipByIdQuery.kt:82:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetEcoTipsQuery.kt:25:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetEcoTipsQuery.kt:77:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetEcoTipsQuery.kt:78:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserAchievementsQuery.kt:25:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserAchievementsQuery.kt:77:30 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserAchievementsQuery.kt:78:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserAchievementsQuery.kt:79:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserAchievementsQuery.kt:92:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserProfileQuery.kt:22:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserProfileQuery.kt:76:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserProfileQuery.kt:77:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserProfileQuery.kt:99:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/GetUserProfileQuery.kt:100:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/SearchEcoTipsQuery.kt:28:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/SearchEcoTipsQuery.kt:89:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/SearchEcoTipsQuery.kt:90:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/UpdateEcoTipMutation.kt:27:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/UpdateEcoTipMutation.kt:83:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/UpdateEcoTipMutation.kt:84:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/UpdateUserProfileMutation.kt:23:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/UpdateUserProfileMutation.kt:73:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/UpdateUserProfileMutation.kt:74:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CompleteEcoTipMutation_ResponseAdapter.kt:25:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CompleteEcoTipMutation_ResponseAdapter.kt:98:26 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CompleteEcoTipMutation_ResponseAdapter.kt:112:72 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CompleteEcoTipMutation_ResponseAdapter.kt:154:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:33:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:119:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:120:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:144:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:146:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:224:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/CreateEcoTipMutation_ResponseAdapter.kt:228:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:33:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:147:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:148:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:172:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:174:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:252:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipByIdQuery_ResponseAdapter.kt:256:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:27:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:134:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:135:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:151:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:153:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:208:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetEcoTipsQuery_ResponseAdapter.kt:212:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:31:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:147:26 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:148:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:149:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:162:72 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:164:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:166:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:210:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:214:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:218:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:240:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:255:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserAchievementsQuery_ResponseAdapter.kt:306:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:28:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:142:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:143:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:156:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:158:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:206:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:210:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:290:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:291:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:310:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:312:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:375:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/GetUserProfileQuery_ResponseAdapter.kt:379:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:34:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:160:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:161:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:185:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:187:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:265:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/SearchEcoTipsQuery_ResponseAdapter.kt:269:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:33:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:118:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:119:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:143:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:145:71 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:223:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateEcoTipMutation_ResponseAdapter.kt:227:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:24:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:101:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:102:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:115:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:117:70 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:165:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/adapter/UpdateUserProfileMutation_ResponseAdapter.kt:169:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:10:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:16:27 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:17:27 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:18:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:19:34 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:21:27 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:22:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/DatetimeFilter.kt:23:28 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsInsertInput.kt:13:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsInsertInput.kt:30:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsInsertInput.kt:31:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsInsertInput.kt:32:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsUpdateInput.kt:13:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsUpdateInput.kt:30:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsUpdateInput.kt:31:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/Eco_tipsUpdateInput.kt:32:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/ProfilesUpdateInput.kt:10:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/ProfilesUpdateInput.kt:20:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/ProfilesUpdateInput.kt:21:35 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/User_eco_tip_completionsInsertInput.kt:11:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/User_eco_tip_completionsInsertInput.kt:17:37 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:20:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:33:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:38:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:43:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:48:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:57:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:62:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/DatetimeFilter_InputAdapter.kt:67:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsInsertInput_InputAdapter.kt:27:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsInsertInput_InputAdapter.kt:104:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsInsertInput_InputAdapter.kt:109:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsInsertInput_InputAdapter.kt:114:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsUpdateInput_InputAdapter.kt:27:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsUpdateInput_InputAdapter.kt:104:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsUpdateInput_InputAdapter.kt:109:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/Eco_tipsUpdateInput_InputAdapter.kt:114:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/ProfilesUpdateInput_InputAdapter.kt:23:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/ProfilesUpdateInput_InputAdapter.kt:66:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/ProfilesUpdateInput_InputAdapter.kt:71:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/User_eco_tip_completionsInsertInput_InputAdapter.kt:24:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/build/generated/source/apollo/service/com/earthmax/data/graphql/type/adapter/User_eco_tip_completionsInsertInput_InputAdapter.kt:54:47 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/events/SupabaseEventsRepository.kt:17:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/events/SupabaseEventsRepository.kt:669:14 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/events/SupabaseEventsRepository.kt:676:18 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/events/SupabaseEventsRepository.kt:704:22 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/events/SupabaseEventsRepository.kt:705:43 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/events/SupabaseEventsRepository.kt:706:22 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/local/migrations/MIGRATION_2_3.kt:7:26 The corresponding parameter in the supertype 'Migration' is named 'db'. This may cause problems when calling this function with named arguments.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/EventMappers.kt:9:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/EventMappers.kt:24:21 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/EventMappers.kt:34:21 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/EventMappers.kt:35:21 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/UserMappers.kt:9:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/UserMappers.kt:44:21 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/UserMappers.kt:45:24 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/mappers/UserMappers.kt:72:48 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:13:8 'typealias Clock = Clock' is deprecated. This type is deprecated in favor of `kotlin.time.Clock`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:23:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:174:23 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:205:29 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:298:21 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:299:43 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/data/src/main/java/com/earthmax/data/todo/SupabaseTodoRepository.kt:300:21 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+
+> Task :checkServiceApolloDuplicates
+> Task :data:javaPreCompileDebug
+> Task :data:compileDebugJavaWithJavac
+> Task :domain:bundleLibRuntimeToJarDebug
+> Task :core:core-network:bundleLibRuntimeToJarDebug
+> Task :data:transformDebugClassesWithAsm
+> Task :data:bundleLibCompileToJarDebug
+> Task :feature-events:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature-events:preBuild UP-TO-DATE
+> Task :feature-events:preDebugBuild UP-TO-DATE
+> Task :feature-events:generateDebugResValues
+> Task :feature-events:generateDebugResources
+> Task :feature-events:packageDebugResources
+> Task :feature-events:parseDebugLocalResources
+> Task :feature-events:generateDebugRFile
+> Task :presentation:preBuild UP-TO-DATE
+> Task :presentation:preDebugBuild UP-TO-DATE
+> Task :presentation:generateDebugResValues
+> Task :presentation:generateDebugResources
+> Task :presentation:packageDebugResources
+> Task :presentation:parseDebugLocalResources
+> Task :presentation:generateDebugRFile
+> Task :core-ui:bundleLibRuntimeToJarDebug
+> Task :data:bundleLibRuntimeToJarDebug
+> Task :presentation:checkKotlinGradlePluginConfigurationErrors SKIPPED
+
+> Task :presentation:kspDebugKotlin
+i: [ksp] loaded provider(s): [dagger.hilt.processor.internal.uninstallmodules.KspUninstallModulesProcessor$Provider, dagger.hilt.processor.internal.aliasof.KspAliasOfProcessor$Provider, dagger.hilt.processor.internal.originatingelement.KspOriginatingElementProcessor$Provider, dagger.hilt.processor.internal.root.KspComponentTreeDepsProcessor$Provider, dagger.hilt.android.processor.internal.customtestapplication.KspCustomTestApplicationProcessor$Provider, dagger.hilt.processor.internal.root.KspRootProcessor$Provider, dagger.hilt.android.processor.internal.viewmodel.KspViewModelProcessor$Provider, dagger.hilt.android.processor.internal.bindvalue.KspBindValueProcessor$Provider, dagger.hilt.processor.internal.aggregateddeps.KspAggregatedDepsProcessor$Provider, dagger.hilt.processor.internal.definecomponent.KspDefineComponentProcessor$Provider, dagger.hilt.android.processor.internal.androidentrypoint.KspAndroidEntryPointProcessor$Provider, dagger.hilt.processor.internal.earlyentrypoint.KspEarlyEntryPointProcessor$Provider, dagger.hilt.processor.internal.generatesrootinput.KspGeneratesRootInputProcessor$Provider, dagger.internal.codegen.KspComponentProcessor$Provider]
+
+> Task :presentation:compileDebugKotlin
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/presentation/src/main/java/com/earthmax/presentation/chat/ChatScreen.kt:33:32 'fun <reified VM : ViewModel> hiltViewModel(viewModelStoreOwner: ViewModelStoreOwner = ..., key: String? = ...): VM' is deprecated. Moved to package: androidx.hilt.lifecycle.viewmodel.compose.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/presentation/src/main/java/com/earthmax/presentation/chat/ChatScreen.kt:95:53 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/presentation/src/main/java/com/earthmax/presentation/chat/ChatScreen.kt:232:49 'val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
+
+> Task :presentation:javaPreCompileDebug
+> Task :presentation:compileDebugJavaWithJavac
+> Task :presentation:transformDebugClassesWithAsm
+> Task :presentation:bundleLibCompileToJarDebug
+
+> Task :feature-events:kspDebugKotlin
+i: [ksp] loaded provider(s): [dagger.hilt.processor.internal.uninstallmodules.KspUninstallModulesProcessor$Provider, dagger.hilt.processor.internal.aliasof.KspAliasOfProcessor$Provider, dagger.hilt.processor.internal.originatingelement.KspOriginatingElementProcessor$Provider, dagger.hilt.processor.internal.root.KspComponentTreeDepsProcessor$Provider, dagger.hilt.android.processor.internal.customtestapplication.KspCustomTestApplicationProcessor$Provider, dagger.hilt.processor.internal.root.KspRootProcessor$Provider, dagger.hilt.android.processor.internal.viewmodel.KspViewModelProcessor$Provider, dagger.hilt.android.processor.internal.bindvalue.KspBindValueProcessor$Provider, dagger.hilt.processor.internal.aggregateddeps.KspAggregatedDepsProcessor$Provider, dagger.hilt.processor.internal.definecomponent.KspDefineComponentProcessor$Provider, dagger.hilt.android.processor.internal.androidentrypoint.KspAndroidEntryPointProcessor$Provider, dagger.hilt.processor.internal.earlyentrypoint.KspEarlyEntryPointProcessor$Provider, dagger.hilt.processor.internal.generatesrootinput.KspGeneratesRootInputProcessor$Provider, dagger.internal.codegen.KspComponentProcessor$Provider]
+
+> Task :feature-events:compileDebugKotlin
+w: Argument -Xopt-in is deprecated. Please use -opt-in instead
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/EventsHomeScreen.kt:32:34 'fun <reified VM : ViewModel> hiltViewModel(viewModelStoreOwner: ViewModelStoreOwner = ..., key: String? = ...): VM' is deprecated. Moved to package: androidx.hilt.lifecycle.viewmodel.compose.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/EventsViewModel.kt:48:7 This declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/components/EventCard.kt:304:57 'val outlinedButtonBorder: BorderStroke' is deprecated. Please use the version that takes an `enabled` param to get the `BorderStroke` with the correct opacity.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/create/CreateEventScreen.kt:42:39 'fun <reified VM : ViewModel> hiltViewModel(viewModelStoreOwner: ViewModelStoreOwner = ..., key: String? = ...): VM' is deprecated. Moved to package: androidx.hilt.lifecycle.viewmodel.compose.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/create/CreateEventScreen.kt:82:53 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/create/CreateEventViewModel.kt:59:5 This annotation is currently applied to the value parameter only, but in the future it will also be applied to field.
+- To opt in to applying to both value parameter and field, add '-Xannotation-default-target=param-property' to your compiler arguments.
+- To keep applying to the value parameter only, use the '@param:' annotation target.
+
+See https://youtrack.jetbrains.com/issue/KT-73255 for more details.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/detail/EventDetailScreen.kt:30:39 'fun <reified VM : ViewModel> hiltViewModel(viewModelStoreOwner: ViewModelStoreOwner = ..., key: String? = ...): VM' is deprecated. Moved to package: androidx.hilt.lifecycle.viewmodel.compose.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/detail/EventDetailScreen.kt:52:53 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/detail/EventDetailScreen.kt:77:61 'val Icons.Filled.Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Chat.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/detail/EventDetailScreen.kt:293:73 'val Icons.Filled.ExitToApp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ExitToApp.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/home/EventsHomeScreen.kt:46:34 'fun <reified VM : ViewModel> hiltViewModel(viewModelStoreOwner: ViewModelStoreOwner = ..., key: String? = ...): VM' is deprecated. Moved to package: androidx.hilt.lifecycle.viewmodel.compose.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/todo/TodoListScreen.kt:31:36 'fun <reified VM : ViewModel> hiltViewModel(viewModelStoreOwner: ViewModelStoreOwner = ..., key: String? = ...): VM' is deprecated. Moved to package: androidx.hilt.lifecycle.viewmodel.compose.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/todo/TodoListScreen.kt:60:57 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/todo/TodoListViewModel.kt:20:8 'typealias Clock = Clock' is deprecated. This type is deprecated in favor of `kotlin.time.Clock`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/todo/TodoListViewModel.kt:21:8 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/todo/TodoListViewModel.kt:207:29 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+w: file:///Users/valentin/EARTH-ANDROID/EarthMAX/feature-events/src/main/java/com/earthmax/feature/events/todo/TodoListViewModel.kt:209:29 'typealias Instant = Instant' is deprecated. This type is deprecated in favor of `kotlin.time.Instant`.
+
+BUILD SUCCESSFUL in 18s
+79 actionable tasks: 79 executed
+Configuration cache entry reused.

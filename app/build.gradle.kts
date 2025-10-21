@@ -25,6 +25,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../keystore/release.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         debug {
             isTestCoverageEnabled = true
@@ -40,15 +49,6 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-        }
-    }
-    
-    signingConfigs {
-        create("release") {
-            storeFile = file("../keystore/release.keystore")
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
         }
     }
     compileOptions {
@@ -153,6 +153,7 @@ dependencies {
     // Core modules
     implementation(project(":core"))
     implementation(project(":core:core-network"))
+    implementation(project(":core:performance"))
     implementation(project(":core-ui"))
     implementation(project(":data"))
     
@@ -223,21 +224,21 @@ dependencies {
     // Android Testing
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
     
     // Hilt Testing
-    testImplementation("com.google.dagger:hilt-android-testing:$hilt_version")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:$hilt_version")
-    kaptTest("com.google.dagger:hilt-android-compiler:$hilt_version")
-    kaptAndroidTest("com.google.dagger:hilt-android-compiler:$hilt_version")
+    testImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.hilt.android.testing)
+    ksp(libs.hilt.compiler)
     
     // Debug implementations
-    debugImplementation("androidx.compose.ui:ui-tooling:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
 android {

@@ -2,7 +2,7 @@ package com.earthmax.core.cache
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import com.earthmax.core.monitoring.MetricsCollector
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking

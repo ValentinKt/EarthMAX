@@ -2,8 +2,9 @@ package com.earthmax.core.error
 
 import com.earthmax.core.config.AppConfig
 import com.earthmax.core.monitoring.MetricsCollector
-import com.earthmax.core.utils.Logger
+
 import kotlinx.coroutines.*
+import kotlin.math.pow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -23,7 +24,6 @@ import kotlin.time.Duration.Companion.seconds
  */
 @Singleton
 class AdvancedErrorHandler @Inject constructor(
-    private val logger: Logger,
     private val metricsCollector: MetricsCollector
 ) {
     private val circuitBreakers = ConcurrentHashMap<String, CircuitBreaker>()
@@ -55,12 +55,12 @@ class AdvancedErrorHandler @Inject constructor(
         return try {
             val result = executeWithRetry(operation, retryPolicy, action)
             circuitBreaker?.recordSuccess()
-            metricsCollector.incrementCounter("error_handler_success", mapOf("operation" to operation))
-            result
+            metricsCollector.incrementCounter("error_handler_success")
+            Result.success(result)
         } catch (e: Exception) {
             circuitBreaker?.recordFailure()
             handleError(operation, e)
-            Result.failure(e)
+            return Result.failure(e)
         }
     }
     
@@ -77,9 +77,9 @@ class AdvancedErrorHandler @Inject constructor(
                 val shouldRetry = shouldRetry(cause, attempt.toInt(), retryPolicy)
                 if (shouldRetry) {
                     val delay = calculateDelay(attempt.toInt(), retryPolicy)
-                    logger.warn("Retrying $operation (attempt ${attempt + 1}) after ${delay}ms", cause)
+                    android.util.Log.w("AdvancedErrorHandler", "Retrying $operation (attempt ${attempt + 1}) after ${delay}ms", cause)
                     delay(delay.milliseconds)
-                    metricsCollector.incrementCounter("error_handler_retries", mapOf("operation" to operation))
+                    metricsCollector.incrementCounter("error_handler_retries")
                 }
                 shouldRetry
             }
@@ -107,9 +107,9 @@ class AdvancedErrorHandler @Inject constructor(
                 
                 if (attempt < retryPolicy.maxAttempts - 1 && shouldRetry(e, attempt, retryPolicy)) {
                     val delay = calculateDelay(attempt, retryPolicy)
-                    logger.warn("Retrying $operation (attempt ${attempt + 1}) after ${delay}ms", e)
+                    android.util.Log.w("AdvancedErrorHandler", "Retrying $operation (attempt ${attempt + 1}) after ${delay}ms", e)
                     delay(delay.milliseconds)
-                    metricsCollector.incrementCounter("error_handler_retries", mapOf("operation" to operation))
+                    metricsCollector.incrementCounter("error_handler_retries")
                 } else {
                     throw e
                 }
@@ -122,8 +122,8 @@ class AdvancedErrorHandler @Inject constructor(
     /**
      * Handle and log error
      */
-    private suspend fun handleError(operation: String, error: Throwable) {
-        logger.error("Error in operation: $operation", error)
+    suspend fun handleError(operation: String, error: Throwable) {
+        android.util.Log.e("AdvancedErrorHandler", "Error in operation: $operation", error)
         
         val errorEvent = ErrorEvent(
             operation = operation,
@@ -133,11 +133,7 @@ class AdvancedErrorHandler @Inject constructor(
         )
         
         _errorEvents.emit(errorEvent)
-        metricsCollector.incrementCounter("error_handler_errors", mapOf(
-            "operation" to operation,
-            "error_type" to error::class.simpleName.orEmpty(),
-            "severity" to errorEvent.severity.name
-        ))
+        metricsCollector.incrementCounter("error_handler_errors")
     }
     
     /**
@@ -148,7 +144,7 @@ class AdvancedErrorHandler @Inject constructor(
         config: CircuitBreakerConfig
     ): CircuitBreaker {
         return circuitBreakers.computeIfAbsent(operation) {
-            CircuitBreaker(operation, config, logger, metricsCollector)
+            CircuitBreaker(operation, config, metricsCollector)
         }
     }
     
@@ -175,7 +171,7 @@ class AdvancedErrorHandler @Inject constructor(
             RetryStrategy.LINEAR -> retryPolicy.baseDelay.inWholeMilliseconds * (attempt + 1)
             RetryStrategy.EXPONENTIAL -> {
                 val exponentialDelay = retryPolicy.baseDelay.inWholeMilliseconds * 
-                    kotlin.math.pow(2.0, attempt.toDouble()).toLong()
+                    2.0.pow(attempt.toDouble()).toLong()
                 kotlin.math.min(exponentialDelay, retryPolicy.maxDelay.inWholeMilliseconds)
             }
         }
@@ -207,7 +203,7 @@ class AdvancedErrorHandler @Inject constructor(
      */
     fun resetCircuitBreaker(operation: String) {
         circuitBreakers[operation]?.reset()
-        logger.info("Circuit breaker reset for operation: $operation")
+        android.util.Log.i("AdvancedErrorHandler", "Circuit breaker reset for operation: $operation")
     }
     
     /**
@@ -231,7 +227,6 @@ class AdvancedErrorHandler @Inject constructor(
 class CircuitBreaker(
     private val operation: String,
     private val config: CircuitBreakerConfig,
-    private val logger: Logger,
     private val metricsCollector: MetricsCollector
 ) {
     private var state = CircuitBreakerState.CLOSED
@@ -244,7 +239,10 @@ class CircuitBreaker(
     fun recordSuccess() {
         failureCount.set(0)
         state = CircuitBreakerState.CLOSED
-        metricsCollector.incrementCounter("circuit_breaker_success", mapOf("operation" to operation))
+        // Record success metric asynchronously
+        kotlinx.coroutines.GlobalScope.launch {
+            metricsCollector.incrementCounter("circuit_breaker_success")
+        }
     }
     
     fun recordFailure() {
@@ -254,8 +252,11 @@ class CircuitBreaker(
         if (failures >= config.failureThreshold) {
             state = CircuitBreakerState.OPEN
             nextAttemptTime = lastFailureTime + config.timeout.inWholeMilliseconds
-            logger.warn("Circuit breaker opened for operation: $operation (failures: $failures)")
-            metricsCollector.incrementCounter("circuit_breaker_opened", mapOf("operation" to operation))
+            android.util.Log.w("AdvancedErrorHandler", "Circuit breaker opened for operation: $operation (failures: $failures)")
+            // Record opened metric asynchronously
+            kotlinx.coroutines.GlobalScope.launch {
+                metricsCollector.incrementCounter("circuit_breaker_opened")
+            }
         }
     }
     

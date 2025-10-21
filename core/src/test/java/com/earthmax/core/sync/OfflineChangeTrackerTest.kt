@@ -4,7 +4,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.earthmax.core.database.EarthMaxDatabase
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
 import org.junit.After

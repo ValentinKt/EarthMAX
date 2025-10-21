@@ -6,6 +6,7 @@ import com.earthmax.core.sync.SyncPriority
 import com.earthmax.core.sync.OfflineChangeStatus
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -21,7 +22,7 @@ class DatabaseConverters {
     @TypeConverter
     fun toStringMap(value: String?): Map<String, Any?>? {
         return value?.let {
-            val type = object : TypeToken<Map<String, Any?>>() {}.type
+            val type: Type = object : TypeToken<Map<String, Any?>>() {}.type
             gson.fromJson(it, type)
         }
     }

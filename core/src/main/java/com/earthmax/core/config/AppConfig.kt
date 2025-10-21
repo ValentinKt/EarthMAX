@@ -11,6 +11,7 @@ object AppConfig {
         const val DEFAULT_CACHE_DURATION_MINUTES = 30L
         const val MAX_CACHE_ENTRIES = 1000
         const val CACHE_CLEANUP_INTERVAL_MINUTES = 60L
+        const val CLEANUP_INTERVAL_MS = 60L * 60 * 1000 // 1 hour in milliseconds
     }
 
     // Network Configuration

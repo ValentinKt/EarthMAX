@@ -2,7 +2,7 @@ package com.earthmax.core.sync
 
 import com.earthmax.core.cache.AdvancedCacheManager
 import com.earthmax.core.error.AdvancedErrorHandler
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import com.earthmax.core.monitoring.MetricsCollector
 import io.mockk.*
 import kotlinx.coroutines.flow.flowOf

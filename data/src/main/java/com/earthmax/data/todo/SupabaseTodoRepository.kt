@@ -9,6 +9,9 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.filter.FilterOperation
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+
+import kotlinx.datetime.Clock
+import io.github.jan.supabase.postgrest.query.PostgrestQueryBuilder
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
@@ -16,6 +19,7 @@ import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
@@ -35,18 +39,21 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             val response = SupabaseClient.client
                 .from(TODO_ITEMS_TABLE)
-                .select()
-                .eq("event_id", eventId)
+                .select {
+                    filter {
+                        eq("event_id", eventId)
+                    }
+                }
                 .decodeList<TodoItemDto>()
             
             val todoItems = response.map { it.toDomainTodoItem() }
             
             Logger.d(TAG, "Successfully fetched ${todoItems.size} todo items for event $eventId")
-            emit(Result.success(todoItems))
+            emit(Result.Success<List<DomainTodoItem>>(todoItems))
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error fetching todo items for event $eventId", e)
-            emit(Result.failure(e))
+            emit(Result.Error(e))
         } finally {
             Logger.exit(TAG, "getTodoItemsByEvent")
         }
@@ -58,18 +65,21 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             val response = SupabaseClient.client
                 .from(TODO_ITEMS_TABLE)
-                .select()
-                .eq("id", todoId)
+                .select {
+                    filter {
+                        eq("id", todoId)
+                    }
+                }
                 .decodeSingle<TodoItemDto>()
             
             val todoItem = response.toDomainTodoItem()
             
             Logger.d(TAG, "Successfully fetched todo item: $todoId")
-            Result.success(todoItem)
+            Result.Success(todoItem)
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error fetching todo item $todoId", e)
-            Result.failure(e)
+            Result.Error(e)
         } finally {
             Logger.exit(TAG, "getTodoItemById")
         }
@@ -89,11 +99,11 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             val createdTodoItem = response.toDomainTodoItem()
             
             Logger.d(TAG, "Successfully created todo item: ${createdTodoItem.id}")
-            Result.success(createdTodoItem)
+            com.earthmax.domain.model.Result.Success(createdTodoItem)
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error creating todo item", e)
-            Result.failure(e)
+            Result.Error(e)
         } finally {
             Logger.exit(TAG, "createTodoItem")
         }
@@ -107,18 +117,21 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             val response = SupabaseClient.client
                 .from(TODO_ITEMS_TABLE)
-                .update(todoDto)
-                .eq("id", todoItem.id)
+                .update(todoDto) {
+                    filter {
+                        eq("id", todoItem.id)
+                    }
+                }
                 .decodeSingle<TodoItemDto>()
             
             val updatedTodoItem = response.toDomainTodoItem()
             
             Logger.d(TAG, "Successfully updated todo item: ${updatedTodoItem.id}")
-            Result.success(updatedTodoItem)
+            com.earthmax.domain.model.Result.Success(updatedTodoItem)
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error updating todo item ${todoItem.id}", e)
-            Result.failure(e)
+            Result.Error(e)
         } finally {
             Logger.exit(TAG, "updateTodoItem")
         }
@@ -130,15 +143,18 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             SupabaseClient.client
                 .from(TODO_ITEMS_TABLE)
-                .delete()
-                .eq("id", todoId)
+                .delete {
+                    filter {
+                        eq("id", todoId)
+                    }
+                }
             
             Logger.d(TAG, "Successfully deleted todo item: $todoId")
-            Result.success(Unit)
+            com.earthmax.domain.model.Result.Success(Unit)
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error deleting todo item $todoId", e)
-            Result.failure(e)
+            Result.Error(e)
         } finally {
             Logger.exit(TAG, "deleteTodoItem")
         }
@@ -150,12 +166,12 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             // First get the current todo item
             val currentTodo = getTodoItemById(todoId)
-            if (currentTodo.isFailure) {
+            if (currentTodo is Result.Error) {
                 return currentTodo
             }
             
-            val todo = currentTodo.getOrThrow()
-            val now = kotlinx.datetime.Clock.System.now()
+            val todo = (currentTodo as Result.Success<DomainTodoItem>).data
+            val now = Instant.fromEpochMilliseconds(java.lang.System.currentTimeMillis())
             
             val updatedTodo = todo.copy(
                 isCompleted = !todo.isCompleted,
@@ -167,7 +183,7 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error toggling todo completion $todoId", e)
-            Result.failure(e)
+            Result.Error(e)
         } finally {
             Logger.exit(TAG, "toggleTodoCompletion")
         }
@@ -179,21 +195,21 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             // First get the current todo item
             val currentTodo = getTodoItemById(todoId)
-            if (currentTodo.isFailure) {
+            if (currentTodo is Result.Error) {
                 return currentTodo
             }
             
-            val todo = currentTodo.getOrThrow()
+            val todo = (currentTodo as Result.Success<DomainTodoItem>).data
             val updatedTodo = todo.copy(
                 assignedTo = userId,
-                updatedAt = kotlinx.datetime.Clock.System.now()
+                updatedAt = Instant.fromEpochMilliseconds(java.lang.System.currentTimeMillis())
             )
             
             updateTodoItem(updatedTodo)
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error assigning todo item $todoId to user $userId", e)
-            Result.failure(e)
+            return Result.Error(e)
         } finally {
             Logger.exit(TAG, "assignTodoItem")
         }
@@ -205,18 +221,21 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
             
             val response = SupabaseClient.client
                 .from(TODO_ITEMS_TABLE)
-                .select()
-                .eq("assigned_to", userId)
+                .select {
+                    filter {
+                        eq("assigned_to", userId)
+                    }
+                }
                 .decodeList<TodoItemDto>()
             
             val todoItems = response.map { it.toDomainTodoItem() }
             
             Logger.d(TAG, "Successfully fetched ${todoItems.size} todo items for user $userId")
-            emit(Result.success(todoItems))
+            emit(Result.Success(todoItems))
             
         } catch (e: Exception) {
             Logger.e(TAG, "Error fetching todo items for user $userId", e)
-            emit(Result.failure(e))
+            emit(Result.Error(e))
         } finally {
             Logger.exit(TAG, "getTodoItemsByUser")
         }
@@ -229,15 +248,12 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
                 
                 val channel = SupabaseClient.client.realtime.channel("todo_updates_$eventId")
                 
-                val changes = channel.postgresChangeFlow<TodoItemDto>(schema = "public") {
-                    table = TODO_ITEMS_TABLE
-                    filter = "event_id=eq.$eventId"
-                }
+                val changes = channel.postgresChangeFlow<PostgresAction>(schema = "public")
                 
                 channel.subscribe()
                 
                 changes.collect { change ->
-                    Logger.d(TAG, "Received real-time todo update: ${change.eventType}")
+                    Logger.d(TAG, "Received real-time todo update")
                     
                     // Fetch fresh data after any change
                     getTodoItemsByEvent(eventId).collect { result ->
@@ -247,7 +263,7 @@ class SupabaseTodoRepository @Inject constructor() : TodoRepository {
                 
             } catch (e: Exception) {
                 Logger.e(TAG, "Error in todo updates subscription for event $eventId", e)
-                emit(Result.failure(e))
+                emit(Result.Error(e))
             } finally {
                 Logger.exit(TAG, "subscribeToTodoUpdates")
             }

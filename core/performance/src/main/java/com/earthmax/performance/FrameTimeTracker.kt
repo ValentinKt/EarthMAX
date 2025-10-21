@@ -207,6 +207,13 @@ class FrameTimeTracker : Choreographer.FrameCallback {
      * Check if currently tracking
      */
     fun isTracking(): Boolean = isTracking
+
+    // Compatibility APIs
+    fun startTracking() = start()
+    fun stopTracking() = stop()
+    fun getFrameStatistics(): FrameStats = getDetailedStats()
+    fun getFrameStats(): FrameStats = getDetailedStats()
+    fun getAverageFps(): Float = getDetailedStats().averageFps.toFloat()
 }
 
 /**

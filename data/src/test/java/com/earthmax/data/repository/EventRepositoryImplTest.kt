@@ -3,7 +3,7 @@ package com.earthmax.data.repository
 import com.earthmax.core.cache.AdvancedCacheManager
 import com.earthmax.core.cache.CachePolicy
 import com.earthmax.core.error.AdvancedErrorHandler
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import com.earthmax.core.monitoring.MetricsCollector
 import com.earthmax.data.local.dao.EventDao
 import com.earthmax.data.local.entity.EventEntity
@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 
 class EventRepositoryImplTest {
 
-    private lateinit var eventRepository: EventRepository
+    private lateinit var eventRepository: EventDataRepository
     private lateinit var eventApi: EventApi
     private lateinit var eventDao: EventDao
     private lateinit var cacheManager: AdvancedCacheManager
@@ -92,7 +92,7 @@ class EventRepositoryImplTest {
         cacheManager = mockk()
         errorHandler = mockk()
 
-        eventRepository = EventRepositoryImpl(
+        eventRepository = EventDataRepository(
             eventApi = eventApi,
             eventDao = eventDao,
             cacheManager = cacheManager,

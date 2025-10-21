@@ -1,6 +1,6 @@
 package com.earthmax.core.sync
 
-import com.earthmax.core.monitoring.Logger
+import com.earthmax.core.utils.Logger
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton

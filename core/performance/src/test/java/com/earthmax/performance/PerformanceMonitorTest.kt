@@ -80,7 +80,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 60.0f
         every { frameTimeTracker.getAverageFps() } returns 45.0f
         every { networkTracker.getAverageResponseTime() } returns 800L
-        every { batteryTracker.getBatteryLevel() } returns 70.0f
+        every { batteryTracker.getBatteryLevel() } returns 70
         
         // When
         val score = performanceMonitor.getOverallScore()
@@ -134,12 +134,12 @@ class PerformanceMonitorTest {
     @Test
     fun `getBatteryScore should return correct score based on battery level`() {
         // Test high battery (good score)
-        every { batteryTracker.getBatteryLevel() } returns 80.0f
+        every { batteryTracker.getBatteryLevel() } returns 80
         var score = performanceMonitor.getBatteryScore()
         assertTrue("High battery should have high score", score >= 80.0)
         
         // Test low battery (poor score)
-        every { batteryTracker.getBatteryLevel() } returns 15.0f
+        every { batteryTracker.getBatteryLevel() } returns 15
         score = performanceMonitor.getBatteryScore()
         assertTrue("Low battery should have low score", score <= 30.0)
     }
@@ -150,7 +150,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 85.0f
         every { frameTimeTracker.getAverageFps() } returns 55.0f
         every { networkTracker.getAverageResponseTime() } returns 300L
-        every { batteryTracker.getBatteryLevel() } returns 60.0f
+        every { batteryTracker.getBatteryLevel() } returns 60
         
         // When
         val issues = performanceMonitor.getPerformanceIssues()
@@ -166,7 +166,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 25.0f
         every { networkTracker.getAverageResponseTime() } returns 300L
-        every { batteryTracker.getBatteryLevel() } returns 60.0f
+        every { batteryTracker.getBatteryLevel() } returns 60
         
         // When
         val issues = performanceMonitor.getPerformanceIssues()
@@ -182,7 +182,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 55.0f
         every { networkTracker.getAverageResponseTime() } returns 2500L
-        every { batteryTracker.getBatteryLevel() } returns 60.0f
+        every { batteryTracker.getBatteryLevel() } returns 60
         
         // When
         val issues = performanceMonitor.getPerformanceIssues()
@@ -198,7 +198,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 55.0f
         every { networkTracker.getAverageResponseTime() } returns 300L
-        every { batteryTracker.getBatteryLevel() } returns 15.0f
+        every { batteryTracker.getBatteryLevel() } returns 15
         
         // When
         val issues = performanceMonitor.getPerformanceIssues()
@@ -214,7 +214,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 85.0f
         every { frameTimeTracker.getAverageFps() } returns 55.0f
         every { networkTracker.getAverageResponseTime() } returns 300L
-        every { batteryTracker.getBatteryLevel() } returns 60.0f
+        every { batteryTracker.getBatteryLevel() } returns 60
         
         // When
         val recommendations = performanceMonitor.getRecommendations()
@@ -230,7 +230,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 25.0f
         every { networkTracker.getAverageResponseTime() } returns 300L
-        every { batteryTracker.getBatteryLevel() } returns 60.0f
+        every { batteryTracker.getBatteryLevel() } returns 60
         
         // When
         val recommendations = performanceMonitor.getRecommendations()
@@ -246,7 +246,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 55.0f
         every { networkTracker.getAverageResponseTime() } returns 2500L
-        every { batteryTracker.getBatteryLevel() } returns 60.0f
+        every { batteryTracker.getBatteryLevel() } returns 60
         
         // When
         val recommendations = performanceMonitor.getRecommendations()
@@ -262,7 +262,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 55.0f
         every { networkTracker.getAverageResponseTime() } returns 300L
-        every { batteryTracker.getBatteryLevel() } returns 15.0f
+        every { batteryTracker.getBatteryLevel() } returns 15
         
         // When
         val recommendations = performanceMonitor.getRecommendations()
@@ -278,7 +278,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 40.0f
         every { frameTimeTracker.getAverageFps() } returns 58.0f
         every { networkTracker.getAverageResponseTime() } returns 200L
-        every { batteryTracker.getBatteryLevel() } returns 80.0f
+        every { batteryTracker.getBatteryLevel() } returns 80
         
         // When
         val recommendations = performanceMonitor.getRecommendations()
@@ -294,7 +294,7 @@ class PerformanceMonitorTest {
         every { memoryTracker.getMemoryUsagePercentage() } returns 60.0f
         every { frameTimeTracker.getAverageFps() } returns 45.0f
         every { networkTracker.getAverageResponseTime() } returns 800L
-        every { batteryTracker.getBatteryLevel() } returns 70.0f
+        every { batteryTracker.getBatteryLevel() } returns 70
         
         // When
         val snapshot = performanceMonitor.createSnapshot()

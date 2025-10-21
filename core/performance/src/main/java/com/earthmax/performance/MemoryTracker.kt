@@ -19,10 +19,12 @@ class MemoryTracker @Inject constructor(
     private val context: Context
 ) {
     
-    private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
     
     private val _memoryMetrics = MutableStateFlow(MemoryUsage())
     val memoryMetrics: StateFlow<MemoryUsage> = _memoryMetrics.asStateFlow()
+    
+    private var isTracking = false
     
     // Track object references for leak detection
     private val trackedObjects = ConcurrentHashMap<String, MutableList<WeakReference<Any>>>()
@@ -38,7 +40,7 @@ class MemoryTracker @Inject constructor(
      */
     fun getMemoryInfo(): MemoryUsage {
         val memoryInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memoryInfo)
+        activityManager?.getMemoryInfo(memoryInfo)
         
         val runtime = Runtime.getRuntime()
         val heapSize = runtime.totalMemory()
@@ -47,6 +49,15 @@ class MemoryTracker @Inject constructor(
         
         val nativeHeapSize = Debug.getNativeHeapSize()
         val nativeHeapUsed = Debug.getNativeHeapAllocatedSize()
+        
+        // Fallback when ActivityManager is unavailable
+        if (activityManager == null) {
+            memoryInfo.totalMem = heapMax
+            memoryInfo.availMem = (heapMax - heapUsed).coerceAtLeast(0L)
+            val ratio = if (heapMax > 0) heapUsed.toDouble() / heapMax.toDouble() else 0.0
+            memoryInfo.lowMemory = ratio > lowMemoryThreshold
+            memoryInfo.threshold = (heapMax * lowMemoryThreshold).toLong()
+        }
         
         val memoryUsage = MemoryUsage(
             usedMemory = memoryInfo.totalMem - memoryInfo.availMem,
@@ -195,38 +206,95 @@ class MemoryTracker @Inject constructor(
     }
     
     /**
-     * Get memory trend analysis
-     */
-    fun getMemoryTrend(): MemoryTrend {
-        if (memorySnapshots.size < 2) {
-            return MemoryTrend()
-        }
-        
-        val recent = memorySnapshots.takeLast(10)
-        val older = memorySnapshots.dropLast(10).takeLast(10)
-        
-        val recentAverage = recent.map { it.totalUsed }.average()
-        val olderAverage = if (older.isNotEmpty()) older.map { it.totalUsed }.average() else recentAverage
-        
-        val trend = when {
-            recentAverage > olderAverage * 1.1 -> MemoryTrendDirection.INCREASING
-            recentAverage < olderAverage * 0.9 -> MemoryTrendDirection.DECREASING
-            else -> MemoryTrendDirection.STABLE
-        }
-        
-        return MemoryTrend(
-            direction = trend,
-            changePercentage = ((recentAverage - olderAverage) / olderAverage * 100).toInt(),
-            snapshots = memorySnapshots.toList()
-        )
-    }
-    
-    /**
      * Clear all tracking data
      */
     fun clearTrackingData() {
         trackedObjects.clear()
         memorySnapshots.clear()
+    }
+
+    fun startTracking() {
+        isTracking = true
+        getMemoryInfo()
+    }
+
+    fun stopTracking() {
+        isTracking = false
+    }
+
+    fun isTracking(): Boolean = isTracking
+
+    fun getMemoryUsagePercentage(): Float {
+        val metrics = _memoryMetrics.value
+        if (metrics.totalMemory <= 0) return 0f
+        val used = metrics.usedMemory.coerceAtLeast(0L).toDouble()
+        val total = metrics.totalMemory.toDouble()
+        return ((used / total) * 100.0).toFloat().coerceIn(0f, 100f)
+    }
+
+    fun createSnapshot(): MemorySnapshot {
+        val info = getMemoryInfo()
+        return MemorySnapshot(
+            timestamp = System.currentTimeMillis(),
+            heapUsed = info.heapUsed,
+            nativeHeapUsed = info.nativeHeapUsed,
+            totalUsed = info.usedMemory,
+            availableMemory = info.availableMemory
+        )
+    }
+
+    fun trackObject(obj: Any?, name: String) {
+        if (obj == null) return
+        trackObject(name, obj)
+    }
+
+    fun untrackObject(obj: Any?) {
+        if (obj == null) return
+        trackedObjects.forEach { (_, references) ->
+            references.removeAll { it.get() === obj }
+        }
+    }
+
+    fun getTrackedObjects(): List<TrackedObjectInfo> {
+        return trackedObjects.map { (name, refs) ->
+            TrackedObjectInfo(name = name, count = refs.count { it.get() != null })
+        }
+    }
+
+    fun detectLeaks(): List<String> {
+        return trackedObjects.filter { (tag, refs) ->
+            val alive = refs.count { it.get() != null }
+            val expected = getExpectedInstanceCount(tag)
+            alive > expected * 2
+        }.map { it.key }
+    }
+
+    fun generateLeakReport(): String {
+        val trackedCount = trackedObjects.size
+        val leaks = detectLeaks()
+        return "Memory Leak Report: tracked=$trackedCount, leaks=${leaks.size}"
+    }
+
+    fun getMemoryTrend(): String {
+        val snapshots = memorySnapshots
+        if (snapshots.size < 2) return "STABLE"
+        val first = snapshots.first().totalUsed
+        val last = snapshots.last().totalUsed
+        return when {
+            last > first -> "INCREASING"
+            last < first -> "DECREASING"
+            else -> "STABLE"
+        }
+    }
+
+    fun getOptimizationRecommendations(): List<String> {
+        return generateMemoryRecommendations()
+    }
+
+    fun reset() {
+        clearTrackingData()
+        _memoryMetrics.value = MemoryUsage()
+        isTracking = false
     }
 }
 
@@ -269,17 +337,4 @@ data class MemoryLeakReport(
 /**
  * Memory trend analysis
  */
-data class MemoryTrend(
-    val direction: MemoryTrendDirection = MemoryTrendDirection.STABLE,
-    val changePercentage: Int = 0,
-    val snapshots: List<MemorySnapshot> = emptyList()
-)
-
-/**
- * Memory trend direction
- */
-enum class MemoryTrendDirection {
-    INCREASING,
-    DECREASING,
-    STABLE
-}
+data class TrackedObjectInfo(val name: String, val count: Int)

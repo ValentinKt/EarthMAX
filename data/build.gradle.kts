@@ -33,7 +33,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
         freeCompilerArgs += listOf(
-            "-opt-in=kotlin.time.ExperimentalTime"
+            "-Xopt-in=kotlin.time.ExperimentalTime"
         )
     }
 }
@@ -57,6 +57,7 @@ apollo {
 }
 
 dependencies {
+    implementation(project(":domain"))
     implementation(project(":core"))
     implementation(project(":core:core-network"))
     

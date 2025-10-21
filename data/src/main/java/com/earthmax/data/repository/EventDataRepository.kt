@@ -13,20 +13,23 @@ import com.earthmax.data.local.entities.toEvent
 import com.earthmax.data.local.entities.EventEntity
 import com.earthmax.data.local.entities.toEntity
 import com.earthmax.data.events.SupabaseEventsRepository
+import com.earthmax.data.mappers.toDomainEvent
+import com.earthmax.domain.model.DomainEvent
+import com.earthmax.domain.model.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class EventRepository @Inject constructor(
+class EventDataRepository @Inject constructor(
     private val eventDao: EventDao,
     private val supabaseEventsRepository: SupabaseEventsRepository
-) {
+) : com.earthmax.domain.repository.EventRepository {
     
     companion object {
         private const val PAGE_SIZE = 20
-        private const val TAG = "EventRepository"
+        private const val TAG = "EventDataRepository"
     }
     
     @OptIn(ExperimentalPagingApi::class)
@@ -157,7 +160,7 @@ class EventRepository @Inject constructor(
         }
     }
     
-    suspend fun getEventById(eventId: String): Event? {
+    override suspend fun getEventById(eventId: String): Result<DomainEvent> {
         Logger.enter(TAG, "getEventById", "eventId" to Logger.maskSensitiveData(eventId))
         val startTime = System.currentTimeMillis()
         
@@ -172,8 +175,9 @@ class EventRepository @Inject constructor(
                     "source" to "local_database"
                 ))
                 Logger.logPerformance(TAG, "getEventById_local", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "getEventById", localEvent.toEvent())
-                return localEvent.toEvent()
+                val domainEvent = localEvent.toEvent().toDomainEvent()
+                Logger.exit(TAG, "getEventById", domainEvent)
+                return Result.Success(domainEvent)
             }
             
             // Fallback to remote
@@ -191,8 +195,9 @@ class EventRepository @Inject constructor(
                     "cached" to "true"
                 ))
                 Logger.logPerformance(TAG, "getEventById_remote", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "getEventById", event)
-                event
+                val domainEvent = (event as Event).toDomainEvent()
+                Logger.exit(TAG, "getEventById", domainEvent)
+                Result.Success(domainEvent)
             } else {
                 Logger.w(TAG, "Event not found in remote either")
                 Logger.logBusinessEvent(TAG, "Event Not Found", mapOf(
@@ -202,7 +207,7 @@ class EventRepository @Inject constructor(
                 ))
                 Logger.logPerformance(TAG, "getEventById_not_found", System.currentTimeMillis() - startTime)
                 Logger.exit(TAG, "getEventById", null)
-                null
+                Result.Error(Exception("Event not found"))
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error retrieving event by ID", e)
@@ -213,7 +218,7 @@ class EventRepository @Inject constructor(
             ))
             Logger.logPerformance(TAG, "getEventById_error", System.currentTimeMillis() - startTime)
             Logger.exit(TAG, "getEventById", null)
-            null
+            Result.Error(e)
         }
     }
     
@@ -246,13 +251,43 @@ class EventRepository @Inject constructor(
         }
     }
     
-    @OptIn(ExperimentalPagingApi::class)
-    fun searchEvents(query: String): Flow<PagingData<Event>> {
+    override suspend fun searchEvents(query: String): Result<List<DomainEvent>> {
         Logger.enter(TAG, "searchEvents", "query" to Logger.maskSensitiveData(query))
         val startTime = System.currentTimeMillis()
         
         return try {
-            val flow = Pager(
+            // Get events directly from DAO instead of using Pager
+            val events = eventDao.searchEventsSync(query)
+            val domainEvents = events.map { it.toEvent().toDomainEvent() }
+            
+            Logger.logBusinessEvent(TAG, "Event Search Completed", mapOf(
+                "query" to Logger.maskSensitiveData(query),
+                "resultCount" to domainEvents.size.toString(),
+                "source" to "local_database"
+            ))
+            Logger.logPerformance(TAG, "searchEvents", System.currentTimeMillis() - startTime)
+            Logger.exit(TAG, "searchEvents", domainEvents)
+            Result.Success(domainEvents)
+        } catch (e: Exception) {
+            Logger.e(TAG, "Error searching events", e)
+            Logger.logBusinessEvent(TAG, "Event Search Error", mapOf(
+                "query" to Logger.maskSensitiveData(query),
+                "errorType" to e.javaClass.simpleName,
+                "errorMessage" to (e.message ?: "Unknown error")
+            ))
+            Logger.logPerformance(TAG, "searchEvents_error", System.currentTimeMillis() - startTime)
+            Logger.exit(TAG, "searchEvents")
+            Result.Error(e)
+        }
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    fun searchEventsPaged(query: String): Flow<PagingData<Event>> {
+        Logger.enter(TAG, "searchEventsPaged", "query" to Logger.maskSensitiveData(query))
+        val startTime = System.currentTimeMillis()
+
+        return try {
+            val pager = Pager(
                 config = PagingConfig(
                     pageSize = PAGE_SIZE,
                     enablePlaceholders = false
@@ -261,25 +296,24 @@ class EventRepository @Inject constructor(
             ).flow.map { pagingData ->
                 pagingData.map { it.toEvent() }
             }
-            
-            Logger.logBusinessEvent(TAG, "Event Search Paging Initialized", mapOf(
+
+            Logger.logBusinessEvent(TAG, "Events Search Paging Initialized", mapOf(
                 "query" to Logger.maskSensitiveData(query),
                 "pageSize" to PAGE_SIZE.toString(),
                 "source" to "local_database"
             ))
-            Logger.logPerformance(TAG, "searchEvents", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "searchEvents")
-            flow
+            Logger.logPerformance(TAG, "searchEventsPaged", System.currentTimeMillis() - startTime)
+            Logger.exit(TAG, "searchEventsPaged")
+            pager
         } catch (e: Exception) {
-            Logger.e(TAG, "Error initializing event search paging", e)
-            Logger.logBusinessEvent(TAG, "Event Search Paging Error", mapOf(
+            Logger.e(TAG, "Error initializing search events paging", e)
+            Logger.logBusinessEvent(TAG, "Events Search Paging Error", mapOf(
                 "query" to Logger.maskSensitiveData(query),
-                "pageSize" to PAGE_SIZE.toString(),
                 "errorType" to e.javaClass.simpleName,
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
-            Logger.logPerformance(TAG, "searchEvents_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "searchEvents")
+            Logger.logPerformance(TAG, "searchEventsPaged_error", System.currentTimeMillis() - startTime)
+            Logger.exit(TAG, "searchEventsPaged")
             throw e
         }
     }
@@ -352,8 +386,8 @@ class EventRepository @Inject constructor(
                     "cached" to "true"
                 ))
                 Logger.logPerformance(TAG, "createEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "createEvent", Result.success<String>(createdEvent.id))
-                Result.success(createdEvent.id)
+                Logger.exit(TAG, "createEvent", Result.Success(createdEvent.id))
+                Result.Success(createdEvent.id)
             } else {
                 val error = result.exceptionOrNull() ?: Exception("Failed to create event")
                 Logger.w(TAG, "Failed to create event", error)
@@ -365,8 +399,8 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "createEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "createEvent", Result.failure<String>(error))
-                Result.failure(error)
+                Logger.exit(TAG, "createEvent", Result.Error(error))
+                Result.Error(error)
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error creating event", e)
@@ -378,8 +412,8 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "createEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "createEvent", Result.failure<String>(e))
-            Result.failure(e)
+            Logger.exit(TAG, "createEvent", Result.Error(e))
+            Result.Error(e)
         }
     }
     
@@ -406,8 +440,8 @@ class EventRepository @Inject constructor(
                     "cached" to "true"
                 ))
                 Logger.logPerformance(TAG, "updateEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateEvent", Result.success<Unit>(Unit))
-                Result.success(Unit)
+                Logger.exit(TAG, "updateEvent", Result.Success(Unit))
+                Result.Success(Unit)
             } else {
                 val error = Exception("Failed to update event")
                 Logger.w(TAG, "Failed to update event", error)
@@ -419,8 +453,8 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "updateEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "updateEvent", Result.failure<Unit>(error))
-                Result.failure(error)
+                Logger.exit(TAG, "updateEvent", Result.Error(error))
+                Result.Error(error)
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error updating event", e)
@@ -432,12 +466,12 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "updateEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "updateEvent", Result.failure<Unit>(e))
-            Result.failure(e)
+            Logger.exit(TAG, "updateEvent", Result.Error(e))
+            Result.Error(e)
         }
     }
     
-    suspend fun deleteEvent(eventId: String): Result<Unit> {
+    override suspend fun deleteEvent(eventId: String): Result<Unit> {
         Logger.enter(TAG, "deleteEvent", "eventId" to Logger.maskSensitiveData(eventId))
         val startTime = System.currentTimeMillis()
         
@@ -453,8 +487,8 @@ class EventRepository @Inject constructor(
                     "removedFromCache" to "true"
                 ))
                 Logger.logPerformance(TAG, "deleteEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "deleteEvent", Result.success<Unit>(Unit))
-                Result.success(Unit)
+                Logger.exit(TAG, "deleteEvent", Result.Success(Unit))
+                Result.Success(Unit)
             } else {
                 val error = Exception("Failed to delete event")
                 Logger.w(TAG, "Failed to delete event", error)
@@ -464,8 +498,8 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "deleteEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "deleteEvent", Result.failure<Unit>(error))
-                Result.failure(error)
+                Logger.exit(TAG, "deleteEvent", Result.Error(error))
+                Result.Error(error)
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error deleting event", e)
@@ -475,12 +509,12 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "deleteEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "deleteEvent", Result.failure<Unit>(e))
-            Result.failure(e)
+            Logger.exit(TAG, "deleteEvent", Result.Error(e))
+            Result.Error(e)
         }
     }
     
-    suspend fun joinEvent(eventId: String, userId: String): Result<Unit> {
+    override suspend fun joinEvent(eventId: String, userId: String): Result<Unit> {
         Logger.enter(TAG, "joinEvent", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "userId" to Logger.maskSensitiveData(userId)
@@ -507,8 +541,8 @@ class EventRepository @Inject constructor(
                     "participantCountUpdated" to (event != null).toString()
                 ))
                 Logger.logPerformance(TAG, "joinEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "joinEvent", Result.success<Unit>(Unit))
-                Result.success(Unit)
+                Logger.exit(TAG, "joinEvent", Result.Success(Unit))
+                Result.Success(Unit)
             } else {
                 val error = Exception("Failed to join event")
                 Logger.w(TAG, "Failed to join event", error)
@@ -519,8 +553,8 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "joinEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "joinEvent", Result.failure<Unit>(error))
-                Result.failure(error)
+                Logger.exit(TAG, "joinEvent", Result.Error(error))
+                Result.Error(error)
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error joining event", e)
@@ -531,12 +565,12 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "joinEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "joinEvent", Result.failure<Unit>(e))
-            Result.failure(e)
+            Logger.exit(TAG, "joinEvent", Result.Error(e))
+            Result.Error(e)
         }
     }
     
-    suspend fun leaveEvent(eventId: String, userId: String): Result<Unit> {
+    override suspend fun leaveEvent(eventId: String, userId: String): Result<Unit> {
         Logger.enter(TAG, "leaveEvent", 
             "eventId" to Logger.maskSensitiveData(eventId),
             "userId" to Logger.maskSensitiveData(userId)
@@ -563,8 +597,8 @@ class EventRepository @Inject constructor(
                     "participantCountUpdated" to (event != null).toString()
                 ))
                 Logger.logPerformance(TAG, "leaveEvent", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "leaveEvent", Result.success<Unit>(Unit))
-                Result.success(Unit)
+                Logger.exit(TAG, "leaveEvent", Result.Success(Unit))
+                Result.Success(Unit)
             } else {
                 val error = Exception("Failed to leave event")
                 Logger.w(TAG, "Failed to leave event", error)
@@ -575,8 +609,8 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "leaveEvent_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "leaveEvent", Result.failure<Unit>(error))
-                Result.failure(error)
+                Logger.exit(TAG, "leaveEvent", Result.Error(error))
+                Result.Error(error)
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error leaving event", e)
@@ -587,8 +621,8 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "leaveEvent_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "leaveEvent", Result.failure<Unit>(e))
-            Result.failure(e)
+            Logger.exit(TAG, "leaveEvent", Result.Error(e))
+            Result.Error(e)
         }
     }
     
@@ -611,8 +645,8 @@ class EventRepository @Inject constructor(
                     "imageUrl" to Logger.maskSensitiveData(imageUrl)
                 ))
                 Logger.logPerformance(TAG, "uploadEventPhoto", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "uploadEventPhoto", result)
-                result
+                Logger.exit(TAG, "uploadEventPhoto", Result.Success(imageUrl))
+                Result.Success(imageUrl)
             } else {
                 val error = Exception("Failed to upload event image")
                 Logger.w(TAG, "Failed to upload event photo", error)
@@ -623,8 +657,8 @@ class EventRepository @Inject constructor(
                     "errorMessage" to (error.message ?: "Unknown error")
                 ))
                 Logger.logPerformance(TAG, "uploadEventPhoto_failed", System.currentTimeMillis() - startTime)
-                Logger.exit(TAG, "uploadEventPhoto", Result.failure<String>(error))
-                Result.failure(error)
+                Logger.exit(TAG, "uploadEventPhoto", Result.Error(error))
+                Result.Error(error)
             }
         } catch (e: Exception) {
             Logger.e(TAG, "Error uploading event photo", e)
@@ -635,8 +669,8 @@ class EventRepository @Inject constructor(
                 "errorMessage" to (e.message ?: "Unknown error")
             ))
             Logger.logPerformance(TAG, "uploadEventPhoto_error", System.currentTimeMillis() - startTime)
-            Logger.exit(TAG, "uploadEventPhoto", Result.failure<String>(e))
-            Result.failure(e)
+            Logger.exit(TAG, "uploadEventPhoto", Result.Error(e))
+            Result.Error(e)
         }
     }
     
@@ -662,6 +696,123 @@ class EventRepository @Inject constructor(
             ))
             Logger.logPerformance(TAG, "refreshEvents_error", System.currentTimeMillis() - startTime)
             Logger.exit(TAG, "refreshEvents")
+        }
+    }
+
+    // Missing abstract method implementations from EventRepository interface
+    
+    override fun getEvents(
+        category: com.earthmax.domain.model.EventCategory?,
+        status: com.earthmax.domain.model.EventStatus?,
+        location: String?
+    ): Flow<Result<List<DomainEvent>>> {
+        Logger.enter(TAG, "getEvents")
+        return kotlinx.coroutines.flow.flow {
+            try {
+                val events = eventDao.getAllEventsSync()
+                val domainEvents = events.map { it.toEvent().toDomainEvent() }
+                emit(Result.Success(domainEvents))
+            } catch (e: Exception) {
+                Logger.logError(TAG, "Failed to get events", e)
+                emit(Result.Error(e))
+            }
+        }
+    }
+
+    override suspend fun createEvent(event: DomainEvent): Result<DomainEvent> {
+        Logger.enter(TAG, "createEvent")
+        return try {
+            val coreEvent = Event(
+                id = event.id,
+                title = event.title,
+                description = event.description,
+                location = event.location,
+                latitude = event.latitude ?: 0.0,
+                longitude = event.longitude ?: 0.0,
+                dateTime = java.util.Date(event.startDate.toEpochMilliseconds()),
+                organizerId = event.organizerId,
+                organizerName = "", // Will be populated if needed
+                maxParticipants = event.maxParticipants ?: 0,
+                currentParticipants = event.participantCount,
+                category = EventCategory.valueOf(event.category.name),
+                imageUrl = event.imageUrl ?: "",
+                isJoined = false,
+                todoItems = emptyList(),
+                photos = emptyList(),
+                createdAt = java.util.Date(event.createdAt.toEpochMilliseconds()),
+                updatedAt = java.util.Date(event.updatedAt.toEpochMilliseconds())
+            )
+            val result = createEvent(coreEvent)
+            when (result) {
+                is Result.Success -> Result.Success(event.copy(id = result.data))
+                is Result.Error -> Result.Error(result.exception)
+                is Result.Loading -> Result.Loading
+            }
+        } catch (e: Exception) {
+            Logger.logError(TAG, "Failed to create event", e)
+            Result.Error(e)
+        }
+    }
+
+    override suspend fun updateEvent(event: DomainEvent): Result<DomainEvent> {
+        Logger.enter(TAG, "updateEvent")
+        return try {
+            val coreEvent = Event(
+                id = event.id,
+                title = event.title,
+                description = event.description,
+                location = event.location,
+                latitude = event.latitude ?: 0.0,
+                longitude = event.longitude ?: 0.0,
+                dateTime = java.util.Date(event.startDate.toEpochMilliseconds()),
+                organizerId = event.organizerId,
+                organizerName = "", // Will be populated if needed
+                maxParticipants = event.maxParticipants ?: 0,
+                currentParticipants = event.participantCount,
+                category = EventCategory.valueOf(event.category.name),
+                imageUrl = event.imageUrl ?: "",
+                isJoined = false,
+                todoItems = emptyList(),
+                photos = emptyList(),
+                createdAt = java.util.Date(event.createdAt.toEpochMilliseconds()),
+                updatedAt = java.util.Date(event.updatedAt.toEpochMilliseconds())
+            )
+            val result = updateEvent(coreEvent)
+            when (result) {
+                is Result.Success -> Result.Success(event)
+                is Result.Error -> Result.Error(result.exception)
+                is Result.Loading -> Result.Loading
+            }
+        } catch (e: Exception) {
+            Logger.logError(TAG, "Failed to update event", e)
+            Result.Error(e)
+        }
+    }
+
+    override fun getEventsByUser(userId: String): Flow<Result<List<DomainEvent>>> {
+        Logger.enter(TAG, "getEventsByUser")
+        return eventDao.getEventsByOrganizer(userId).map { eventEntities ->
+            try {
+                val domainEvents = eventEntities.map { it.toEvent().toDomainEvent() }
+                Result.Success(domainEvents)
+            } catch (e: Exception) {
+                Logger.logError(TAG, "Failed to get events by user", e)
+                Result.Error(e)
+            }
+        }
+    }
+
+    override fun getJoinedEvents(userId: String): Flow<Result<List<DomainEvent>>> {
+        Logger.enter(TAG, "getJoinedEvents")
+        return kotlinx.coroutines.flow.flow {
+            try {
+                // This would need to be implemented based on your database schema
+                // For now, returning empty list
+                emit(Result.Success(emptyList<DomainEvent>()))
+            } catch (e: Exception) {
+                Logger.logError(TAG, "Failed to get joined events", e)
+                emit(Result.Error(e))
+            }
         }
     }
 }

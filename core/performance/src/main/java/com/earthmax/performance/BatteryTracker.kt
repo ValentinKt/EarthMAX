@@ -20,8 +20,8 @@ class BatteryTracker @Inject constructor(
     private val context: Context
 ) {
     
-    private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-    private val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+    private val powerManager: PowerManager? = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+    private val batteryManager: BatteryManager? = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
     
     private val _batteryMetrics = MutableStateFlow(BatteryMetrics())
     val batteryMetrics: StateFlow<BatteryMetrics> = _batteryMetrics.asStateFlow()
@@ -40,7 +40,7 @@ class BatteryTracker @Inject constructor(
     private var screenOffTime = 0L
     private var lastScreenStateChange = 0L
     private var isScreenOn = true
-    
+
     /**
      * Start battery tracking
      */
@@ -75,7 +75,7 @@ class BatteryTracker @Inject constructor(
         // Get initial battery state
         updateBatteryInfo()
     }
-    
+
     /**
      * Stop battery tracking
      */
@@ -93,7 +93,7 @@ class BatteryTracker @Inject constructor(
         }
         batteryReceiver = null
     }
-    
+
     /**
      * Handle battery level/status changes
      */
@@ -140,7 +140,7 @@ class BatteryTracker @Inject constructor(
         isScreenOn = false
         lastScreenStateChange = currentTime
     }
-    
+
     /**
      * Update battery information
      */
@@ -150,9 +150,9 @@ class BatteryTracker @Inject constructor(
         val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
         val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
         val batteryLevel = if (level >= 0 && scale > 0) {
-            (level * 100 / scale)
+            (level * 100 / scale).coerceIn(0, 100)
         } else {
-            -1
+            0
         }
         
         val status = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
@@ -168,7 +168,7 @@ class BatteryTracker @Inject constructor(
         }
         
         val temperature = batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
-        val batteryTemperature = if (temperature > 0) temperature / 10.0f else 0f
+        val batteryTemperature = if (temperature >= 0) temperature / 10.0f else 0f
         
         val voltage = batteryIntent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
         val health = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
@@ -177,7 +177,7 @@ class BatteryTracker @Inject constructor(
         val powerUsage = calculatePowerUsage(batteryLevel, isCharging)
         
         // Check power save mode
-        val isPowerSaveMode = powerManager.isPowerSaveMode
+        val isPowerSaveMode = powerManager?.isPowerSaveMode == true
         
         val batteryMetrics = BatteryMetrics(
             batteryLevel = batteryLevel,
@@ -287,7 +287,158 @@ class BatteryTracker @Inject constructor(
         }
         return _batteryMetrics.value
     }
+
+    /**
+     * Compatibility API: get current battery level as Int (0..100)
+     */
+    fun getBatteryLevel(): Int {
+        if (!isTracking) updateBatteryInfo()
+        return _batteryMetrics.value.batteryLevel.coerceIn(0, 100)
+    }
     
+    /**
+     * Compatibility API: get current charging status
+     */
+    fun isCharging(): Boolean {
+        if (!isTracking) updateBatteryInfo()
+        return _batteryMetrics.value.isCharging
+    }
+
+    /**
+     * Get battery temperature in Celsius
+     */
+    fun getBatteryTemperature(): Float {
+        val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val temperature = batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+        return if (temperature >= 0) temperature / 10.0f else 0f
+    }
+
+    /**
+     * Power usage from BatteryManager (mA)
+     */
+    fun getPowerUsage(): PowerUsage {
+        val nowMicro = batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) ?: Int.MIN_VALUE
+        val avgMicro = batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) ?: Int.MIN_VALUE
+        val currentNow = if (nowMicro == Int.MIN_VALUE) 0 else kotlin.math.abs(nowMicro) / 1000
+        val currentAverage = if (avgMicro == Int.MIN_VALUE) 0 else kotlin.math.abs(avgMicro) / 1000
+        return PowerUsage(currentNow = currentNow, currentAverage = currentAverage)
+    }
+
+    /**
+     * Estimate remaining time based on average consumption (ms)
+     */
+    fun getEstimatedTimeRemaining(): Long {
+        if (!isTracking) updateBatteryInfo()
+        val level = _batteryMetrics.value.batteryLevel.coerceIn(0, 100)
+        val avgMicro = batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) ?: Int.MIN_VALUE
+        val avgMa = if (avgMicro == Int.MIN_VALUE) 0 else kotlin.math.abs(avgMicro) / 1000
+        if (avgMa <= 0) return -1L
+        val capacityMah = 3000 // default capacity assumption
+        val remainingMah = capacityMah * (level / 100.0)
+        val hours = remainingMah / avgMa
+        return (hours * 3600000).toLong()
+    }
+
+    /**
+     * Battery health as uppercase enum-like string
+     */
+    fun getBatteryHealth(): String {
+        val batteryIntent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val health = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
+        return when (health) {
+            BatteryManager.BATTERY_HEALTH_GOOD -> "GOOD"
+            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "OVERHEAT"
+            BatteryManager.BATTERY_HEALTH_DEAD -> "DEAD"
+            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "OVER_VOLTAGE"
+            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "UNSPECIFIED_FAILURE"
+            BatteryManager.BATTERY_HEALTH_COLD -> "COLD"
+            else -> "UNKNOWN"
+        }
+    }
+
+    /**
+     * Snapshot capturing current battery state
+     */
+    fun createSnapshot(): BatteryTrackerSnapshot {
+        val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+        val percent = if (level >= 0 && scale > 0) (level * 100 / scale).coerceIn(0, 100) else 0
+        val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+        val charging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+        val tempDeciC = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+        val temperature = if (tempDeciC >= 0) tempDeciC / 10.0f else 0f
+        val health = getBatteryHealth()
+        val nowMicro = batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) ?: Int.MIN_VALUE
+        val avgMicro = batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) ?: Int.MIN_VALUE
+        val currentNow = if (nowMicro == Int.MIN_VALUE) 0 else kotlin.math.abs(nowMicro) / 1000
+        val currentAverage = if (avgMicro == Int.MIN_VALUE) 0 else kotlin.math.abs(avgMicro) / 1000
+        return BatteryTrackerSnapshot(
+            timestamp = System.currentTimeMillis(),
+            batteryLevel = percent,
+            isCharging = charging,
+            temperature = temperature,
+            health = health,
+            currentNow = currentNow,
+            currentAverage = currentAverage
+        )
+    }
+
+    /**
+     * Optimization recommendations for battery usage
+     */
+    fun getOptimizationRecommendations(): List<String> {
+        if (!isTracking) updateBatteryInfo()
+        val metrics = _batteryMetrics.value
+        val usage = getPowerUsage()
+        val recs = mutableListOf<String>()
+        if (metrics.batteryLevel < 20) recs.add("Battery level is low. Enable power saving mode.")
+        if (metrics.batteryTemperature > 40f) recs.add("Battery temperature is high (${metrics.batteryTemperature}°C). Reduce CPU intensive tasks.")
+        if (usage.currentNow > 1000) recs.add("High power consumption detected. Limit background activity and lower screen brightness.")
+        if (!metrics.isPowerSaveMode && metrics.batteryLevel < 30) recs.add("Consider enabling power save mode to extend battery life.")
+        return recs
+    }
+
+    /**
+     * Aggregate battery performance score (0..100)
+     */
+    fun getBatteryPerformanceScore(): Float {
+        val level = getBatteryLevel()
+        val temp = getBatteryTemperature()
+        val health = getBatteryHealth()
+        val usage = getPowerUsage()
+        var score = 100f
+        // Level
+        score -= when {
+            level < 20 -> 40f
+            level < 40 -> 20f
+            level < 60 -> 10f
+            else -> 0f
+        }
+        // Temperature
+        score -= when {
+            temp > 45f -> 25f
+            temp > 40f -> 15f
+            temp > 35f -> 5f
+            else -> 0f
+        }
+        // Health
+        score -= when (health) {
+            "DEAD" -> 30f
+            "OVERHEAT" -> 25f
+            "OVER_VOLTAGE", "UNSPECIFIED_FAILURE", "COLD" -> 15f
+            else -> 0f
+        }
+        // Current usage
+        score -= when {
+            usage.currentNow > 1500 -> 20f
+            usage.currentNow > 1000 -> 10f
+            usage.currentNow > 500 -> 5f
+            else -> 0f
+        }
+        return score.coerceIn(0f, 100f)
+    }
+
     /**
      * Get battery optimization recommendations
      */
@@ -403,6 +554,15 @@ class BatteryTracker @Inject constructor(
         lastScreenStateChange = 0L
         lastBatteryLevel = -1
     }
+
+    /**
+     * Compatibility API: reset tracker and clear data
+     */
+    fun reset() {
+        if (isTracking) stopTracking()
+        clearData()
+        _batteryMetrics.value = BatteryMetrics()
+    }
 }
 
 /**
@@ -478,3 +638,18 @@ enum class ChargingType {
     AC,
     WIRELESS
 }
+
+data class PowerUsage(
+    val currentNow: Int = 0,
+    val currentAverage: Int = 0
+)
+
+data class BatteryTrackerSnapshot(
+    val timestamp: Long,
+    val batteryLevel: Int,
+    val isCharging: Boolean,
+    val temperature: Float,
+    val health: String,
+    val currentNow: Int,
+    val currentAverage: Int
+)
